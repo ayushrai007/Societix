@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Societix — The Autonomous Society Operating System</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%230f1c3f'/%3E%3Cstop offset='.6' stop-color='%230a1430'/%3E%3Cstop offset='1' stop-color='%230b7d54'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='32' y='44' font-family='Segoe UI,Helvetica,Arial,sans-serif' font-size='38' font-weight='800' fill='%23ffffff' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E" />
+<meta name="description" content="Societix is a privacy-first, autonomous operating system for residential communities. Autopilot treasury, statutory e-AGMs, AI committee copilot, and offline gate security — zero ads, DPDP-compliant." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- ===================== TOP BAR ===================== -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="#top" aria-label="Societix home">
+      <span class="mark">S</span>
+      <span>Societix<span class="tag">Autonomous Society OS</span></span>
+    </a>
+    <nav class="site-nav" aria-label="Sections" id="siteNav">
+      <a href="#platform">Platform</a>
+      <a href="#paradigm">Why Societix</a>
+      <a href="#compare">Compare</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#roadmap">Roadmap</a>
+    </nav>
+    <span class="topbar-spacer"></span>
+    <div class="preview-tabs" role="tablist" aria-label="Prototype view">
+      <button id="tab-website" class="active" role="tab" aria-selected="true" onclick="setView('website')"><span class="dot"></span>Website</button>
+      <button id="tab-app" role="tab" aria-selected="false" onclick="setView('app')"><span class="dot"></span>App</button>
+    </div>
+    <a class="btn btn-dark btn-sm cta-top" href="#demo">Book a demo</a>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ===================== WEBSITE VIEW ===================== -->
+<div class="view active" id="view-website">
+  <span id="top"></span>
+
+  <!-- HERO -->
+  <section class="hero" style="padding-top:64px">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="eyebrow">Privacy-first community OS · DPDP compliant</span>
+        <h1>The society that <span class="accent">runs itself.</span></h1>
+        <p class="lead">Societix turns the unpaid weekend grind of your Managing Committee into zero-touch automation — autonomous treasury, statutory e-AGMs, an AI copilot, and offline-first gate security. No ads. No data harvesting. Ever.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#demo">Book a demo</a>
+          <button class="btn btn-ghost" onclick="setView('app')">
+            See the app
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </button>
+        </div>
+        <div class="trust">
+          <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg>DPDP-compliant</span>
+          <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18.4 5.6 9 15 5.6 11.6"/><circle cx="12" cy="12" r="9"/></svg>Zero ads, ever</span>
+          <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/></svg>RBI-aligned payments</span>
+        </div>
+      </div>
+
+      <!-- hero visual -->
+      <div class="hero-card" aria-hidden="true">
+        <div class="hc-top">
+          <b>Autopilot Treasury</b>
+          <span class="pill-live"><span class="d"></span>Live</span>
+        </div>
+        <div class="hc-metric">
+          <div class="big">94.2%</div>
+          <div class="sub">Maintenance collected this cycle · ₹41.3L of ₹43.8L</div>
+          <div class="hc-bar"><i></i></div>
+        </div>
+        <div class="hc-rows">
+          <div class="hc-row">
+            <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div class="tx"><b>Flat B-1204 · UPI auto-matched</b><small>Webhook settled in 0.8s · zero-touch</small></div>
+            <span class="amt">+₹6,400</span>
+          </div>
+          <div class="hc-row">
+            <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+            <div class="tx"><b>Trial balance · auto-reconciled</b><small>Dual-entry ledger updated live</small></div>
+            <span class="amt">Balanced</span>
+          </div>
+          <div class="hc-row">
+            <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <div class="tx"><b>3 defaulters · cadence running</b><small>Day +10 SMS + IVR dispatched</small></div>
+            <span class="amt">Auto</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="stats" id="problem">
+    <div class="wrap">
+      <div class="section-head" style="margin-bottom:34px">
+        <span class="eyebrow" style="background:rgba(255,255,255,.08);color:#8ff0c6">The committee tax</span>
+        <h2 style="color:#fff">Volunteer officers are quietly paying for broken tools.</h2>
+      </div>
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="n amber">8.5 hrs</div>
+          <div class="k">Weekly burden / officer</div>
+          <p>Lost to manual Tally reconciliations, vendor quotation reviews, and hostile WhatsApp disputes.</p>
+        </div>
+        <div class="stat">
+          <div class="n red">18–32%</div>
+          <div class="k">Uncollected cash deficit</div>
+          <p>Societies suffer persistent capital deficits from friction and social awkwardness in manual collections.</p>
+        </div>
+        <div class="stat">
+          <div class="n em">₹250 Cr</div>
+          <div class="k">DPDP statutory exposure</div>
+          <p>Ad-supported legacy tools harvest visitor and resident gate logs, exposing committees to severe legal penalties.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULES -->
+  <section id="platform">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">The platform</span>
+        <h2>Six autonomous modules. One operating system.</h2>
+        <p>Everything a 100+ unit community needs to run compliant treasury, governance, security, and migration — engineered to minimise the secretary to under 45 minutes a week.</p>
+      </div>
+      <div class="grid cols-3">
+        <!-- 1 -->
+        <article class="card">
+          <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <span class="ftag">Module 01</span>
+          <h3>Autopilot Treasury &amp; ERP</h3>
+          <p>Multi-formula billing, virtual accounts, and a real-time double-entry ledger that reconciles itself.</p>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Static VAN + UPI VPA per flat — 99.8% zero-touch allocation</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Sinking / Repair / Reserve fund chart of accounts</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Maker-checker vendor payouts with TDS &amp; GST ITC</li>
+          </ul>
+        </article>
+        <!-- 2 -->
+        <article class="card">
+          <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <span class="ftag">Module 02</span>
+          <h3>Statutory Governance &amp; e-AGMs</h3>
+          <p>Legally binding digital quorums and cryptographically audited e-voting — no more disputed hand counts.</p>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Notice registry with 14/21-day proof-of-delivery</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Real-time quorum engine with validated proxy weights</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Committee handover escrow for contracts &amp; signatories</li>
+          </ul>
+        </article>
+        <!-- 3 -->
+        <article class="card alt">
+          <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4-2.5 5.2-.8.8-1.5 1.5-1.5 2.8v1H9v-1c0-1.3-.7-2-1.5-2.8C6.3 13 5 11.5 5 9a7 7 0 0 1 7-7z"/><path d="M9 21h6"/></svg></div>
+          <span class="ftag">Module 03</span>
+          <h3>AI Committee Copilot</h3>
+          <p>Ask your finances in plain language, auto-draft minutes, and resolve bylaw conflicts in seconds.</p>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Natural-language financial analytics</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Auto-synthesised, legally compliant MoM</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>State bylaw advisor &amp; tender comparison matrix</li>
+          </ul>
+        </article>
+        <!-- 4 -->
+        <article class="card">
+          <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 20h8M12 18v2"/><path d="M8 9l2 2 4-4"/></svg></div>
+          <span class="ftag">Module 04</span>
+          <h3>Offline Gate Infrastructure</h3>
+          <p>Gate operations that never stop — even in a basement Wi-Fi blackout — syncing seamlessly on reconnect.</p>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Local SQLite edge sync, zero data loss</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Multilingual audio UI in 8 Indian languages</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Pre-approved QR, delivery fast-track, ANPR scanning</li>
+          </ul>
+        </article>
+        <!-- 5 -->
+        <article class="card alt">
+          <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+          <span class="ftag">Module 05</span>
+          <h3>DPDP Act Privacy Shield</h3>
+          <p>Compliance turned into a moat: no trackers, no lead-brokers, and visitor data that deletes itself.</p>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>100% zero third-party ad / tracking SDKs</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>30-day auto-purge of visitor photos &amp; numbers</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Granular resident consent &amp; directory masking</li>
+          </ul>
+        </article>
+        <!-- 6 -->
+        <article class="card">
+          <div class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12a8 8 0 0 1 14-5.3L21 9M20 12a8 8 0 0 1-14 5.3L3 15"/><path d="M21 4v5h-5M3 20v-5h5"/></svg></div>
+          <span class="ftag">Module 06</span>
+          <h3>Smart-Switch Migration</h3>
+          <p>Move from Tally, Excel, MyGate or ADDA with validated, audited books in under four hours.</p>
+          <ul>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Automated ingestion ETL for legacy dumps</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Programmatic opening-balance verification</li>
+            <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>Zero-downtime 30-day parallel run</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- PARADIGM -->
+  <section class="para" id="paradigm">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow gold">Minimise the secretary</span>
+        <h2>From volunteer servitude to zero-touch autonomy.</h2>
+        <p>The same four pillars every committee fights with — reimagined as autonomous workflows.</p>
+      </div>
+      <div class="para-grid">
+        <div class="para-col legacy">
+          <h3><span class="badge">Legacy / incumbent</span></h3>
+          <div class="para-row"><span class="lbl">Treasury</span><span class="val">Manual bank reconciliations, un-tracked cash &amp; cheques, ad-hoc WhatsApp chasing.</span></div>
+          <div class="para-row"><span class="lbl">Governance</span><span class="val">Disputed hand counts at AGMs, unverified proxies, missing compliance paper files.</span></div>
+          <div class="para-row"><span class="lbl">Privacy</span><span class="val">Commercial ad networks, gate logs sold for merchant lead-gen, tracking SDKs.</span></div>
+          <div class="para-row"><span class="lbl">Onboarding</span><span class="val">High migration inertia, feared loss of historical books, manual ledger entry.</span></div>
+        </div>
+        <div class="para-col now">
+          <h3><span class="badge">Societix autonomous</span></h3>
+          <div class="para-row"><span class="lbl">Treasury</span><span class="val">Autopilot engine: virtual accounts, webhook auto-matching, multi-channel legal reminder ladders.</span></div>
+          <div class="para-row"><span class="lbl">Governance</span><span class="val">Digital quorums: cryptographically logged e-voting, dynamic quorum checks, auto-drafted minutes.</span></div>
+          <div class="para-row"><span class="lbl">Privacy</span><span class="val">Privacy shield: zero-ad guarantee, localized data isolation, 30-day automatic visitor-log purge.</span></div>
+          <div class="para-row"><span class="lbl">Onboarding</span><span class="val">Smart-Switch: ingests Tally / Excel / competitor data in under 4 hours at zero cost.</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARE -->
+  <section id="compare">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Incumbent teardown</span>
+        <h2>Built for committees — not for ad networks.</h2>
+        <p>Subsidised players prioritise resident eyeballs over committee functionality. Societix is pure, transparent SaaS.</p>
+      </div>
+      <div class="compare">
+        <table class="cmp">
+          <thead>
+            <tr>
+              <th>Evaluation vector</th>
+              <th>MyGate <span class="mut" style="font-weight:400;display:block;font-size:12px">Ad-network</span></th>
+              <th>NoBrokerHood <span class="mut" style="font-weight:400;display:block;font-size:12px">Brokerage funnel</span></th>
+              <th class="us">Societix <span style="font-weight:400;display:block;font-size:12px;color:#8ff0c6">Autonomous OS</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="vec">Core heritage</td>
+              <td class="mut">Gate security app expanded into commerce ad network.</td>
+              <td class="mut">Free gate-entry tool feeding a real-estate brokerage funnel.</td>
+              <td class="us">Autonomous governance, treasury &amp; compliance OS.</td>
+            </tr>
+            <tr>
+              <td class="vec">Monetization</td>
+              <td class="mut">Subsidised SaaS + ads + in-app merchant float.</td>
+              <td class="mut">Freemium + home-service commissions + lead selling.</td>
+              <td class="us">Pure transparent SaaS (₹25–₹45/unit/mo) · zero ads.</td>
+            </tr>
+            <tr>
+              <td class="vec">Committee time</td>
+              <td class="mut">6–8 hrs/week manual reconciliation.</td>
+              <td class="mut">8–10 hrs/week manual inputs &amp; data cleaning.</td>
+              <td class="us">&lt; 45 mins/week via autonomous event matching.</td>
+            </tr>
+            <tr>
+              <td class="vec">Accounting depth</td>
+              <td class="mut">Moderate; relies on manual Tally exports.</td>
+              <td class="mut">Basic ledger; frequent mismatch errors.</td>
+              <td class="us">Automated dual-entry general ledger &amp; audit packs.</td>
+            </tr>
+            <tr>
+              <td class="vec">AGM governance</td>
+              <td class="mut">Basic non-binding polls; zero legal quorum tools.</td>
+              <td class="mut">Informal announcement-board messaging.</td>
+              <td class="us">Legally binding digital quorums &amp; audited e-voting.</td>
+            </tr>
+            <tr>
+              <td class="vec">DPDP compliance</td>
+              <td class="mut">Third-party ad tracking SDKs; commercial pushes.</td>
+              <td class="mut">Aggressive cross-sell tracking into brokerage DB.</td>
+              <td class="us">100% zero-ad guarantee · 30-day auto-purge of gate logs.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="cmp-note">Source: Societix competitive positioning analysis, SOC-BRD-2026-V1. Comparison reflects publicly described incumbent business models.</p>
+    </div>
+  </section>
+
+  <!-- MOATS -->
+  <section class="moats">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow" style="background:rgba(199,167,99,.18);color:var(--gold)">Strategic moats</span>
+        <h2>Three reasons incumbents can't follow.</h2>
+        <p>Each moat compounds — regulation, migration lock-in, and recovery economics.</p>
+      </div>
+      <div class="grid cols-3">
+        <div class="moat">
+          <div class="num">1</div>
+          <h3>The DPDP privacy wedge</h3>
+          <p>The DPDP Act imposes fines up to ₹250 Cr for non-consensual resident tracking. Incumbents can't drop ad-trackers without gutting revenue — we turn compliance into an unassailable moat.</p>
+        </div>
+        <div class="moat">
+          <div class="num">2</div>
+          <h3>Smart-Switch migration</h3>
+          <p>The primary barrier to switching is migration fear. Our ETL engine ingests legacy Tally or competitor CSV exports, validating opening balances and rebuilding audited books in under four hours.</p>
+        </div>
+        <div class="moat">
+          <div class="num">3</div>
+          <h3>Defaulter escalation rails</h3>
+          <p>No more interpersonal friction. Societix automates multi-channel reminder cadences — WhatsApp → IVR → auto-drafted legal demand notices with statutory interest — recovering dues 3.5× faster.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing">
+    <div class="wrap">
+      <div class="section-head center">
+        <span class="eyebrow">Transparent pricing</span>
+        <h2>One honest price. Zero ads. No data resale.</h2>
+        <p>Pure SaaS, billed per occupied unit. Maintenance collections route directly to your society bank account via licensed payment aggregators — Societix never holds your float.</p>
+      </div>
+      <div class="price-wrap">
+        <div class="price-card">
+          <div class="rel">
+            <div class="amt">₹25–45<small> / unit / month</small></div>
+            <span class="zero"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="12" cy="12" r="9"/><path d="M5 5l14 14"/></svg>Zero-ad guarantee · no cross-sell</span>
+            <ul class="price-feats">
+              <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l4 4L19 6"/></svg>All six modules, every resident &amp; committee seat</li>
+              <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l4 4L19 6"/></svg>Free Smart-Switch migration (under 4 hours)</li>
+              <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l4 4L19 6"/></svg>Sovereign Indian data residency · AES-256 at rest</li>
+              <li><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12l4 4L19 6"/></svg>99.95% uptime across treasury &amp; security</li>
+            </ul>
+            <a class="btn btn-primary" href="#demo" style="width:100%">Start a 30-day parallel run</a>
+          </div>
+        </div>
+        <div class="price-side">
+          <h3>Priced to replace spreadsheets, not to harvest residents.</h3>
+          <p>Incumbents subsidise software by monetising your community's personal data. We don't — so the price you see is the whole deal.</p>
+          <div class="mini">
+            <div class="m">
+              <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+              <div><b>Payments stay yours</b><small>RBI-aligned: funds settle straight to your society account.</small></div>
+            </div>
+            <div class="m">
+              <div class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg></div>
+              <div><b>&lt; 2.5% annual churn</b><small>Communities stay — compounding multi-year value.</small></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section class="road" id="roadmap">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Execution roadmap</span>
+        <h2>From a Bengaluru blitz to a national OS.</h2>
+      </div>
+      <div class="road-grid">
+        <div class="phase"><span class="step">0</span><div class="ph">Phase 0 · Validate</div><h3>Groundwork</h3><p>30 secretary in-depth interviews, payment-escrow legal structuring, and state-bylaw rules-engine mapping.</p></div>
+        <div class="phase"><span class="step">1</span><div class="ph">Phase 1 · MVP wedge</div><h3>Autopilot + Gate</h3><p>Deploy Autopilot invoicing &amp; the offline gate app across 20 pilot societies in East Bengaluru.</p></div>
+        <div class="phase"><span class="step">2</span><div class="ph">Phase 2 · Governance</div><h3>e-AGM + Copilot</h3><p>Launch e-AGM quorums, the AI copilot, and Smart-Switch ETL; scale to 120 Bengaluru societies.</p></div>
+        <div class="phase"><span class="step">3</span><div class="ph">Phase 3 · Scale &amp; B2B</div><h3>Metro + white-label</h3><p>Expand to Pune &amp; Hyderabad; launch white-label ERP for tier-1 facility firms (JLL, CBRE).</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="ctaband" id="demo">
+    <div class="wrap">
+      <span class="eyebrow" style="background:rgba(255,255,255,.18);color:#fff">Approved for Sprint 1</span>
+      <h2>Give your committee their weekends back.</h2>
+      <p>See how Societix runs a 100+ unit community in under 45 minutes a week — book a 20-minute walkthrough with our team.</p>
+
+      <form class="demo-form" id="demo-form" novalidate>
+        <div class="df-grid">
+          <label class="df-field">
+            <span>Your name</span>
+            <input type="text" name="name" id="df-name" placeholder="e.g. R. Menon" autocomplete="name" required />
+          </label>
+          <label class="df-field">
+            <span>Society name</span>
+            <input type="text" name="society" id="df-society" placeholder="e.g. Maple Residency" autocomplete="organization" required />
+          </label>
+          <label class="df-field">
+            <span>Units / flats</span>
+            <input type="number" name="units" id="df-units" placeholder="e.g. 220" min="1" inputmode="numeric" />
+          </label>
+          <label class="df-field">
+            <span>Email or phone</span>
+            <input type="text" name="contact" id="df-contact" placeholder="you@society.in / 9876543210" autocomplete="email" required />
+          </label>
+        </div>
+        <div class="df-actions">
+          <button type="submit" class="btn btn-primary">Book my demo</button>
+          <button type="button" class="btn btn-ghost" onclick="setView('app')">Explore the app</button>
+        </div>
+        <p class="df-note" id="df-note">No ads, no spam — your details are used only to schedule the walkthrough.</p>
+      </form>
+
+      <div class="demo-done" id="demo-done" hidden>
+        <div class="dd-check">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12l4 4L19 6"/></svg>
+        </div>
+        <h3 id="dd-title">You're on the list!</h3>
+        <p id="dd-msg">Thanks — we'll reach out within one business day to lock in your walkthrough.</p>
+        <button type="button" class="btn btn-ghost" onclick="resetDemo()">Book another</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="wrap">
+      <div class="foot-grid">
+        <div>
+          <div class="brand"><span class="mark">S</span><span>Societix</span></div>
+          <p class="desc">The autonomous, privacy-first operating system for India's residential communities. Minimise the secretary — maximise the community.</p>
+          <div class="compliance">
+            <span>DPDP Act 2023</span><span>RBI PA norms</span><span>TLS 1.3 · AES-256</span><span>Mumbai &amp; Hyderabad regions</span>
+          </div>
+        </div>
+        <div>
+          <h4>Platform</h4>
+          <ul>
+            <li><a href="#platform">Autopilot Treasury</a></li>
+            <li><a href="#platform">Statutory e-AGMs</a></li>
+            <li><a href="#platform">AI Copilot</a></li>
+            <li><a href="#platform">Offline Gate</a></li>
+            <li><a href="#platform">Privacy Shield</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#compare">Why Societix</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#roadmap">Roadmap</a></li>
+            <li><a href="#demo">Book a demo</a></li>
+            <li><a href="#" onclick="setView('app');return false;">View the app</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="foot-bottom">
+        <span>© 2026 Societix · SOC-BRD-2026-V1 · Confidential prototype</span>
+        <span>Data Fiduciary tooling · Zero commercial targeting</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ===================== APP VIEW ===================== -->
+<div class="view" id="view-app">
+  <section class="app-stage">
+    <div class="wrap">
+      <div class="app-intro">
+        <span class="eyebrow">Mobile prototype</span>
+        <h2>One app. Two sides of the community.</h2>
+        <p>Residents pay, invite, and vote in a tap. Committees run treasury, governance, and security on autopilot. Switch roles to explore both.</p>
+        <div class="role-toggle" role="tablist" aria-label="App persona">
+          <button id="role-resident" class="active" onclick="setRole('resident')">
+            <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="8" r="4"/><path d="M5 21a7 7 0 0 1 14 0"/></svg></span>Resident
+          </button>
+          <button id="role-committee" onclick="setRole('committee')">
+            <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg></span>Committee
+          </button>
+        </div>
+      </div>
+
+      <div class="app-layout">
+        <!-- PHONE -->
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="notch"></div>
+            <div class="status-bar">
+              <span>9:41</span>
+              <span class="r">
+                <svg width="16" height="11" viewBox="0 0 24 16" fill="currentColor"><rect x="0" y="9" width="4" height="7" rx="1"/><rect x="6" y="6" width="4" height="10" rx="1"/><rect x="12" y="3" width="4" height="13" rx="1"/><rect x="18" y="0" width="4" height="16" rx="1"/></svg>
+                <svg width="18" height="12" viewBox="0 0 24 16" fill="currentColor"><path d="M12 3c3 0 5.8 1.2 7.8 3.2l-1.4 1.4C16.8 6 14.5 5 12 5S7.2 6 5.6 7.6L4.2 6.2C6.2 4.2 9 3 12 3z"/><path d="M12 8c1.7 0 3.2.7 4.2 1.8l-1.4 1.4c-.7-.7-1.7-1.2-2.8-1.2s-2.1.5-2.8 1.2L7.8 9.8C8.8 8.7 10.3 8 12 8z"/><circle cx="12" cy="13.5" r="1.6"/></svg>
+                <svg width="24" height="12" viewBox="0 0 28 14" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="23" height="12" rx="3"/><rect x="3" y="3" width="17" height="8" rx="1.5" fill="currentColor"/><rect x="25" y="4.5" width="2" height="5" rx="1" fill="currentColor"/></svg>
+              </span>
+            </div>
+
+            <!-- header (dynamic) -->
+            <div class="app-head">
+              <div class="hi" id="app-hi">Good morning,</div>
+              <div class="who">
+                <b id="app-name">Ananya Rao</b>
+                <span class="av" id="app-av">AR</span>
+              </div>
+              <span class="unit" id="app-unit">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 21h18M5 21V8l7-5 7 5v13"/></svg>
+                Flat B-1204 · Maple Residency
+              </span>
+            </div>
+
+            <!-- body -->
+            <div class="app-body" id="app-body"><!-- rendered by JS --></div>
+
+            <!-- tab bar (dynamic) -->
+            <div class="tabbar" id="app-tabbar"><!-- rendered by JS --></div>
+          </div>
+        </div>
+
+        <!-- FEATURE SIDE -->
+        <div class="app-feats" id="app-feats"><!-- rendered by JS --></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
