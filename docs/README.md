@@ -89,6 +89,6 @@ This stack is **authoritative** — all docs and code must align to it. Changes 
 | Security | TLS 1.3 + HSTS; AES-256 at rest w/ envelope key rotation; immutable audit trail |
 | Observability | **OpenTelemetry**, Prometheus, Grafana; centralized structured logging |
 
-### Module numbering (authoritative, maps 1:1 to BRD)
+### Module numbering (authoritative, maps 1:1 to BRD) 
 
 `M1` Treasury/ERP · `M2` Governance/e-AGM · `M3` AI Copilot · `M4` Gate Infra · `M5` Privacy Shield · `M6` Smart-Switch.
