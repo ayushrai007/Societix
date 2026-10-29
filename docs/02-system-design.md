@@ -4,7 +4,7 @@
 
 This document specifies the concerns that span every module: authentication/authorization,
 the gateway/BFF, the uniform error model, idempotency, pagination, i18n, notification fan-out,
-observability, and concurrency control. It builds on the C4 views, Kafka topic list, and RLS
+observability, and concurrency control. It builds on the C4 views, event (outbox) catalogue, and RLS
 tenancy flow defined in [architecture](01-architecture.md); those are referenced, not repeated.
 See the [glossary](glossary.md) for terms and the [data model](03-data-model.md) for schema.
 
@@ -128,7 +128,7 @@ All errors return `application/problem+json`. Rules live in
 | `SOC-RES-404-001` | 404 | Resource not found (within tenant) |
 | `SOC-RATE-429-001` | 429 | Rate limit exceeded (see `Retry-After`) |
 | `SOC-LOCK-423-001` | 423 | Resource locked / optimistic conflict |
-| `SOC-DEP-503-001` | 503 | Downstream (PA / LLM / Kafka) unavailable |
+| `SOC-DEP-503-001` | 503 | Downstream (PA / LLM) unavailable |
 
 Validation errors always use `status: 400`, `code: SOC-VAL-400-001`, and a populated `errors[]`
 array (one entry per field). `traceId` is the OpenTelemetry trace id (§8) for support correlation.
@@ -146,7 +146,7 @@ Unsafe, side-effecting operations accept an `Idempotency-Key` header (client-gen
 | **Replay (different hash)** | `409 SOC-IDEM-409-001` — key reused with a different payload |
 | **In-flight** | Second concurrent call with same key gets `409` until the first completes |
 
-Combined with at-least-once Kafka delivery (consumers dedupe on idempotency keys + unique
+Combined with at-least-once outbox delivery (consumers dedupe on idempotency keys + unique
 constraints — see [architecture](01-architecture.md) §5), this makes retries safe end-to-end.
 
 ## 5. Pagination & Filtering
@@ -176,23 +176,25 @@ Target languages (8): **English, Hindi, Marathi, Kannada, Tamil, Telugu, Bengali
 
 ## 7. Notification Fan-out (escalation ladder)
 
-Notifications are event-driven (Kafka): a domain event produces a `notification.requested`
-record; the Notification service resolves the recipient's channel preference and locale, then
-walks the ladder **in-app → WhatsApp → SMS → IVR**, stopping at the first channel with
-proof-of-delivery (POD). Each attempt and its POD are recorded and are audit-visible.
+Notifications are event-driven (via the Postgres outbox — see
+[ADR-0004](adr/0004-kafka-event-driven-cadence.md)): a domain event produces a
+`notification.requested` record; the Notification service resolves the recipient's channel
+preference and locale, then walks the ladder **in-app → WhatsApp → SMS → IVR**, stopping at the
+first channel with proof-of-delivery (POD). Each attempt and its POD are recorded and are
+audit-visible.
 
 ```mermaid
 sequenceDiagram
     participant SRC as Module (M1 Cadence / M2 / M4)
-    participant K as Kafka
+    participant K as Outbox + poller
     participant N as Notification Service
     participant APP as In-App (push)
     participant WA as WhatsApp (BSP)
     participant SMS as SMS Gateway
     participant IVR as IVR / Voice
 
-    SRC->>K: defaulter.stage.advanced / notification.requested
-    K->>N: consume (keyed by tenant_id)
+    SRC->>K: defaulter.stage.advanced / notification.requested (outbox row)
+    K->>N: poller dispatches (keyed by tenant_id)
     N->>APP: deliver in-app push
     APP-->>N: delivered? (ack)
     alt no POD within window
@@ -217,10 +219,15 @@ sequenceDiagram
 
 ## 8. Observability
 
-| Signal | Tooling | Notes |
+**v1 (economical):** **Spring Boot Actuator** (health, Micrometer metrics, info) + **structured JSON
+logs** with correlation ids, shipped to the managed host's log aggregation. This is enough for health,
+basic metrics, and incident triage without a standalone metrics/trace platform. The richer tracing
+stack is a documented later step — see [`delivery/cicd-devops.md`](delivery/cicd-devops.md) §7.
+
+| Signal | Tooling (v1 → later) | Notes |
 |---|---|---|
-| **Tracing** | OpenTelemetry → OTLP collector | `traceId` surfaced in every problem+json; spans across gateway → module → DB/Kafka |
-| **Metrics** | Micrometer → Prometheus → Grafana | SLO dashboards for gate check-in < 1.5s, AI query < 2.5s (BRD §10) |
+| **Tracing** | `traceId` in logs → **OpenTelemetry** export later | `traceId` surfaced in every problem+json; spans across gateway → module → DB when OTel is added |
+| **Metrics** | **Actuator + Micrometer** now → **Prometheus/Grafana** later | SLO signals for gate check-in < 1.5s, AI query < 2.5s (BRD §10); Micrometer is OTel/Prometheus-ready |
 | **Logs** | Structured JSON (SLF4J + logstash encoder) | Correlation: `traceId`, `tenantId`, `userId`, `module` |
 | **Audit log** | Dedicated append-only, hash-chained DB table | **Distinct from app logs**: business-meaningful, tamper-evident, retained for statutory auditors |
 

@@ -30,7 +30,7 @@ money movement, and Societix will never pool, hold, or route customer float.**
   flow of funds and holds no escrow/nodal/float balance.
 - The PA notifies Societix of credits via **webhooks** (`payment.settled`); the **Webhook Matcher**
   consumes them and the treasury module posts a balanced ledger transaction, flipping the invoice to
-  `PAID` (zero-touch) — driven over Kafka with idempotent handling
+  `PAID` (zero-touch) — driven via the transactional outbox with idempotent handling
   ([ADR-0004](0004-kafka-event-driven-cadence.md)).
 - Vendor payouts are initiated via the PA's payout API under **maker-checker** control; again the
   money moves PA→vendor, not through Societix.

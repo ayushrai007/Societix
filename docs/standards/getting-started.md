@@ -53,7 +53,9 @@ societix/
 ## 3. Local infrastructure (Docker Compose)
 
 Create / use the repo's `docker-compose.yml`. It brings up **PostgreSQL 16 (with pgvector)**,
-**Redis 7**, **Kafka 7 in KRaft mode** (no ZooKeeper), and a **Payment-Aggregator sandbox mock**.
+**Redis 7**, and a **Payment-Aggregator sandbox mock**. There is **no message broker** — the
+event backbone is a Postgres transactional outbox (see
+[ADR-0004](../adr/0004-kafka-event-driven-cadence.md)), so local setup is one container lighter.
 
 ```yaml
 # docker-compose.yml
@@ -84,28 +86,7 @@ services:
       timeout: 3s
       retries: 20
 
-  kafka:
-    image: confluentinc/cp-kafka:7.6.1      # KRaft mode — single-node, no ZooKeeper
-    container_name: soc-kafka
-    ports: ["9092:9092"]
-    environment:
-      KAFKA_NODE_ID: 1
-      KAFKA_PROCESS_ROLES: "broker,controller"
-      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
-      KAFKA_LISTENERS: "PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093"
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:9092"
-      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
-      CLUSTER_ID: "soc-local-kraft-cluster1"
-    healthcheck:
-      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092"]
-      interval: 10s
-      timeout: 5s
-      retries: 20
+  # NOTE: no Kafka/broker service in v1 — the event backbone is a Postgres outbox (ADR-0004).
 
   pa-sandbox:
     # Payment Aggregator sandbox/mock (Razorpay/Cashfree stand-in).
@@ -154,8 +135,11 @@ DB_PASSWORD=societix
 REDIS_HOST=localhost
 REDIS_PORT=6379
 
-# --- Kafka (KRaft) ---
-KAFKA_BOOTSTRAP_SERVERS=localhost:9092
+# --- Event backbone ---
+# No broker in v1. The transactional outbox lives in PostgreSQL; a scheduled poller
+# (ShedLock-guarded) dispatches events. Tunables:
+OUTBOX_POLL_INTERVAL_MS=1000
+OUTBOX_BATCH_SIZE=100
 
 # --- Payment Aggregator sandbox (Razorpay/Cashfree stand-in) ---
 PA_PROVIDER=mock                         # mock | razorpay | cashfree
@@ -257,12 +241,12 @@ curl -s -X POST http://localhost:1080/pa/simulate/payment \
 
 ```bash
 ./gradlew test             # unit + slice tests
-./gradlew integrationTest  # Testcontainers-backed (Postgres, Kafka, Redis)
+./gradlew integrationTest  # Testcontainers-backed (Postgres, Redis)
 ./gradlew check            # tests + Spotless + static analysis (Error Prone / SpotBugs)
 ```
 
-> **Testcontainers note:** `integrationTest` spins up **real** Postgres 16, Kafka (KRaft), and
-> Redis containers automatically — it does **not** use the `docker-compose` stack, so it is safe to
+> **Testcontainers note:** `integrationTest` spins up **real** Postgres 16 and Redis containers
+> automatically — it does **not** use the `docker-compose` stack, so it is safe to
 > run while `docker compose up` is live. You only need Docker running; no manual container setup.
 > On CI the Docker socket is provided by the runner. First run pulls images (slow); later runs are
 > cached. Tenancy/RLS isolation tests live under `app/src/integrationTest` and assert that a query
@@ -282,7 +266,7 @@ cd web && npm test         # Vitest + React Testing Library
 | `FATAL: database "societix" does not exist` | Volume created before env set | `docker compose down -v && docker compose up -d` |
 | Flyway: `relation already exists` / checksum mismatch | Edited an applied `V__` script | Never edit applied migrations — add a new `V__`; or reset DB (`down -v`) locally |
 | Query returns 0 rows but data exists | `app.tenant_id` GUC not set (RLS fail-closed) | Ensure you hit the API via a JWT; don't query the DB directly without `SET LOCAL app.tenant_id` |
-| Kafka consumer never fires | Broker not healthy / wrong bootstrap | `docker compose logs kafka`; confirm `KAFKA_BOOTSTRAP_SERVERS=localhost:9092` |
+| Outbox events never dispatched (e.g. no reminder sent) | Poller not running / ShedLock held by a dead instance | Check app logs for the outbox poller; verify the `shedlock` row isn't stuck locked; confirm `OUTBOX_POLL_INTERVAL_MS` is set |
 | Copilot returns `"(stub answer)"` | `LLM_API_KEY` blank | Paste a key in `.env`; restart `bootRun` |
 | Payment webhook 401 | `PA_WEBHOOK_SECRET` mismatch | Match `.env` to the value in `infra/pa-mock/pa-expectations.json` |
 | Web console: CORS / 404 on `/api/v1` | Wrong `VITE_API_BASE_URL` | Set it to `http://localhost:8080/api/v1` in `web/.env.local` |

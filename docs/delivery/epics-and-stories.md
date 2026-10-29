@@ -39,17 +39,17 @@ and [`definition-of-done.md`](definition-of-done.md).
 |---|---|---|---|
 | F2.1 | As a **Resident**, I want notices via my preferred channel, so that I actually receive them. | Given channel prefs, When a notice fires, Then it uses the top available channel and logs delivery. | M |
 | F2.2 | As a **Secretary**, I want failed channels to escalate (in-app→WhatsApp→SMS→IVR), so that critical dues reminders land. | Given WhatsApp fails, When retry exhausts, Then SMS is attempted and the fallback is audited. | M |
-| F2.3 | As a **Platform Admin**, I want notifications driven by Kafka events, so that modules stay decoupled from channels. | Given `defaulter.stage.advanced`, When consumed, Then exactly one notification is produced (idempotent). | S |
+| F2.3 | As a **Platform Admin**, I want notifications driven by outbox events, so that modules stay decoupled from channels. | Given `defaulter.stage.advanced`, When the outbox poller dispatches it, Then exactly one notification is produced (idempotent). | S |
 
 ---
 
 ## Foundation Epic F3 — Observability & Audit
 
-*Phase 0, always-on. OTel/Prometheus/Grafana; append-only hash-chained audit.*
+*Phase 0, always-on. v1: Spring Boot Actuator + structured logs; OTel/Prometheus/Grafana deferred to a later scale step. Append-only hash-chained audit from day 1.*
 
 | # | Story | AC (abridged) | Size |
 |---|---|---|---|
-| F3.1 | As a **Platform Admin**, I want distributed traces across modules, so that I can debug a slow request end-to-end. | Given a request, When it spans gateway→module→DB, Then one trace with correlated spans appears in Grafana. | M |
+| F3.1 | As a **Platform Admin**, I want structured logs correlated by `traceId`/`tenantId` (and distributed traces once OTel lands), so that I can debug a slow request end-to-end. | Given a request, When it spans gateway→module→DB, Then its `traceId` correlates the log lines (and spans, after the OTel upgrade). | M |
 | F3.2 | As an **Auditor**, I want an append-only tamper-evident log, so that I can trust the record of financial/vote actions. | Given a logged action, When an UPDATE/DELETE is attempted, Then it is rejected; hash chain verifies. | M |
 | F3.3 | As an **SRE**, I want SLO alerts tied to 99.95% availability, so that we page before breaching. | Given error-budget burn > threshold, When sustained, Then an alert fires to on-call. | S |
 

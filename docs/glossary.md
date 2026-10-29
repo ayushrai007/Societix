@@ -62,7 +62,8 @@
 | **RLS — Row-Level Security** | PostgreSQL feature filtering rows by a per-session tenant id; our tenancy isolation. |
 | **CRDT** | Conflict-free Replicated Data Type — lets the offline gate merge edits without conflicts. |
 | **WAL** | Write-Ahead Log — SQLite durability mechanism used on the gate edge. |
-| **Outbox pattern** | Transactional outbox table drained to Kafka to keep DB state and events consistent. |
+| **Outbox pattern** | Transactional outbox table written in the same DB transaction as the state change, then dispatched by a scheduled poller — our broker-free event backbone (see ADR-0004). |
+| **Message broker (deferred)** | A dedicated event bus (e.g. Kafka or Redis Streams). Not used in v1; a documented scale-up option once the outbox poller's throughput is exceeded. |
 | **RAG** | Retrieval-Augmented Generation — grounding LLM answers in retrieved bylaws/ledger context. |
 | **pgvector** | PostgreSQL extension for vector similarity search (embeddings). |
 | **ANPR** | Automatic Number Plate Recognition — vehicle entry at the gate. |

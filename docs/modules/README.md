@@ -4,8 +4,9 @@
 
 This folder holds the per-module engineering specifications. Each module maps **1:1** to a BRD
 functional block and carries its own document (`SOC-DOC-M<n>`). Read the
-[Architecture anchor](../01-architecture.md) first — it defines the C4 views, the Kafka topic
-catalogue, and the RLS multi-tenancy model that every module below assumes. Domain terms are in the
+[Architecture anchor](../01-architecture.md) first — it defines the C4 views, the domain-event
+catalogue (Postgres outbox; no broker in v1), and the RLS multi-tenancy model that every module
+below assumes. Domain terms are in the
 [glossary](../glossary.md).
 
 > **Shared foundations** (not numbered modules): **IAM/RBAC**, **Notification fan-out**
@@ -83,7 +84,7 @@ See [`../delivery/development-plan.md`](../delivery/development-plan.md) for the
 
 | Phase | Modules | Rationale |
 |---|---|---|
-| **Phase 0 (foundations)** | IAM/RBAC · Notification · Audit · RLS tenancy · Kafka/outbox | Everything depends on tenancy, identity, eventing, and the audit trail. |
+| **Phase 0 (foundations)** | IAM/RBAC · Notification · Audit · RLS tenancy · outbox/event backbone | Everything depends on tenancy, identity, eventing, and the audit trail. |
 | **Phase 1** | **M1** + **M4** | The two revenue/retention anchors: treasury (the "minimise the secretary" value) and the gate (daily-touch security). Independent enough to build in parallel. |
 | **Phase 2** | **M2** + **M3** + **M6** | M2 needs M1's ledger (capex votes); M3 needs M1+M2 corpora to index; M6 migrates data *into* M1/M2 and is best built once their schemas are stable. |
 | **Cross-cutting (day 1 → always-on)** | **M5** | The zero-ad / purge / consent guarantees must hold from the first line of code — M5 is designed in from Phase 0, not bolted on, and its purge worker goes live with M4 in Phase 1. |

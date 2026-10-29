@@ -76,7 +76,7 @@ Full schema + key management in [`../03-data-model.md`](../03-data-model.md) and
 ```mermaid
 sequenceDiagram
     participant M4 as Gate (M4)
-    participant K as Kafka
+    participant K as Outbox + poller
     participant SCH as Purge Scheduler (M5)
     participant W as Purge Worker
     participant DB as PostgreSQL (RLS)

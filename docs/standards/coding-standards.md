@@ -206,7 +206,8 @@ log.info("paid by {} ({})", resident.name(), resident.phone());   // ❌ never
   and fails closed.
 - The app DB role is **not** `BYPASSRLS`. Never query a tenant table outside a tenant-scoped tx.
 - Publish domain events with `@ApplicationModuleListener` (runs **after commit**) or via the
-  transactional **outbox** for anything that must reach Kafka atomically with the DB write.
+  transactional **outbox** for anything that must be dispatched reliably and atomically with the DB
+  write (no broker in v1 — see [ADR-0004](../adr/0004-kafka-event-driven-cadence.md)).
 
 ```java
 @Service

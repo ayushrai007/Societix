@@ -28,7 +28,7 @@ the module specs in [`../modules/`](../modules/README.md), and the engineering c
 - **M1 ledger before M2 and M6.** M2 capex/fund-hike voting references ledger fund balances;
   M6 reconciliation reconstructs the M1 ledger. Neither ships before M1's ledger is stable.
 - **Foundations first.** IAM/RBAC, Notification fan-out, Audit log, RLS tenancy, and the
-  Kafka/outbox backbone precede all feature modules.
+  outbox/event backbone precede all feature modules.
 - **M5 privacy guardrails from the first commit.** No module that writes resident/visitor PII
   ships before M5's consent + purge controls cover that data path (BRD build-order invariant).
 
@@ -85,7 +85,7 @@ payments, ledger) end-to-end before any feature breadth.
 | CI/CD skeleton | GitHub Actions: build + unit test on PR, Testcontainers integration lane, SAST/secret/dependency scan, image build to registry, deploy-to-dev — see [`cicd-devops.md`](cicd-devops.md) |
 | Auth | OIDC login (Auth Code + PKCE), JWT validation at gateway, role claims (`SECRETARY`, `TREASURER`, `OWNER`, `GUARD`, …) per [`../02-system-design.md`](../02-system-design.md) §1 |
 | Tenancy / RLS | `tenant_id` on every table; `OncePerRequestFilter` sets `SET LOCAL app.tenant_id`; Flyway baseline with RLS policies; a tenancy isolation test that fails a cross-tenant read |
-| Eventing | Kafka cluster; transactional **outbox** pattern; one topic (`billing.invoice.raised`) wired producer→consumer |
+| Eventing | Transactional **outbox** table in PostgreSQL + `@TransactionalEventListener` + a ShedLock-guarded `@Scheduled` poller; one event (`billing.invoice.raised`) wired producer→consumer. No broker in v1 — see [ADR-0004](../adr/0004-kafka-event-driven-cadence.md) |
 | M5 guardrails | No-third-party-SDK lint gate; consent model stub; purge scheduler skeleton (`privacy.purge.due`) |
 | Walking skeleton | **One vertical slice**: raise invoice → pay via PA sandbox (Razorpay/Cashfree) → webhook matched → double-entry ledger posting, all tenant-scoped and audited |
 
@@ -107,7 +107,7 @@ flowchart LR
 - [ ] Cross-tenant read test **fails to return rows** (RLS proven)
 - [ ] Walking-skeleton slice green in staging against PA sandbox
 - [ ] No third-party tracking SDK present (compliance gate green)
-- [ ] One synthetic tenant seeded; observability (OTel traces) visible in Grafana
+- [ ] One synthetic tenant seeded; observability (Actuator health + structured logs with `traceId`) in place — OTel/Grafana deferred to a later scale step
 
 ---
 
@@ -170,7 +170,7 @@ societies** (~24k units, Yr1 target).
 
 | Milestone | Focus | Key deliverables |
 |---|---|---|
-| **M3A Multi-region scale** | Reliability | Mumbai active / Hyderabad passive validated; PG failover + Kafka mirror drills; HPA tuned; 99.95% SLO proven over a quarter |
+| **M3A Multi-region scale** | Reliability | Mumbai active / Hyderabad passive validated; managed-PG failover drills + PITR restore rehearsals; autoscaling tuned; **introduce a message broker if ADR-0004's upgrade trigger has fired**; 99.95% SLO proven over a quarter |
 | **M3B White-label** | B2B | Tenant branding/theming, portfolio (multi-society) admin, FM-firm reporting rollups, contractual SLAs |
 
 **Dependencies:** performance & tenancy isolation hardened in Phase 2; observability/SLOs
@@ -203,7 +203,7 @@ societies** (~24k units, Yr1 target).
 
 ```mermaid
 flowchart TD
-    F[Foundations: IAM, Notify, Audit, RLS, Kafka/outbox] --> M1
+    F[Foundations: IAM, Notify, Audit, RLS, outbox/events] --> M1
     F --> M4
     M5[M5 Privacy Shield - day 1, always on] -.consent/purge gates.-> M1 & M4 & M2
     M1 --> M2
