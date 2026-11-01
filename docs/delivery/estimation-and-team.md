@@ -20,7 +20,7 @@ embedded **enabling** capability, not an afterthought.
 ```mermaid
 flowchart TB
     subgraph Platform["Platform team (X-as-a-Service)"]
-      P[Paved road: CI/CD, IaC, K8s, Kafka/outbox, IAM, Notification, Audit, Observability]
+      P[Paved road: CI/CD, IaC, managed infra, outbox/events, IAM, Notification, Audit, Observability]
     end
     subgraph Streams["Stream-aligned teams"]
       SA[Team Treasury+Gate -> M1, M4]
@@ -40,7 +40,7 @@ flowchart TB
 
 | Team | Owns | Modules |
 |---|---|---|
-| **Platform** | Paved road, tenancy/RLS plumbing, Kafka/outbox, IAM, Notification, Audit, Observability, CI/CD, IaC | Foundations |
+| **Platform** | Paved road, tenancy/RLS plumbing, outbox/event backbone, IAM, Notification, Audit, Observability, CI/CD, IaC | Foundations |
 | **Stream: Treasury + Gate** | Collections spine + daily-touch gate | M1, M4 |
 | **Stream: Governance + Copilot** | Statutory governance + AI analytics | M2, M3 |
 | **Stream: Migration + Data** | ETL onboarding + data/embedding pipelines | M6 |

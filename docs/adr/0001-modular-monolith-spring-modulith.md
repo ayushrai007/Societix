@@ -32,10 +32,11 @@ well-bounded modules enforced by Spring Modulith**, one top-level package per mo
 - Modules communicate only via each module's **published events** (preferred) or a narrow
   **`*Facade`** API — never by reaching into another module's internals.
 - `ApplicationModules.verify()` runs as a build-blocking test, so boundary violations fail CI.
-- In-process domain events use Modulith's `@ApplicationModuleListener`; events that must reach Kafka
-  use the transactional **outbox** ([ADR-0004](0004-kafka-event-driven-cadence.md)).
+- In-process domain events use Modulith's `@ApplicationModuleListener`; events that must survive
+  process boundaries or drive the autonomous cadence use the transactional **outbox** dispatched by a
+  scheduled poller ([ADR-0004](0004-kafka-event-driven-cadence.md)) — no broker in v1.
 - Boundaries are drawn so that, at scale, a module can be **extracted into its own service** with
-  minimal surgery (replace in-process events with Kafka topics it already publishes).
+  minimal surgery (the outbox events it already writes can be relayed to a broker).
 
 ## Consequences
 

@@ -171,7 +171,7 @@ sequenceDiagram
     autonumber
     participant G as Gate Tablet (SQLite oplog)
     participant S as Sync API (M4)
-    participant K as Kafka (gate.visit.logged)
+    participant K as Outbox + poller (gate.visit.logged)
     participant M5 as M5 Purge Scheduler
 
     Note over G: 6-hour blackout — ops appended locally, synced=0

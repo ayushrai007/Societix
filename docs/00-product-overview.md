@@ -60,7 +60,7 @@ Societix ships **6 modules** (authoritative numbering, maps 1:1 to BRD §8–9).
 |---|---|
 | Gate check-in latency | < 1.5 s visitor push (4G/5G), 5,000 req/s stress |
 | Offline data integrity | zero loss over 6-hour gate blackout (SQLite WAL + CRDT) |
-| Platform availability | 99.95% across treasury & security; multi-region active-passive |
+| Platform availability | 99.95% across treasury & security; single-region + managed-Postgres backups/PITR in v1, multi-region active-passive as a later scale step |
 | AI query response | < 2.5 s end-to-end for NL committee queries |
 | Data isolation | per-society row/schema tenancy (PostgreSQL RLS, dedicated keys) |
 

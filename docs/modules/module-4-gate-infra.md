@@ -78,7 +78,7 @@ sequenceDiagram
     participant G as Gate Tablet (SQLite/CRDT)
     participant GW as API Gateway
     participant M4 as Gate Sync (cloud)
-    participant K as Kafka
+    participant K as Outbox + poller
     Note over G: wifi BLACKOUT
     V->>G: show visitor QR / ANPR plate read
     G->>G: validate against local pass store (edge-local, <1.5s)

@@ -18,7 +18,7 @@ Design non-negotiables:
 2. **Append-only** — posted entries are never mutated or deleted. Corrections are *reversing
    journals*. This is what makes the ledger a legal, auditable record (BRD "immutable audit").
 3. **Idempotent posting** — the same business event (e.g. a `payment.settled`) posts exactly once,
-   even under at-least-once Kafka redelivery.
+   even under at-least-once outbox redelivery.
 4. **No float** — Societix never holds money; the ledger models the *society's* books, not a wallet.
    Cash movements are recorded only when the Payment Aggregator (PA) confirms settlement to the
    society bank account ([ADR-0003](../adr/0003-payment-aggregator-no-float.md)).
@@ -236,14 +236,15 @@ This is two balanced legs in one journal: move the cash (`1000 → 1010`) and re
 
 ---
 
-## 4. Idempotent posting via the Kafka outbox
+## 4. Idempotent posting via the transactional outbox
 
 Postings are driven by domain events, but posting must happen **exactly once** per event even though
-Kafka is at-least-once. Two mechanisms combine:
+dispatch is at-least-once. Two mechanisms combine:
 
 - **Transactional outbox** ([Architecture §5](../01-architecture.md)): the producing module writes its
-  state change and an outbox row in one DB transaction; a relay publishes to Kafka. This guarantees
-  the *event* is not lost.
+  state change and an outbox row in one DB transaction; a ShedLock-guarded scheduled poller
+  dispatches the event in-process (no broker in v1 — see
+  [ADR-0004](../adr/0004-kafka-event-driven-cadence.md)). This guarantees the *event* is not lost.
 - **Idempotency key on `ledger_transaction`**: the consumer derives a deterministic key from the
   event (e.g. `payment:{paymentId}`) and relies on `UNIQUE (tenant_id, idempotency_key)`. A redelivered
   event collides on insert and is swallowed — the posting is a no-op the second time.
@@ -254,23 +255,23 @@ sequenceDiagram
     participant PA as Payment Aggregator
     participant MATCH as M1 Webhook Matcher
     participant OBOX as Outbox (DB)
-    participant K as Kafka (payment.settled)
+    participant POLL as Outbox Poller (ShedLock)
     participant LED as Ledger Poster
     participant DB as PostgreSQL (ledger_*)
 
     PA->>MATCH: webhook: funds settled (paymentId, amount)
     MATCH->>OBOX: BEGIN; persist match + outbox row; COMMIT
-    OBOX-->>K: relay publishes payment.settled
-    K->>LED: deliver (at-least-once)
+    POLL-->>OBOX: poll unprocessed rows
+    POLL->>LED: dispatch payment.settled (at-least-once)
     LED->>DB: BEGIN
     LED->>DB: INSERT ledger_transaction (idempotency_key='payment:PID')
     alt key already exists (redelivery)
-        DB-->>LED: unique violation -> treat as done, ROLLBACK, ack
+        DB-->>LED: unique violation -> treat as done, ROLLBACK, mark processed
     else first time
         LED->>DB: INSERT ledger_entry x N (balanced)
         DB->>DB: deferred balance trigger @COMMIT
         LED->>DB: COMMIT
-        LED-->>K: ack offset
+        LED-->>POLL: mark outbox row processed
     end
 ```
 

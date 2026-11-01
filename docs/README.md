@@ -43,6 +43,7 @@ See **[modules/README.md](modules/README.md)** for the dependency graph and buil
 ## Delivery & project management
 
 - **[development-plan.md](delivery/development-plan.md)** — phased plan (BRD Phases 0–3) → sprints.
+- **[execution-plan-3-devs.md](delivery/execution-plan-3-devs.md)** — sprint-by-sprint story execution order for a 3-developer team.
 - **[epics-and-stories.md](delivery/epics-and-stories.md)** — epics → user stories with acceptance criteria.
 - **[estimation-and-team.md](delivery/estimation-and-team.md)** — team topology, roles, sizing, RACI.
 - **[testing-strategy.md](delivery/testing-strategy.md)** — test pyramid, contract/e2e/perf/compliance tests.
@@ -59,8 +60,8 @@ See **[modules/README.md](modules/README.md)** for the dependency graph and buil
 ## Architecture Decision Records
 
 See **[adr/README.md](adr/README.md)** for the index. Key decisions: modular monolith (Spring
-Modulith), PostgreSQL RLS multi-tenancy, payment-aggregator (no float), Kafka event cadence,
-offline gate CRDT, cryptographic e-voting scheme.
+Modulith), PostgreSQL RLS multi-tenancy, payment-aggregator (no float), event-driven via Postgres
+outbox (Kafka deferred to scale), offline gate CRDT, cryptographic e-voting scheme.
 
 ## Glossary
 
@@ -80,7 +81,7 @@ This stack is **authoritative** — all docs and code must align to it. Changes 
 | Persistence | **PostgreSQL 16** with **Row-Level Security (RLS)** multi-tenancy; **Flyway** migrations |
 | Vector search | **pgvector** (bylaws + ledger embeddings for the AI Copilot) |
 | Cache / coordination | **Redis 7** (cache, rate-limit, idempotency keys, locks) |
-| Messaging | **Apache Kafka** (event-driven topology, webhook matcher, defaulter cadence) |
+| Eventing / async | **Transactional outbox in PostgreSQL** + Spring scheduled dispatch (ShedLock); **no broker in v1** (Kafka deferred — see [ADR-0004](adr/0004-kafka-event-driven-cadence.md)) |
 | Payments | **Razorpay / Cashfree** Payment Aggregator (VAN + UPI VPA); Societix holds **no float** |
 | Web frontend | **React 18 + TypeScript + Vite**, TanStack Query, Radix/shadcn, navy+emerald tokens |
 | Mobile (resident) & Gate app | **React Native (Expo)**; gate app = local **SQLite + CRDT** offline sync |
@@ -89,6 +90,6 @@ This stack is **authoritative** — all docs and code must align to it. Changes 
 | Security | TLS 1.3 + HSTS; AES-256 at rest w/ envelope key rotation; immutable audit trail |
 | Observability | **OpenTelemetry**, Prometheus, Grafana; centralized structured logging |
 
-### Module numbering (authoritative, maps 1:1 to BRD) 
+### Module numbering (authoritative, maps 1:1 to BRD)
 
 `M1` Treasury/ERP · `M2` Governance/e-AGM · `M3` AI Copilot · `M4` Gate Infra · `M5` Privacy Shield · `M6` Smart-Switch.

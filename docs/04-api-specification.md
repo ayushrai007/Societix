@@ -119,7 +119,7 @@ sequenceDiagram
     participant GW as Webhook Endpoint
     participant V as Verifier
     participant M as Matcher (M1)
-    participant K as Kafka
+    participant K as Outbox + poller
     participant L as Ledger
 
     PA->>GW: POST settlement {payload, X-Signature}
@@ -144,7 +144,7 @@ sequenceDiagram
   (see [system design](02-system-design.md) §4). `payment.settled` consumers are idempotent.
 - **Unmatched:** credits that don't map to an invoice emit `payment.unmatched` → ops queue (see
   [architecture](01-architecture.md) §5), never auto-posted.
-- **Fast ack:** respond `200` quickly after verify+dedupe; heavy allocation/posting is async via Kafka.
+- **Fast ack:** respond `200` quickly after verify+dedupe; heavy allocation/posting is async via the Postgres outbox (dispatched by a scheduled poller — see [ADR-0004](adr/0004-kafka-event-driven-cadence.md)).
 
 ## 4. Error responses
 

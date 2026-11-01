@@ -102,7 +102,7 @@ sequenceDiagram
     participant PA as Payment Aggregator
     participant MATCH as Webhook Matcher (M1)
     participant LEDGER as Double-Entry Ledger
-    participant K as Kafka
+    participant K as Outbox + poller
     participant NOTIF as Notification
     PA->>MATCH: POST /webhooks/pa (payment credited to VAN/VPA)
     MATCH->>MATCH: verify signature + idempotency key (Redis)

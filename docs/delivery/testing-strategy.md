@@ -17,7 +17,7 @@ the architecture in [`../01-architecture.md`](../01-architecture.md) and the acc
 flowchart TB
     E2E["E2E - few: Playwright web, Detox/Maestro RN"] 
     CONTRACT["Contract - consumer-driven: Spring Cloud Contract / Pact"]
-    INT["Integration - Testcontainers: PostgreSQL, Kafka, Redis"]
+    INT["Integration - Testcontainers: PostgreSQL, Redis"]
     SLICE["Component / Slice - MockMvc, REST-assured, @ApplicationModuleTest"]
     UNIT["Unit - many: JUnit 5 + Mockito"]
     E2E --> CONTRACT --> INT --> SLICE --> UNIT
@@ -28,7 +28,7 @@ flowchart TB
 | **Unit** | JUnit 5, Mockito, AssertJ | Pure domain logic (ledger balancing, cadence stages, CRDT merge functions) | PR, every push |
 | **Component / slice** | Spring `@WebMvcTest`/MockMvc, REST-assured, `@DataJpaTest` | Controllers, serialization, repository queries, RLS at query level | PR |
 | **Modulith boundary** | `@ApplicationModuleTest`, `ApplicationModules.verify()`, ArchUnit | Module encapsulation; no illegal cross-module access | PR |
-| **Integration** | Testcontainers (PostgreSQL 16, Kafka, Redis) | Real DB/eventing: outbox→Kafka, webhook→ledger, RLS with real policies | PR integration lane |
+| **Integration** | Testcontainers (PostgreSQL 16, Redis) | Real DB/eventing: outbox write→poller dispatch→handler, webhook→ledger, RLS with real policies | PR integration lane |
 | **Contract** | Spring Cloud Contract (preferred) or Pact | Consumer-driven contracts between modules/BFF and the PA webhook shape | PR + nightly |
 | **E2E** | Playwright (web console), Detox or Maestro (resident + gate RN) | Headline user journeys across the stack | Nightly + pre-release |
 

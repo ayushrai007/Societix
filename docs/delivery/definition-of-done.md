@@ -53,7 +53,7 @@ A story is done only when **all** of the following hold:
 
 ### Docs & interface
 - [ ] **OpenAPI** updated for new/changed endpoints; docs/README updated.
-- [ ] Event catalogue updated for any new Kafka topic.
+- [ ] Event catalogue updated for any new outbox event.
 
 ### UI (if applicable)
 - [ ] **Accessibility** checked (WCAG AA baseline; keyboard, contrast, screen-reader labels).
