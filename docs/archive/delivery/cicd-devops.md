@@ -21,7 +21,7 @@ testing lanes in [`testing-strategy.md`](testing-strategy.md). Quality gates are
 
 ```mermaid
 flowchart LR
-    PR[PR opened/updated] --> BUILD[Build + unit/slice tests - Gradle]
+    PR[PR opened/updated] --> BUILD[Build + unit/slice tests - Maven]
     BUILD --> SCAN[Security scans: SAST, deps, secrets, no-SDK compliance]
     SCAN --> INT[Integration + contract + tenancy tests - Testcontainers]
     INT --> GATE{Quality gates pass?}
@@ -36,7 +36,7 @@ flowchart LR
 
 | Stage | Trigger | Actions |
 |---|---|---|
-| Build + test | every PR | Gradle build, unit/slice/Modulith tests, patch coverage gate |
+| Build + test | every PR | Maven verify, unit/slice/Modulith tests, patch coverage gate |
 | Security scans | every PR | **SAST** (CodeQL), **dependency** scan (Dependabot/OWASP), **secret** scan (gitleaks), **no-third-party-SDK** compliance check |
 | Integration | PR (required) | Testcontainers integration, contract verify, tenancy isolation |
 | Image | merge to trunk | Build OCI image, generate SBOM, **sign** (cosign), **container scan** (Trivy/Grype) |

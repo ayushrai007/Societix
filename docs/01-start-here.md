@@ -73,8 +73,8 @@ them by hand), and **Node.js** (for the web/app front-ends).
 # 1. start the database + cache locally (Docker reads a file called docker-compose.yml)
 docker compose up -d
 
-# 2. run the backend (Gradle is our build tool; this compiles + starts the server)
-./gradlew bootRun
+# 2. run the backend (Maven Wrapper compiles + starts the server)
+./mvnw spring-boot:run
 
 # 3. run the web app in another terminal
 cd web && npm install && npm run dev

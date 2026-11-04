@@ -8,7 +8,7 @@ Backlog item **SOC-4** · component **Platform** · suggested sprint **S0** ·
 size **2 point(s)** · priority **High**.
 
 ## Goal
-Add a GitHub Actions workflow that builds the backend, runs tests, and runs static checks on every PR. Add a secret/dependency scan step. Keep it fast. Where to start: a basic gradle build+test workflow, then add scans.
+Add a GitHub Actions workflow that builds the backend, runs tests, and runs static checks on every PR. Add a secret/dependency scan step. Keep it fast. Where to start: a basic Maven verify workflow, then add scans.
 
 ## Preconditions (must already exist)
 SOC-2.

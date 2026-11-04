@@ -69,7 +69,7 @@ Legend: **[A]/[B]/[C]** = owning dev; **(pair)** = two devs together.
 
 | Sprint | Dev A | Dev B | Dev C |
 |---|---|---|---|
-| **S0 — Walking skeleton** | Repo, Gradle multi-module (Modulith), CI skeleton, docker-compose (PG+Redis+PA mock) | **F1.1** tenant onboarding + **F1.4** RLS fail-closed *(pair with A)* | Web app shell (Vite), auth screens, design tokens wired |
+| **S0 — Walking skeleton** | Repo, Maven build with Spring Modulith package boundaries, CI skeleton, docker-compose (PG+Redis+PA mock) | **F1.1** tenant onboarding + **F1.4** RLS fail-closed *(pair with A)* | Web app shell (Vite), auth screens, design tokens wired |
 | **S1 — Identity & outbox** | **F1.4** finish RLS + **outbox table + ShedLock poller** (the event backbone) | **F1.2** OTP+OIDC login, **F1.3** RBAC roles | **F3.2** audit log (append-only, hash-chain) + Actuator/health |
 | **S2 — Notifications & vertical slice** | **F2.1** notification fan-out core + channel adapters | **F2.2** escalation + **F2.3** outbox-driven dispatch (idempotent) | Vertical slice UI: raise invoice → see it; seed demo tenant |
 

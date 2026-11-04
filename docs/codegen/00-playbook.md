@@ -47,7 +47,7 @@ For each task prompt, Claude produces its answer in **this order**:
    and endpoints involved. Flag anything the task depends on that should already exist.
 3. **Write the code** following the conventions and blueprint.
 4. **Write the tests** that prove each acceptance criterion (name which test covers which criterion).
-5. **Show how to verify:** the exact commands to run (`./gradlew test`, how to hit the endpoint,
+5. **Show how to verify:** the exact commands to run (`./mvnw test`, how to hit the endpoint,
    expected output).
 6. **Self-review** against the checklist below and state the result honestly (including anything not
    done or any assumption made).

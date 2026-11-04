@@ -25,9 +25,8 @@ societix/
 
 ```
 backend/
-├── build.gradle.kts
-├── settings.gradle.kts
-├── gradlew / gradlew.bat / gradle/      # committed wrapper
+├── pom.xml                              # Maven parent/build configuration
+├── mvnw / mvnw.cmd / .mvn/wrapper/      # committed Maven Wrapper
 └── src/
     ├── main/java/com/societix/
     │   ├── SocietixApplication.java
@@ -46,34 +45,80 @@ backend/
     ├── main/resources/
     │   ├── application.yml
     │   └── db/migration/        # Flyway V1__*.sql, V2__*.sql, ...
-    └── test/ + integrationTest/ # unit + Testcontainers tests
+    └── test/java/               # unit tests + *IT.java Testcontainers tests (Maven Failsafe)
 ```
 
-## 3. `build.gradle.kts` baseline (shape, not exhaustive)
+## 3. `pom.xml` baseline (shape, not exhaustive)
 
-```kotlin
-plugins {
-    java
-    id("org.springframework.boot") version "3.3.+"
-    id("io.spring.dependency-management") version "1.1.+"
-    id("org.flywaydb.flyway") version "10.+"
-}
-java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
-dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.modulith:spring-modulith-starter-core")
-    implementation("net.javacrumbs.shedlock:shedlock-spring")
-    implementation("org.flywaydb:flyway-database-postgresql")
-    runtimeOnly("org.postgresql:postgresql")
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation("org.testcontainers:postgresql")
-    testImplementation("org.testcontainers:junit-jupiter")
-}
+```xml
+<parent>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-parent</artifactId>
+  <version>3.3.4</version>
+  <relativePath/>
+</parent>
+<properties>
+  <java.version>21</java.version>
+  <spring-modulith.version>1.2.4</spring-modulith.version>
+  <testcontainers.version>1.20.3</testcontainers.version>
+</properties>
+<dependencyManagement>
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.modulith</groupId>
+      <artifactId>spring-modulith-bom</artifactId>
+      <version>${spring-modulith.version}</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers-bom</artifactId>
+      <version>${testcontainers.version}</version>
+      <type>pom</type>
+      <scope>import</scope>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+<dependencies>
+  <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
+  <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-jpa</artifactId></dependency>
+  <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
+  <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-validation</artifactId></dependency>
+  <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
+  <dependency><groupId>org.springframework.modulith</groupId><artifactId>spring-modulith-starter-core</artifactId></dependency>
+  <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-redis</artifactId></dependency>
+  <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-core</artifactId></dependency>
+  <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-database-postgresql</artifactId></dependency>
+  <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><scope>runtime</scope></dependency>
+  <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
+  <dependency><groupId>org.testcontainers</groupId><artifactId>postgresql</artifactId><scope>test</scope></dependency>
+  <dependency><groupId>org.testcontainers</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+</dependencies>
+<build>
+  <plugins>
+    <plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin>
+    <plugin><groupId>org.flywaydb</groupId><artifactId>flyway-maven-plugin</artifactId></plugin>
+  </plugins>
+</build>
+<profiles>
+  <profile>
+    <id>integration</id>
+    <build>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-failsafe-plugin</artifactId>
+          <executions>
+            <execution>
+              <goals><goal>integration-test</goal><goal>verify</goal></goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </build>
+  </profile>
+</profiles>
 ```
 
 ## 4. Local infra — `docker-compose.yml` (no broker)
@@ -163,7 +208,7 @@ mobile/
 ## 10. Config & environments
 
 - All config via environment variables (12-factor). `application.yml` reads env with local defaults.
-- Local: `docker compose up -d` then `./gradlew bootRun`.
+- Local: `docker compose up -d` then `./mvnw spring-boot:run`.
 - Environments: `dev` → `staging` → `prod`, single region (Mumbai) to start, managed Postgres/Redis.
 - Secrets from the environment/secret store only — never in the repo.
 

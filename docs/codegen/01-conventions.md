@@ -14,7 +14,7 @@ Where a term is unfamiliar, see [../06-glossary.md](../06-glossary.md).
 |---|---|
 | Language | Java 21 |
 | Framework | Spring Boot 3.3.x + Spring Modulith |
-| Build | Gradle 8.x, Kotlin DSL, with the Gradle wrapper committed |
+| Build | Apache Maven 3.9.x, with the Maven Wrapper committed |
 | Database | PostgreSQL 16 (+ `pgvector` extension for M3) |
 | Migrations | Flyway (`V<n>__<desc>.sql`, applied on startup) |
 | Cache/locks | Redis 7 |

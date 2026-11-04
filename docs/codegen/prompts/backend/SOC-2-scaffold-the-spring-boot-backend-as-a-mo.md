@@ -8,7 +8,7 @@ Backlog item **SOC-2** · component **Platform** · suggested sprint **S0** ·
 size **2 point(s)** · priority **Highest**.
 
 ## Goal
-Create the Java 21 + Spring Boot backend using Gradle (Kotlin DSL). Add Spring Modulith and create empty module packages: treasury, governance, copilot, gate, privacy, migration, platform. One runnable app that starts and serves a /health endpoint. Where to start: Spring Initializr, add Web/Validation/Actuator/Modulith deps. See docs/03-tech-choices.md for why these tools.
+Create the Java 21 + Spring Boot backend using Maven. Add Spring Modulith and create empty module packages: treasury, governance, copilot, gate, privacy, migration, platform. One runnable app that starts and serves a /health endpoint. Where to start: Spring Initializr, add Web/Validation/Actuator/Modulith deps. See docs/03-tech-choices.md for why these tools.
 
 ## Preconditions (must already exist)
 SOC-1.
@@ -20,7 +20,7 @@ Produce the code **and tests** for this task, following the per-task loop in the
 every acceptance criterion below. Keep strictly to this task's scope.
 
 ## Acceptance criteria (all must be demonstrably met)
-- ./gradlew bootRun starts the app
+- ./mvnw spring-boot:run starts the app
 - GET /actuator/health returns 200
 - each module is its own package with a package-info marking the module boundary
 

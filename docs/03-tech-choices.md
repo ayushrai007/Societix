@@ -29,11 +29,12 @@ plumbing (HTTP, database connections, security) so we write mostly business logi
 **Why:** gives us the tidiness of separate services without the pain of actually running separate
 services. ("Modulith" = modular + monolith.)
 
-### Gradle
+### Maven
 **What:** our **build tool** — the thing that compiles the code, runs tests, and packages the app
-(`./gradlew ...` commands).
-**Why:** standard for modern Java; the "wrapper" (`gradlew`) means everyone uses the exact same
-version with no manual install.
+(`./mvnw ...` commands).
+**Why:** it is a widely used Java build tool with a clear, convention-based project structure. The
+Maven Wrapper (`mvnw`) pins the Maven version, so developers and CI use the same version without a
+separate global Maven install.
 
 ---
 

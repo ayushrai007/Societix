@@ -7,7 +7,8 @@ backend, local infra, and web console — with a seeded demo society. Follow it 
 every command is copy-pasteable. Architecture context: [`../01-architecture.md`](../01-architecture.md).
 Data model & RLS: [`../03-data-model.md`](../03-data-model.md). Terms: [`../glossary.md`](../glossary.md).
 
-> **TL;DR** — `docker compose up -d` → `./gradlew flywayMigrate seedDemo bootRun` →
+> **TL;DR** — `docker compose up -d` → `./mvnw flyway:migrate` →
+> `./mvnw spring-boot:run -Dspring-boot.run.profiles=local,seed-demo` →
 > `cd web && npm i && npm run dev` → log in as `secretary@maple.demo` / `Password123!`.
 
 ---
@@ -19,14 +20,14 @@ Install these **exact** major versions. Others may work but CI pins these.
 | Tool | Version | Install (macOS) | Verify |
 |---|---|---|---|
 | JDK | **Temurin 21 (LTS)** | `brew install --cask temurin@21` | `java -version` → `21.x` |
-| Gradle | **use the wrapper** (`./gradlew`, 8.x) | ships in repo — do **not** install globally | `./gradlew --version` |
+| Maven | **use the wrapper** (`./mvnw`, 3.9.x) | committed in repo — do **not** install Maven globally | `./mvnw --version` |
 | Docker Desktop | latest; ≥ 6 GB RAM allocated | `brew install --cask docker` | `docker info` |
 | Node.js | **20 LTS** | `brew install node@20` | `node -v` → `v20.x` |
 | Git | ≥ 2.40 | `brew install git` | `git --version` |
 
 > Set `JAVA_HOME` to the Temurin 21 path, e.g.
 > `export JAVA_HOME=$(/usr/libexec/java_home -v 21)` (add to your shell profile).
-> On Linux/Windows install the equivalent Temurin 21 JDK and Docker Engine; the Gradle wrapper and
+> On Linux/Windows install the equivalent Temurin 21 JDK and Docker Engine; the Maven Wrapper and
 > `docker compose` commands are identical.
 
 ## 2. Clone
@@ -40,9 +41,9 @@ Repo layout (top level):
 
 ```
 societix/
-├── build.gradle.kts            # root Gradle (Kotlin DSL)
-├── settings.gradle.kts
-├── gradlew / gradlew.bat       # Gradle wrapper — always use this
+├── pom.xml                     # Maven parent/build configuration
+├── .mvn/wrapper/               # pinned Maven Wrapper configuration
+├── mvnw / mvnw.cmd             # Maven Wrapper — always use this
 ├── docker-compose.yml          # local infra (this guide)
 ├── .env.sample                 # copy to .env
 ├── app/                        # Spring Boot modular monolith (com.societix.*)
@@ -170,14 +171,12 @@ policies and the `pgvector` extension (see [`../03-data-model.md`](../03-data-mo
 
 ```bash
 # 1. Apply schema + RLS policies + pgvector
-./gradlew flywayMigrate
+./mvnw flyway:migrate
 
-# 2. Seed a demo society "Maple Residency" with chart-of-accounts, roles, and demo users.
-#    The seed task sets SET LOCAL app.tenant_id for the demo tenant so RLS applies during seeding.
-./gradlew seedDemo
+# Demo seed data is loaded by the `seed-demo` Spring profile when the app starts (see §6).
 ```
 
-`seedDemo` creates:
+The `seed-demo` profile creates:
 
 | What | Value |
 |---|---|
@@ -189,12 +188,12 @@ policies and the `pgvector` extension (see [`../03-data-model.md`](../03-data-mo
 | Sample invoices | one `RAISED` maintenance invoice per unit, current month |
 
 > If a migration fails mid-way, see the troubleshooting table (§10). To start completely clean:
-> `docker compose down -v && docker compose up -d && ./gradlew flywayMigrate seedDemo`.
+> `docker compose down -v && docker compose up -d && ./mvnw flyway:migrate`.
 
 ## 6. Run the backend
 
 ```bash
-./gradlew bootRun
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local,seed-demo
 ```
 
 The app reads `.env` (via the Spring config import) and starts on `http://localhost:8080`.
@@ -240,16 +239,16 @@ curl -s -X POST http://localhost:1080/pa/simulate/payment \
 ## 9. Run the tests
 
 ```bash
-./gradlew test             # unit + slice tests
-./gradlew integrationTest  # Testcontainers-backed (Postgres, Redis)
-./gradlew check            # tests + Spotless + static analysis (Error Prone / SpotBugs)
+./mvnw test             # unit + slice tests
+./mvnw verify -Pintegration  # Testcontainers-backed (Postgres, Redis)
+./mvnw verify                # tests + formatting + static analysis
 ```
 
-> **Testcontainers note:** `integrationTest` spins up **real** Postgres 16 and Redis containers
+> **Testcontainers note:** the Maven `integration` profile runs integration tests with **real** Postgres 16 and Redis containers
 > automatically — it does **not** use the `docker-compose` stack, so it is safe to
 > run while `docker compose up` is live. You only need Docker running; no manual container setup.
 > On CI the Docker socket is provided by the runner. First run pulls images (slow); later runs are
-> cached. Tenancy/RLS isolation tests live under `app/src/integrationTest` and assert that a query
+> cached. Tenancy/RLS isolation tests live under `app/src/test/java` as `*IT.java` tests and assert that a query
 > without `app.tenant_id` fails closed.
 
 Frontend tests:
@@ -262,15 +261,15 @@ cd web && npm test         # Vitest + React Testing Library
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| `bootRun` fails: `Connection refused :5432` | Postgres not up/healthy | `docker compose ps`; wait for `(healthy)`; `docker compose up -d postgres` |
+| `spring-boot:run` fails: `Connection refused :5432` | Postgres not up/healthy | `docker compose ps`; wait for `(healthy)`; `docker compose up -d postgres` |
 | `FATAL: database "societix" does not exist` | Volume created before env set | `docker compose down -v && docker compose up -d` |
 | Flyway: `relation already exists` / checksum mismatch | Edited an applied `V__` script | Never edit applied migrations — add a new `V__`; or reset DB (`down -v`) locally |
 | Query returns 0 rows but data exists | `app.tenant_id` GUC not set (RLS fail-closed) | Ensure you hit the API via a JWT; don't query the DB directly without `SET LOCAL app.tenant_id` |
 | Outbox events never dispatched (e.g. no reminder sent) | Poller not running / ShedLock held by a dead instance | Check app logs for the outbox poller; verify the `shedlock` row isn't stuck locked; confirm `OUTBOX_POLL_INTERVAL_MS` is set |
-| Copilot returns `"(stub answer)"` | `LLM_API_KEY` blank | Paste a key in `.env`; restart `bootRun` |
+| Copilot returns `"(stub answer)"` | `LLM_API_KEY` blank | Paste a key in `.env`; restart `spring-boot:run` |
 | Payment webhook 401 | `PA_WEBHOOK_SECRET` mismatch | Match `.env` to the value in `infra/pa-mock/pa-expectations.json` |
 | Web console: CORS / 404 on `/api/v1` | Wrong `VITE_API_BASE_URL` | Set it to `http://localhost:8080/api/v1` in `web/.env.local` |
-| `./gradlew` wrong Java | `JAVA_HOME` points elsewhere | `export JAVA_HOME=$(/usr/libexec/java_home -v 21)` |
+| `./mvnw` wrong Java | `JAVA_HOME` points elsewhere | `export JAVA_HOME=$(/usr/libexec/java_home -v 21)` |
 | Testcontainers: `Could not find a valid Docker environment` | Docker not running | Start Docker Desktop; `docker info` must succeed |
 
 ---
