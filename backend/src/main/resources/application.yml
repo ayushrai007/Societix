@@ -1,6 +1,6 @@
 spring:
   application:
-    name: societix-backend
+    name: societix
 
 management:
   endpoints:
