@@ -2,7 +2,7 @@
 
 **Document:** `SOC-DOC-CS` · **Status:** Standard (prescriptive)
 
-Conventions for the Societix backend (Java 21, Spring Boot 3.3+, Spring Modulith). A reviewer may
+Conventions for the Societix backend (Java 25, Spring Boot 4.1.2, Spring Modulith 2.1.2). A reviewer may
 block a PR that violates these. Architecture: [`../01-architecture.md`](../01-architecture.md).
 Multi-tenancy/RLS: [`../03-data-model.md`](../03-data-model.md) §3. API rules:
 [`api-guidelines.md`](api-guidelines.md).

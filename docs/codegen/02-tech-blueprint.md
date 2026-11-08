@@ -54,13 +54,13 @@ backend/
 <parent>
   <groupId>org.springframework.boot</groupId>
   <artifactId>spring-boot-starter-parent</artifactId>
-  <version>3.3.4</version>
+  <version>4.1.2</version>
   <relativePath/>
 </parent>
 <properties>
-  <java.version>21</java.version>
-  <spring-modulith.version>1.2.4</spring-modulith.version>
-  <testcontainers.version>1.20.3</testcontainers.version>
+  <java.version>25</java.version>
+  <spring-modulith.version>2.1.2</spring-modulith.version>
+  <testcontainers.version>2.0.5</testcontainers.version>
 </properties>
 <dependencyManagement>
   <dependencies>
@@ -81,7 +81,7 @@ backend/
   </dependencies>
 </dependencyManagement>
 <dependencies>
-  <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>
+  <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-webmvc</artifactId></dependency>
   <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-data-jpa</artifactId></dependency>
   <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-security</artifactId></dependency>
   <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-validation</artifactId></dependency>
@@ -92,8 +92,8 @@ backend/
   <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-database-postgresql</artifactId></dependency>
   <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><scope>runtime</scope></dependency>
   <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
-  <dependency><groupId>org.testcontainers</groupId><artifactId>postgresql</artifactId><scope>test</scope></dependency>
-  <dependency><groupId>org.testcontainers</groupId><artifactId>junit-jupiter</artifactId><scope>test</scope></dependency>
+  <dependency><groupId>org.testcontainers</groupId><artifactId>testcontainers-postgresql</artifactId><scope>test</scope></dependency>
+  <dependency><groupId>org.testcontainers</groupId><artifactId>testcontainers-junit-jupiter</artifactId><scope>test</scope></dependency>
 </dependencies>
 <build>
   <plugins>
@@ -126,11 +126,11 @@ backend/
 ```yaml
 services:
   postgres:
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:0.8.7-pg18
     environment: { POSTGRES_DB: societix, POSTGRES_USER: societix, POSTGRES_PASSWORD: societix }
     ports: ["5432:5432"]
   redis:
-    image: redis:7-alpine
+    image: redis:8.2-alpine
     ports: ["6379:6379"]
   pa-sandbox:                      # payment-aggregator mock (Razorpay/Cashfree stand-in)
     image: mockserver/mockserver:5.15.0

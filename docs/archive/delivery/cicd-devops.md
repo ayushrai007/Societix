@@ -62,8 +62,8 @@ Data residency: all environments stay within Indian regions (DPDP/sovereignty re
 
 ## 3. Infrastructure as Code
 
-- **Terraform** provisions cloud infra: network, a **managed container host**, **managed PostgreSQL 16**
-  (automated backups + PITR), **managed Redis 7**, object storage, DNS/ingress. State in a locked
+- **Terraform** provisions cloud infra: network, a **managed container host**, **managed PostgreSQL 18**
+  (automated backups + PITR), **managed Redis 8.2**, object storage, DNS/ingress. State in a locked
   remote backend. *No broker and no self-managed Kubernetes control plane in v1.*
 - **Deployment manifests / PaaS config** deploy the modular monolith, gateway/BFF, and the scheduled
   outbox/worker process; autoscaling on the stateless app.
