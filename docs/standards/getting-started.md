@@ -123,9 +123,9 @@ Planned local defaults:
 # .env.example — local development defaults
 
 # --- Database (PostgreSQL 18 + pgvector 0.8.7) ---
-DB_URL=jdbc:postgresql://localhost:5432/societix
-DB_USER=societix
-DB_PASSWORD=societix
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/societix
+SPRING_DATASOURCE_USERNAME=societix
+SPRING_DATASOURCE_PASSWORD=societix
 
 # --- Redis 8.2 ---
 REDIS_HOST=localhost
@@ -153,14 +153,21 @@ SERVER_PORT=8080
 JWT_ISSUER=https://local.societix.dev
 ```
 
+> Spring does not read `.env` by itself. Export these variables into the shell that runs the
+> backend (for example `set -a; source .env; set +a`); `SPRING_DATASOURCE_PASSWORD` has no default
+> and startup fails without it. See [`../database-migrations.md`](../database-migrations.md).
+
 > **Never** commit a real `LLM_API_KEY`, `PA_KEY_SECRET`, or any production secret. CI and prod
 > inject these from the secret manager (see [`../archive/delivery/cicd-devops.md`](../archive/delivery/cicd-devops.md)).
 
 ## 5. Database migrations and demo data
 
-The current scaffold does not yet configure Flyway migrations or demo seed data. Those arrive in
-backlog tasks SOC-5 (Flyway baseline) and SOC-10 (tenancy onboarding); there is no migration command
-or seed profile to run at this stage.
+Flyway applies the versioned SQL migrations in `backend/src/main/resources/db/migration`
+automatically when `./mvnw spring-boot:run` starts; there is no separate migration command. See
+[`../database-migrations.md`](../database-migrations.md) for how to add a migration.
+
+The current scaffold does not yet configure demo seed data. That arrives in backlog task SOC-10
+(tenancy onboarding); there is no seed profile to run at this stage.
 
 ## 6. Run the backend
 
@@ -169,7 +176,8 @@ cd backend
 ./mvnw spring-boot:run
 ```
 
-The Spring Boot modular monolith starts on `http://localhost:8080`.
+With the `.env` variables exported (see §4), the Spring Boot modular monolith starts on
+`http://localhost:8080`.
 Verify:
 
 ```bash
