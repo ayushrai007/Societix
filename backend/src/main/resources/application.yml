@@ -1,6 +1,14 @@
 spring:
   application:
     name: societix
+  datasource:
+    # Local defaults; override with SPRING_DATASOURCE_URL / SPRING_DATASOURCE_USERNAME.
+    # The password is never committed: set SPRING_DATASOURCE_PASSWORD in the environment.
+    url: jdbc:postgresql://localhost:5432/societix
+    username: societix
+  flyway:
+    # Versioned SQL migrations are applied automatically on application startup.
+    locations: classpath:db/migration
 
 management:
   endpoints:

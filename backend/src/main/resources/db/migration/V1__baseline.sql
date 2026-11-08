@@ -1,0 +1,4 @@
+-- V1: empty baseline.
+-- Marks the starting point of the Societix schema history. Real tables arrive in later
+-- migrations (V2__..., V3__...). Never edit this file once it has been applied anywhere;
+-- add a new versioned migration instead. See docs/database-migrations.md.
