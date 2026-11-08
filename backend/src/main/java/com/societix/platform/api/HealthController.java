@@ -1,6 +1,9 @@
 package com.societix.platform.api;
 
 import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
+import org.springframework.boot.health.contributor.Status;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,7 +17,9 @@ public class HealthController {
     }
 
     @GetMapping("/health")
-    public HealthResponse health() {
-        return new HealthResponse(healthEndpoint.health().getStatus().getCode());
+    public ResponseEntity<HealthResponse> health() {
+        Status status = healthEndpoint.health().getStatus();
+        HttpStatus httpStatus = Status.UP.equals(status) ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE;
+        return ResponseEntity.status(httpStatus).body(new HealthResponse(status.getCode()));
     }
 }
