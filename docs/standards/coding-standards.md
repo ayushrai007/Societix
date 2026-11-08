@@ -1,11 +1,11 @@
 # Coding Standards — Java / Spring
 
-**Document:** `SOC-DOC-CS` · **Status:** Standard (prescriptive)
+**Status:** Standard (prescriptive)
 
 Conventions for the Societix backend (Java 25, Spring Boot 4.1.2, Spring Modulith 2.1.2). A reviewer may
-block a PR that violates these. Architecture: [`../01-architecture.md`](../01-architecture.md).
-Multi-tenancy/RLS: [`../03-data-model.md`](../03-data-model.md) §3. API rules:
-[`api-guidelines.md`](api-guidelines.md).
+block a PR that violates these. Architecture: [`../archive/01-architecture.md`](../archive/01-architecture.md).
+Multi-tenancy/RLS: [`../archive/03-data-model.md`](../archive/03-data-model.md) §3. API rules:
+[`../archive/standards/api-guidelines.md`](../archive/standards/api-guidelines.md).
 
 ---
 
@@ -158,7 +158,7 @@ Invoice inv = invoices.findById(id)
 
 ## 8. Exception handling → uniform problem+json
 
-All errors surface as **RFC 9457 problem+json** (see [`api-guidelines.md`](api-guidelines.md) §error).
+All errors surface as **RFC 9457 problem+json** (see [`../archive/standards/api-guidelines.md`](../archive/standards/api-guidelines.md) §error).
 Throw typed domain exceptions; a single `@RestControllerAdvice` in `platform` maps them.
 
 ```java
@@ -201,13 +201,13 @@ log.info("paid by {} ({})", resident.name(), resident.phone());   // ❌ never
 - Put `@Transactional` on the **application service method** (the use-case boundary), not on
   controllers or repositories. Keep transactions short.
 - The tenancy filter opens the request transaction and runs `SET LOCAL app.tenant_id = :tid`
-  (see [`../01-architecture.md`](../01-architecture.md) §6). `SET LOCAL` is scoped to that
+  (see [`../archive/01-architecture.md`](../archive/01-architecture.md) §6). `SET LOCAL` is scoped to that
   transaction — so **every DB-touching use case must run inside a transaction**, or RLS has no GUC
   and fails closed.
 - The app DB role is **not** `BYPASSRLS`. Never query a tenant table outside a tenant-scoped tx.
 - Publish domain events with `@ApplicationModuleListener` (runs **after commit**) or via the
   transactional **outbox** for anything that must be dispatched reliably and atomically with the DB
-  write (no broker in v1 — see [ADR-0004](../adr/0004-kafka-event-driven-cadence.md)).
+  write (no broker in v1 — see [ADR-0008](../adr/0008-postgres-outbox-no-broker.md)).
 
 ```java
 @Service
@@ -248,7 +248,8 @@ void shouldRejectPayoutWhenMakerEqualsChecker() {
 
 ---
 
-**Related:** [`getting-started.md`](getting-started.md) · [`api-guidelines.md`](api-guidelines.md) ·
-[`git-workflow.md`](git-workflow.md) · [`../03-data-model.md`](../03-data-model.md) ·
-[ADR-0001](../adr/0001-modular-monolith-spring-modulith.md) ·
-[ADR-0002](../adr/0002-postgres-rls-multitenancy.md)
+**Related:** [`getting-started.md`](getting-started.md) · [`../archive/standards/api-guidelines.md`](../archive/standards/api-guidelines.md) ·
+[`git-workflow.md`](git-workflow.md) · [`../archive/03-data-model.md`](../archive/03-data-model.md) ·
+[ADR-0001](../archive/adr/0001-modular-monolith-spring-modulith.md) ·
+[ADR-0002](../archive/adr/0002-postgres-rls-multitenancy.md) ·
+[ADR-0008](../adr/0008-postgres-outbox-no-broker.md)

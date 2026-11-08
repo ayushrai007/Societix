@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-141** · component **Privacy** · suggested sprint **S7** ·
+Backlog item **SOC-141** · component **Privacy** · suggested sprint **W4** ·
 size **3 point(s)** · priority **High**.
 
 ## Goal
 Visitor photos and phone numbers must be hard-deleted 30 days after the visit. Driven by the scheduled jobs. The deletion itself is audited (so we can prove it happened). See glossary (DPDP).
 
 ## Preconditions (must already exist)
-SOC-22, SOC-40.
+SOC-22, SOC-40, SOC-122.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

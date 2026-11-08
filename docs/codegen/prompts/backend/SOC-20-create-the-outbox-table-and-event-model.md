@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-20** · component **Platform** · suggested sprint **S1** ·
+Backlog item **SOC-20** · component **Platform** · suggested sprint **W1** ·
 size **2 point(s)** · priority **Highest**.
 
 ## Goal
 Add the 'outbox' table: a simple list of 'things that happened' (event type, payload, tenant, created time, processed flag). Producers insert a row in the SAME database save as their change. Why: reliable automatic behaviour with no Kafka. See docs/02-how-it-works.md ('the outbox').
 
 ## Preconditions (must already exist)
-see prompts/README.md build order — ensure earlier tasks exist.
+SOC-5, SOC-10.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

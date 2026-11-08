@@ -47,8 +47,10 @@
 - **Labels** — `phase-0/1/2`, module (`m1`…`m6`), and topic (`payments`, `privacy`, `ci`…) for
   filtering.
 - **Component** — which part of the system (Platform, Treasury, Gate, …).
-- **Sprint** — suggested 2-week sprint (`S0`–`S13`) from
-  [../05-building-it.md](../05-building-it.md). Earlier = earlier.
+- **Sprint** — execution sprint (`W1`–`W8` backend schedule from
+  [../05-building-it.md](../05-building-it.md); `Post-1-Jan` for mobile).
+- **Assignee** — assigned engineer (Aditya, Shree, Ayush).
+- **Status** — current delivery status (`Done` for SOC-1/2, `To Do` for the rest).
 
 ## The epics (build order)
 
@@ -68,24 +70,26 @@ Foundations first, then the valuable core (Treasury + Gate + Privacy), then the 
 | 10 | M3 AI Copilot | 2 |
 | 11 | M6 Smart-Switch Migration | 2 |
 
-## Suggested first sprint (S0) — start here
+## Suggested first sprint (W1) — start here
 
 Pick these up on day one (they unblock everything else):
 
-- **SOC-1** Create the repository and branch rules
-- **SOC-2** Scaffold the Spring Boot backend
+- **SOC-1** Create the repository and branch rules (Done)
+- **SOC-2** Scaffold the Spring Boot backend (Done)
+- **SOC-5** Database migrations with Flyway
 - **SOC-3** Local dev environment with Docker Compose
 - **SOC-4** CI pipeline (build + test on every PR)
 - **SOC-10** Define the Society (tenant) entity and onboarding
+- **SOC-6** Walking skeleton (end-to-end slice)
 
 Then move into Auth & Tenancy (**SOC-11/12/13**) and the Outbox (**SOC-20/21**) — the privacy-
 critical **SOC-13** (data isolation) and **SOC-140** (no-trackers check) should land early.
 
 ## Owners (from [../05-building-it.md](../05-building-it.md))
 
-- **Dev A:** Foundations + Treasury ledger (Platform, Treasury components).
-- **Dev B:** Payments, defaulter cadence, later Governance (Treasury, Governance).
-- **Dev C:** Front-ends + Gate app (Gate, and the web/mobile UIs across modules).
+- **Aditya (GitHub: Adityarajkishan, Dev A):** Project setup, Flyway, Docker Compose, CI, Tenancy RLS (SOC-13), Chart of Accounts & Ledger (SOC-100), Financial Statements, Maker-Checker, Migration engine (SOC-200/202/203), and Pair tasks. Starting tasks: SOC-1, SOC-3, SOC-4, SOC-5.
+- **Shree (GitHub: ssharan100, Dev B):** Spring Boot scaffold, Walking skeleton, Login/Auth (SOC-11/12), Health/metrics (SOC-41), Tracker check (SOC-140), Billing (SOC-101/102), Defaulter cadence (SOC-104), AGM notices & Quorum (SOC-160/161), Handover (SOC-164), and Pair tasks. Starting tasks: SOC-2, SOC-6.
+- **Ayush (GitHub: ayushrai007, Dev C):** Tenant entity (SOC-10), Outbox & background jobs (SOC-20/21/22), Notifications (SOC-30/31), Audit log (SOC-40), Gate visitor backend (SOC-122), Privacy auto-delete & consent (SOC-141/142), pgvector & AI copilot (SOC-180/181/182/183), Capex voting (SOC-163), and MyGate import (SOC-201). Front-end and mobile apps follow post-1 Jan.
 
-The two **PAIR TASK**s (**SOC-103** payment matching, **SOC-162** e-voting) are built by two devs
-together.
+The two **PAIR TASKS** (**SOC-103** payment matching, **SOC-162** e-voting) are built by Aditya and Shree
+together with dedicated 5-day buffers.

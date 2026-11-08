@@ -1,14 +1,19 @@
 # Phased Development Plan
 
-**Document:** `SOC-DOC-DEL-01` · **Status:** Draft for engineering · **Source BRD:** `SOC-BRD-2026-V1` §14
+> [!WARNING]
+> **Superseded delivery plan:** This historical 12–14 sprint planning document has been superseded
+> by the active 8-week execution plan in [`../05-building-it.md`](../05-building-it.md) and the
+> task backlog in [`../jira/societix-backlog.csv`](../jira/societix-backlog.csv).
+> For v1 pilot operations, Societix targets a 99.5% monthly availability pilot target on single-region infrastructure (Mumbai)
+> with managed PostgreSQL backups and PITR; the 99.95% availability target is reserved for Phase 3 multi-region scale.
 
 This plan maps the four BRD delivery phases to engineering milestones, 2-week sprints, and
-exit criteria. It assumes the architecture in [`../01-architecture.md`](../01-architecture.md),
-the module specs in [`../modules/`](../modules/README.md), and the engineering conventions in
+exit criteria. It assumes the architecture in [`../archive/01-architecture.md`](../archive/01-architecture.md),
+the module specs in [`../archive/modules/`](../archive/modules/README.md), and the engineering conventions in
 [`../standards/`](../standards/). Companion delivery docs:
-[epics & stories](epics-and-stories.md) · [estimation & team](estimation-and-team.md) ·
-[testing strategy](testing-strategy.md) · [CI/CD & DevOps](cicd-devops.md) ·
-[Definition of Done](definition-of-done.md).
+[epics & stories](../archive/delivery/epics-and-stories.md) · [estimation & team](../archive/delivery/estimation-and-team.md) ·
+[testing strategy](../archive/delivery/testing-strategy.md) · [CI/CD & DevOps](../archive/delivery/cicd-devops.md) ·
+[Definition of Done](../archive/delivery/definition-of-done.md).
 
 ---
 
@@ -82,10 +87,10 @@ payments, ledger) end-to-end before any feature breadth.
 | Area | Deliverable |
 |---|---|
 | Repo & build | Maven project configured by a root `pom.xml`; Spring Modulith package boundaries for `treasury`, `governance`, `copilot`, `gate`, `privacy`, `migration`, and `platform`; `ArchUnit`/Modulith verification in CI |
-| CI/CD skeleton | GitHub Actions: build + unit test on PR, Testcontainers integration lane, SAST/secret/dependency scan, image build to registry, deploy-to-dev — see [`cicd-devops.md`](cicd-devops.md) |
-| Auth | OIDC login (Auth Code + PKCE), JWT validation at gateway, role claims (`SECRETARY`, `TREASURER`, `OWNER`, `GUARD`, …) per [`../02-system-design.md`](../02-system-design.md) §1 |
+| CI/CD skeleton | GitHub Actions: build + unit test on PR, Testcontainers integration lane, SAST/secret/dependency scan, image build to registry, deploy-to-dev — see [`../archive/delivery/cicd-devops.md`](../archive/delivery/cicd-devops.md) |
+| Auth | OIDC login (Auth Code + PKCE), JWT validation at gateway, role claims (`SECRETARY`, `TREASURER`, `OWNER`, `GUARD`, …) per [`../archive/02-system-design.md`](../archive/02-system-design.md) §1 |
 | Tenancy / RLS | `tenant_id` on every table; `OncePerRequestFilter` sets `SET LOCAL app.tenant_id`; Flyway baseline with RLS policies; a tenancy isolation test that fails a cross-tenant read |
-| Eventing | Transactional **outbox** table in PostgreSQL + `@TransactionalEventListener` + a ShedLock-guarded `@Scheduled` poller; one event (`billing.invoice.raised`) wired producer→consumer. No broker in v1 — see [ADR-0004](../adr/0004-kafka-event-driven-cadence.md) |
+| Eventing | Transactional **outbox** table in PostgreSQL + `@TransactionalEventListener` + a ShedLock-guarded `@Scheduled` poller; one event (`billing.invoice.raised`) wired producer→consumer. No broker in v1 — see [ADR-0008](../adr/0008-postgres-outbox-no-broker.md) |
 | M5 guardrails | No-third-party-SDK lint gate; consent model stub; purge scheduler skeleton (`privacy.purge.due`) |
 | Walking skeleton | **One vertical slice**: raise invoice → pay via PA sandbox (Razorpay/Cashfree) → webhook matched → double-entry ledger posting, all tenant-scoped and audited |
 
@@ -174,7 +179,7 @@ societies** (~24k units, Yr1 target).
 | **M3B White-label** | B2B | Tenant branding/theming, portfolio (multi-society) admin, FM-firm reporting rollups, contractual SLAs |
 
 **Dependencies:** performance & tenancy isolation hardened in Phase 2; observability/SLOs
-(see [`cicd-devops.md`](cicd-devops.md)) in place before B2B SLA commitments.
+(see [`../archive/delivery/cicd-devops.md`](../archive/delivery/cicd-devops.md)) in place before B2B SLA commitments.
 
 **Exit criteria**
 

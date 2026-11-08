@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-1** · component **Platform** · suggested sprint **S0** ·
+Backlog item **SOC-1** · component **Platform** · suggested sprint **W1** ·
 size **1 point(s)** · priority **Highest**.
 
 ## Goal
-Set up the Git repository on GitHub with a protected main branch. Add a README that points to docs/. Configure branch protection so every change goes through a Pull Request with one approval and passing checks. Where to start: create the repo, add .gitignore for Java/Node, enable branch protection in repo settings. Fits in: this is the very first task; everything else branches off it.
+Set up the Git repository on GitHub with a protected master branch. Add a README that points to docs/. Configure branch protection so every change goes through a Pull Request with one approval and passing checks. Where to start: create the repo, add .gitignore for Java/Node, enable branch protection in repo settings. Fits in: this is the very first task; everything else branches off it.
 
 ## Preconditions (must already exist)
-see prompts/README.md build order — ensure earlier tasks exist.
+None (this is the initial repository task; everything branches off it).
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables
@@ -20,7 +20,7 @@ Produce the code **and tests** for this task, following the per-task loop in the
 every acceptance criterion below. Keep strictly to this task's scope.
 
 ## Acceptance criteria (all must be demonstrably met)
-- main branch cannot be pushed to directly
+- master branch cannot be pushed to directly
 - a PR requires 1 approval + green checks before merge
 - repo README links to docs/
 

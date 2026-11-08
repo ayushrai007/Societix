@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-40** · component **Platform** · suggested sprint **S1** ·
+Backlog item **SOC-40** · component **Platform** · suggested sprint **W3** ·
 size **3 point(s)** · priority **High**.
 
 ## Goal
 A write-once audit table recording sensitive actions (money moves, votes, data deletions). Rows can't be edited or deleted; each links to the previous via a hash so tampering is detectable. Auditors read it. Why: trust + legal. See glossary (audit / hash-chain).
 
 ## Preconditions (must already exist)
-see prompts/README.md build order — ensure earlier tasks exist.
+SOC-5, SOC-11.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

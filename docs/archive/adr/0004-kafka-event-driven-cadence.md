@@ -1,8 +1,12 @@
 # ADR-0004: Event-driven core via Postgres outbox now; message broker deferred
 
-**Status:** Accepted (supersedes the earlier "Kafka backbone" draft)
-**Date:** 2026-10-29
+**Status:** Superseded by [ADR-0008](../../adr/0008-postgres-outbox-no-broker.md) (formerly Accepted)  
+**Date:** 2026-10-29  
 **Deciders:** Principal Engineer, Backend Lead
+
+> [!NOTE]
+> **Superseded:** This record has been superseded by [ADR-0008](../../adr/0008-postgres-outbox-no-broker.md),
+> which records the canonical PostgreSQL transactional outbox decision and v1 message broker deferral.
 
 ## Context
 

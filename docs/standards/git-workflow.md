@@ -1,19 +1,19 @@
 # Git Workflow
 
-**Document:** `SOC-DOC-GIT` · **Status:** Standard (prescriptive)
+**Status:** Standard (prescriptive)
 
 How we branch, commit, review, and release Societix. Prescriptive and short — follow it verbatim.
-Tooling and CI gates: [`../delivery/cicd-devops.md`](../delivery/cicd-devops.md). Quality gates:
-[`../delivery/definition-of-done.md`](../delivery/definition-of-done.md).
+Tooling and CI gates: [`../archive/delivery/cicd-devops.md`](../archive/delivery/cicd-devops.md). Quality gates:
+[`../archive/delivery/definition-of-done.md`](../archive/delivery/definition-of-done.md).
 
 ---
 
 ## 1. Branching model — trunk-based
 
-- **`main` is the trunk** and is always releasable. Every change lands on `main` via PR.
-- Work on **short-lived feature branches** cut from `main`; merge back within **1–2 days**. Long
+- **`master` is the trunk** and is always releasable. Every change lands on `master` via PR.
+- Work on **short-lived feature branches** cut from `master`; merge back within **1–2 days**. Long
   branches cause migration/merge pain — split the work instead.
-- No long-lived `develop`/`release` branches. Releases are tags on `main` (§7).
+- No long-lived `develop`/`release` branches. Releases are tags on `master` (§7).
 
 ### Branch naming
 
@@ -73,7 +73,7 @@ Refs: SOC-123
 - **One logical change per PR.** Don't mix a refactor with a feature.
 - PR title follows Conventional Commits (it becomes the squash-merge commit).
 - The PR description must **link the ticket** and reference the **Definition of Done**
-  ([`../delivery/definition-of-done.md`](../delivery/definition-of-done.md)); use the repo PR
+  ([`../archive/delivery/definition-of-done.md`](../archive/delivery/definition-of-done.md)); use the repo PR
   template checklist.
 - **Required to merge:**
   - ✅ Green CI — `cd backend && ./mvnw verify` runs the configured backend tests and packages the
@@ -81,8 +81,8 @@ Refs: SOC-123
   - ✅ **At least one approving review** (two for changes touching `treasury`, `platform` security,
     RLS/tenancy, or DB migrations).
   - ✅ No unresolved review threads.
-  - ✅ Branch up to date with `main`.
-- **Merge strategy: squash merge.** Keeps `main` history linear and one-commit-per-PR.
+  - ✅ Branch up to date with `master`.
+- **Merge strategy: squash merge.** Keeps `master` history linear and one-commit-per-PR.
 
 ## 4. Code review expectations
 
@@ -106,7 +106,7 @@ Branch protection on `main`:
 ## 6. Database migrations in branches
 
 - Migrations are **forward-only, immutable once merged** — never edit a merged `V__` script; add a
-  new one (see [`../03-data-model.md`](../03-data-model.md) §6).
+  new one (see [`../archive/03-data-model.md`](../archive/03-data-model.md) §6).
 - Name versioned scripts `V<version>__<desc>.sql` and **version by timestamp** (e.g.
   `V20261027__…`) to avoid collisions between concurrent branches. Repeatable scripts use `R__`.
 - A PR adding a migration needs **two reviews** and must note rollout/rollback in the description.
@@ -118,17 +118,17 @@ Branch protection on `main`:
 
 - Versioning is **[SemVer](https://semver.org/)** `MAJOR.MINOR.PATCH`, derived from Conventional
   Commits since the last tag.
-- A release is an annotated tag on `main`: `vMAJOR.MINOR.PATCH` (e.g. `v1.4.0`), which triggers the
+- A release is an annotated tag on `master`: `vMAJOR.MINOR.PATCH` (e.g. `v1.4.0`), which triggers the
   release pipeline.
 
 ```bash
-git switch main && git pull
+git switch master && git pull
 git tag -a v1.4.0 -m "release: v1.4.0"
 git push origin v1.4.0
 ```
 
 - Pre-release/RC tags: `v1.4.0-rc.1`. Hotfixes branch from the release tag, fix, tag `v1.4.1`,
-  then merge back to `main`.
+  then merge back to `master`.
 
 ## 8. Changelog
 
@@ -139,6 +139,6 @@ git push origin v1.4.0
 ---
 
 **Related:** [`getting-started.md`](getting-started.md) · [`coding-standards.md`](coding-standards.md) ·
-[`api-guidelines.md`](api-guidelines.md) ·
-[`../delivery/cicd-devops.md`](../delivery/cicd-devops.md) ·
-[`../delivery/definition-of-done.md`](../delivery/definition-of-done.md)
+[`../archive/standards/api-guidelines.md`](../archive/standards/api-guidelines.md) ·
+[`../archive/delivery/cicd-devops.md`](../archive/delivery/cicd-devops.md) ·
+[`../archive/delivery/definition-of-done.md`](../archive/delivery/definition-of-done.md)

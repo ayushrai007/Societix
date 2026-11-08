@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-122** · component **Gate** · suggested sprint **S5** ·
+Backlog item **SOC-122** · component **Gate** · suggested sprint **W3** ·
 size **3 point(s)** · priority **High**.
 
 ## Goal
 Core gate flow: guard logs a visitor, resident gets a notification to approve/deny. Must complete the local check-in in under 1.5 seconds even offline.
 
 ## Preconditions (must already exist)
-SOC-120, SOC-121.
+SOC-12, SOC-13, SOC-30 (backend half); SOC-120, SOC-121 (tablet half).
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

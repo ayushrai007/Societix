@@ -63,26 +63,32 @@ is in the [Glossary](06-glossary.md).
 
 ## Run it on your laptop (the short version)
 
-> This is the target workflow for once the project skeleton exists (the first tasks in the
-> [backlog](jira/backlog.md) set this up). Keeping it here so we all aim for the same thing.
-
-You need: **Java 25 (LTS)**, **Docker Desktop** (runs the database/cache in containers so you don't
-install them by hand), and **Node.js 26 (LTS)** (for the web/app front-ends).
+**Current running baseline:**
 
 ```bash
-# 1. start the database + cache locally (Docker reads a file called docker-compose.yml)
-docker compose up -d
-
-# 2. run the backend (Maven Wrapper compiles + starts the server)
+# 1. run the backend (Maven Wrapper compiles + starts the server on :8080)
 cd backend
 ./mvnw spring-boot:run
 
-# 3. run the web app in another terminal
+# 2. check the health endpoints in another terminal
+curl -s http://localhost:8080/health
+curl -s http://localhost:8080/actuator/health
+```
+
+**Target workflow once local infrastructure (SOC-3) and web console land:**
+
+```bash
+# 1. start the database + cache locally (arriving in SOC-3)
+docker compose up -d
+
+# 2. run the backend
+cd backend && ./mvnw spring-boot:run
+
+# 3. run the web app in another terminal (arriving in front-end milestones)
 cd web && npm install && npm run dev
 ```
 
-Then open the web app in your browser and log in as the demo Secretary account (the setup tasks seed
-one). If something fails, the troubleshooting notes live in the backlog's setup tasks.
+Detailed instructions and environment setup live in [`standards/getting-started.md`](standards/getting-started.md).
 
 ## Where things live (once we start)
 

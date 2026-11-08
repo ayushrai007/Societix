@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-120** · component **Gate** · suggested sprint **S3** ·
+Backlog item **SOC-120** · component **Gate** · suggested sprint **Post-1-Jan** ·
 size **3 point(s)** · priority **Highest**.
 
 ## Goal
 Create the React Native gate tablet app that stores visitor records in a small on-device database first (works with no internet). See docs/04-the-6-modules.md#m4. Pairs with SOC-121 for sync.
 
 ## Preconditions (must already exist)
-see prompts/README.md build order — ensure earlier tasks exist.
+SOC-11, SOC-122 (backend half).
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

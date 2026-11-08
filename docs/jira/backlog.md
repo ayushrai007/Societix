@@ -2,7 +2,7 @@
 **What this is:** every epic and task for the whole project, mirroring `societix-backlog.csv` exactly (same IDs). Import the CSV into Jira, or read here to plan.
 **Totals:** 11 epics · 45 tasks · 125 story points (~1 point ≈ 1 developer-day).
 > Task size target: 1–3 days. A few genuinely bigger items are 5 points and marked **PAIR TASK** where two of us should build together.
-> Sprints S0–S13 are 2-week sprints from the plan in [05-building-it.md](../05-building-it.md).
+> Sprints W1–W8 are 1-week calendar sprints (Mon 9 Nov 2026 – Fri 1 Jan 2027) from the backend time plan in [05-building-it.md](../05-building-it.md); mobile tasks are scheduled for Post-1-Jan.
 
 ---
 
@@ -14,18 +14,18 @@ _Repo, build, local infra, CI skeleton, walking skeleton._
 
 ### SOC-1 — Create the code repository and branch rules
 
-- **Points:** 1  |  **Priority:** Highest  |  **Sprint:** S0  |  **Component:** Platform  |  **Labels:** `phase-0,setup`
+- **Points:** 1  |  **Priority:** Highest  |  **Sprint:** W1  |  **Assignee:** Aditya  |  **Status:** Done  |  **Component:** Platform  |  **Labels:** `phase-0,setup`
 
-**Description:** Set up the Git repository on GitHub with a protected main branch. Add a README that points to docs/. Configure branch protection so every change goes through a Pull Request with one approval and passing checks. Where to start: create the repo, add .gitignore for Java/Node, enable branch protection in repo settings. Fits in: this is the very first task; everything else branches off it.
+**Description:** Set up the Git repository on GitHub with a protected master branch. Add a README that points to docs/. Configure branch protection so every change goes through a Pull Request with one approval and passing checks. Where to start: create the repo, add .gitignore for Java/Node, enable branch protection in repo settings. Fits in: this is the very first task; everything else branches off it.
 
 **Acceptance criteria:**
-- main branch cannot be pushed to directly
+- master branch cannot be pushed to directly
 - a PR requires 1 approval + green checks before merge
 - repo README links to docs/
 
 ### SOC-2 — Scaffold the Spring Boot backend as a modular monolith
 
-- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** S0  |  **Component:** Platform  |  **Labels:** `phase-0,setup`
+- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** W1  |  **Assignee:** Shree  |  **Status:** Done  |  **Component:** Platform  |  **Labels:** `phase-0,setup`
 
 **Description:** Create the Java 25 + Spring Boot 4.1.2 backend using Maven 3.10.0. Add Spring Modulith 2.1.2 and create empty module packages: treasury, governance, copilot, gate, privacy, migration, platform. One runnable app that starts and serves a /health endpoint. Where to start: Spring Initializr, add WebMVC/Validation/Actuator/Modulith deps. See docs/03-tech-choices.md for why these tools.
 
@@ -36,7 +36,7 @@ _Repo, build, local infra, CI skeleton, walking skeleton._
 
 ### SOC-3 — Local dev environment with Docker Compose
 
-- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** S0  |  **Component:** Platform  |  **Labels:** `phase-0,setup`
+- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** W1  |  **Assignee:** Aditya  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,setup`
 
 **Description:** Write docker-compose.yml that starts PostgreSQL 18 with pgvector 0.8.7 and Redis 8.2 locally, plus a mock payment provider. Add a sample .env and document the commands in docs/01-start-here.md. No message broker (we use the outbox). Where to start: copy the compose snippet from the archived getting-started doc and trim Kafka.
 
@@ -47,7 +47,7 @@ _Repo, build, local infra, CI skeleton, walking skeleton._
 
 ### SOC-4 — Set up the CI pipeline (build + test on every PR)
 
-- **Points:** 2  |  **Priority:** High  |  **Sprint:** S0  |  **Component:** Platform  |  **Labels:** `phase-0,setup,ci`
+- **Points:** 2  |  **Priority:** High  |  **Sprint:** W1  |  **Assignee:** Aditya  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,setup,ci`
 
 **Description:** Add a GitHub Actions workflow that builds the backend, runs tests, and runs static checks on every PR. Add a secret/dependency scan step. Keep it fast. Where to start: a basic Maven verify workflow, then add scans.
 
@@ -58,7 +58,7 @@ _Repo, build, local infra, CI skeleton, walking skeleton._
 
 ### SOC-5 — Database migrations with Flyway
 
-- **Points:** 1  |  **Priority:** High  |  **Sprint:** S1  |  **Component:** Platform  |  **Labels:** `phase-0,setup,db`
+- **Points:** 1  |  **Priority:** High  |  **Sprint:** W1  |  **Assignee:** Aditya  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,setup,db`
 
 **Description:** Wire in Flyway so database schema changes are version-controlled SQL scripts applied automatically on startup. Add the first migration (an empty baseline). Document the naming convention (V1__description.sql). Why: so every environment has an identical, reproducible schema.
 
@@ -69,7 +69,7 @@ _Repo, build, local infra, CI skeleton, walking skeleton._
 
 ### SOC-6 — Walking skeleton: one feature end-to-end
 
-- **Points:** 3  |  **Priority:** High  |  **Sprint:** S2  |  **Component:** Platform  |  **Labels:** `phase-0,setup`
+- **Points:** 3  |  **Priority:** High  |  **Sprint:** W1  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,setup`
 
 **Description:** Prove the whole chain works with the thinnest possible slice: an endpoint that creates a dummy invoice, a call to the mock payment provider, and a record of the result in the DB. No real business logic yet. Why: de-risks the architecture before we build real features.
 
@@ -86,7 +86,7 @@ _Login, roles, and keeping each society's data private (RLS)._
 
 ### SOC-10 — Define the Society (tenant) entity and onboarding
 
-- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** S0  |  **Component:** Platform  |  **Labels:** `phase-0,auth,tenancy`
+- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** W1  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,auth,tenancy`
 
 **Description:** Create the Society entity (one row per apartment complex) and an admin endpoint to onboard a new society. This is the 'tenant' every other table will belong to. Where to start: entity + migration + repository + a simple create endpoint. See docs/02-how-it-works.md ('one program, one database').
 
@@ -97,7 +97,7 @@ _Login, roles, and keeping each society's data private (RLS)._
 
 ### SOC-11 — User login with OTP + OIDC
 
-- **Points:** 3  |  **Priority:** Highest  |  **Sprint:** S1  |  **Component:** Platform  |  **Labels:** `phase-0,auth`
+- **Points:** 3  |  **Priority:** Highest  |  **Sprint:** W1  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,auth`
 
 **Description:** Let a user log in. Phone OTP for first contact, bound to a standard OIDC identity, issuing a signed JWT that carries the user id, their society, and their roles. Why OIDC/JWT: standard, secure, we don't invent our own. See glossary for JWT/OIDC.
 
@@ -108,7 +108,7 @@ _Login, roles, and keeping each society's data private (RLS)._
 
 ### SOC-12 — Roles and permissions (RBAC)
 
-- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** S1  |  **Component:** Platform  |  **Labels:** `phase-0,auth`
+- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** W2  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,auth`
 
 **Description:** Define roles (Platform Admin, Secretary, Treasurer, Committee Member, Owner, Tenant, Guard, Auditor) and enforce them on endpoints. A resident can't hit a treasurer-only endpoint. Where to start: a role enum + method-level security annotations.
 
@@ -119,7 +119,7 @@ _Login, roles, and keeping each society's data private (RLS)._
 
 ### SOC-13 — Data isolation with Row-Level Security (RLS)
 
-- **Points:** 5  |  **Priority:** Highest  |  **Sprint:** S1  |  **Component:** Platform  |  **Labels:** `phase-0,auth,tenancy,privacy`
+- **Points:** 5  |  **Priority:** Highest  |  **Sprint:** W2  |  **Assignee:** Aditya  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,auth,tenancy,privacy`
 
 **Description:** The big one for privacy. Add a tenant_id column to tenant-owned tables and PostgreSQL RLS policies that filter by the current society, set from the JWT on each request. If code forgets to filter, the DATABASE still hides other societies' rows. Why: a bug here is a privacy breach, so we enforce it at the DB. See docs/02-how-it-works.md.
 
@@ -136,7 +136,7 @@ _The outbox table + background jobs that power automatic behaviour._
 
 ### SOC-20 — Create the outbox table and event model
 
-- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** S1  |  **Component:** Platform  |  **Labels:** `phase-0,events`
+- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** W1  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,events`
 
 **Description:** Add the 'outbox' table: a simple list of 'things that happened' (event type, payload, tenant, created time, processed flag). Producers insert a row in the SAME database save as their change. Why: reliable automatic behaviour with no Kafka. See docs/02-how-it-works.md ('the outbox').
 
@@ -147,7 +147,7 @@ _The outbox table + background jobs that power automatic behaviour._
 
 ### SOC-21 — Background job that drains the outbox
 
-- **Points:** 3  |  **Priority:** Highest  |  **Sprint:** S2  |  **Component:** Platform  |  **Labels:** `phase-0,events`
+- **Points:** 3  |  **Priority:** Highest  |  **Sprint:** W2  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,events`
 
 **Description:** Add a background job that runs every few seconds, reads unprocessed outbox rows, and calls the matching handler, then marks them processed. Guard it so only one app instance runs it at a time (ShedLock). Why: this is what makes 'automatic' happen. Handlers must be safe to run twice (idempotent).
 
@@ -158,7 +158,7 @@ _The outbox table + background jobs that power automatic behaviour._
 
 ### SOC-22 — Scheduled jobs for time-based automation
 
-- **Points:** 2  |  **Priority:** High  |  **Sprint:** S2  |  **Component:** Platform  |  **Labels:** `phase-0,events`
+- **Points:** 2  |  **Priority:** High  |  **Sprint:** W2  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,events`
 
 **Description:** Add a scheduling mechanism for 'do X after N days' needs (defaulter reminders, 30-day data purge). A daily job queries rows that are now due. Where to start: a simple @Scheduled job + a query-due-rows pattern reused by M1 and M5.
 
@@ -175,7 +175,7 @@ _Sending in-app / WhatsApp / SMS messages, with fallback._
 
 ### SOC-30 — Notification service with channel adapters
 
-- **Points:** 3  |  **Priority:** High  |  **Sprint:** S2  |  **Component:** Platform  |  **Labels:** `phase-1,notify`
+- **Points:** 3  |  **Priority:** High  |  **Sprint:** W2  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-1,notify`
 
 **Description:** A service that sends a message to a resident via a channel (in-app, WhatsApp, SMS). Start with in-app + one real channel behind an interface so others slot in. Driven by outbox events. Where to start: an interface + in-app impl + a WhatsApp stub.
 
@@ -186,7 +186,7 @@ _Sending in-app / WhatsApp / SMS messages, with fallback._
 
 ### SOC-31 — Channel fallback and delivery logging
 
-- **Points:** 2  |  **Priority:** Medium  |  **Sprint:** S3  |  **Component:** Platform  |  **Labels:** `phase-1,notify`
+- **Points:** 2  |  **Priority:** Medium  |  **Sprint:** W3  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-1,notify`
 
 **Description:** If the preferred channel fails, escalate (in-app -> WhatsApp -> SMS). Log what was delivered and when (needed for legal proof of meeting notices later). Keep it idempotent so one event = one message.
 
@@ -203,7 +203,7 @@ _Tamper-proof audit log + basic health/metrics._
 
 ### SOC-40 — Append-only, tamper-evident audit log
 
-- **Points:** 3  |  **Priority:** High  |  **Sprint:** S1  |  **Component:** Platform  |  **Labels:** `phase-0,audit,privacy`
+- **Points:** 3  |  **Priority:** High  |  **Sprint:** W3  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,audit,privacy`
 
 **Description:** A write-once audit table recording sensitive actions (money moves, votes, data deletions). Rows can't be edited or deleted; each links to the previous via a hash so tampering is detectable. Auditors read it. Why: trust + legal. See glossary (audit / hash-chain).
 
@@ -214,7 +214,7 @@ _Tamper-proof audit log + basic health/metrics._
 
 ### SOC-41 — Health checks and basic metrics
 
-- **Points:** 2  |  **Priority:** Medium  |  **Sprint:** S1  |  **Component:** Platform  |  **Labels:** `phase-0,observability`
+- **Points:** 2  |  **Priority:** Medium  |  **Sprint:** W2  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,observability`
 
 **Description:** Expose health and basic metrics via Spring Boot Actuator and structured logging. Enough to see if the app is up and spot errors. Full dashboards (Grafana) come later. Why: we need visibility without heavy tooling now.
 
@@ -231,7 +231,7 @@ _Billing, auto payment collection, defaulter chasing, ledger._
 
 ### SOC-100 — Chart of accounts and double-entry ledger tables
 
-- **Points:** 3  |  **Priority:** Highest  |  **Sprint:** S3  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury`
+- **Points:** 3  |  **Priority:** Highest  |  **Sprint:** W3  |  **Assignee:** Aditya  |  **Status:** To Do  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury`
 
 **Description:** Create the accounting foundation: account types and a ledger where every transaction records matching debits and credits (so books always balance). Include the statutory fund accounts (sinking/repair/reserve/maintenance). See docs/04-the-6-modules.md#m1 and the archived ledger deep-dive.
 
@@ -242,7 +242,7 @@ _Billing, auto payment collection, defaulter chasing, ledger._
 
 ### SOC-101 — Multi-formula billing engine
 
-- **Points:** 3  |  **Priority:** Highest  |  **Sprint:** S3  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury`
+- **Points:** 3  |  **Priority:** Highest  |  **Sprint:** W3  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury`
 
 **Description:** Generate monthly invoices for each flat. Support the common formulas: flat rate, by carpet area (per sq.ft), by metered usage (water), or a mix. Where to start: a BillingFormula strategy per type + an invoice generator job.
 
@@ -253,7 +253,7 @@ _Billing, auto payment collection, defaulter chasing, ledger._
 
 ### SOC-102 — Give each flat a payment number (VAN / UPI VPA)
 
-- **Points:** 3  |  **Priority:** Highest  |  **Sprint:** S4  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury,payments`
+- **Points:** 3  |  **Priority:** Highest  |  **Sprint:** W3  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury,payments`
 
 **Description:** Integrate the payment provider to assign each flat a unique virtual account number and UPI address, so incoming money is auto-identified. Use the mock provider locally. See glossary (VAN/UPI VPA). Pairs with SOC-103.
 
@@ -264,7 +264,7 @@ _Billing, auto payment collection, defaulter chasing, ledger._
 
 ### SOC-103 — Zero-touch payment matching (PAIR TASK)
 
-- **Points:** 5  |  **Priority:** Highest  |  **Sprint:** S4  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury,payments`
+- **Points:** 5  |  **Priority:** Highest  |  **Sprint:** W4  |  **Assignee:** Aditya, Shree  |  **Status:** To Do  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury,payments`
 
 **Description:** The headline feature. When the payment provider sends a 'money received' webhook, match it to the flat by its VAN/VPA, mark the invoice paid, and post it to the ledger - all automatically, no manual matching. Build this as a PAIR (Dev A + Dev B); it's the trickiest money path. Must be idempotent (a repeated webhook doesn't double-post).
 
@@ -275,7 +275,7 @@ _Billing, auto payment collection, defaulter chasing, ledger._
 
 ### SOC-104 — Defaulter reminder cadence (Day +1 to +30)
 
-- **Points:** 3  |  **Priority:** High  |  **Sprint:** S5  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury`
+- **Points:** 3  |  **Priority:** High  |  **Sprint:** W5  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury`
 
 **Description:** Automatic chasing of unpaid bills: day 1 gentle in-app/WhatsApp nudge, day 10 SMS/call, day 15 late fee added (respecting state-law caps), day 30 a formal notice document. Stops instantly when they pay. Uses the scheduled jobs (SOC-22) and notifications (SOC-30).
 
@@ -286,7 +286,7 @@ _Billing, auto payment collection, defaulter chasing, ledger._
 
 ### SOC-105 — Financial statements (trial balance, P&L, balance sheet)
 
-- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** S5  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury`
+- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** W3  |  **Assignee:** Aditya  |  **Status:** To Do  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury`
 
 **Description:** Generate the standard financial reports from the ledger automatically. Where to start: aggregation queries over the ledger; a report endpoint per statement. See the archived ledger deep-dive for the exact math.
 
@@ -297,7 +297,7 @@ _Billing, auto payment collection, defaulter chasing, ledger._
 
 ### SOC-106 — Maker-checker vendor payouts with tax tracking
 
-- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** S6  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury`
+- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** W3  |  **Assignee:** Aditya  |  **Status:** To Do  |  **Component:** Treasury  |  **Labels:** `phase-1,m1,treasury`
 
 **Description:** Pay vendors safely: one user requests a payout, a different user approves it before it executes. Track TDS (tax withheld) and GST input credit. See glossary (maker-checker, TDS/GST).
 
@@ -314,7 +314,7 @@ _Offline visitor logging, QR passes, number-plate reading._
 
 ### SOC-120 — Gate app shell with local on-device storage
 
-- **Points:** 3  |  **Priority:** Highest  |  **Sprint:** S3  |  **Component:** Gate  |  **Labels:** `phase-1,m4,gate,mobile`
+- **Points:** 3  |  **Priority:** Highest  |  **Sprint:** Post-1-Jan  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Gate  |  **Labels:** `phase-1,m4,gate,mobile`
 
 **Description:** Create the React Native gate tablet app that stores visitor records in a small on-device database first (works with no internet). See docs/04-the-6-modules.md#m4. Pairs with SOC-121 for sync.
 
@@ -325,7 +325,7 @@ _Offline visitor logging, QR passes, number-plate reading._
 
 ### SOC-121 — Offline sync with conflict-free merge (CRDT)
 
-- **Points:** 5  |  **Priority:** High  |  **Sprint:** S4  |  **Component:** Gate  |  **Labels:** `phase-1,m4,gate,mobile`
+- **Points:** 5  |  **Priority:** High  |  **Sprint:** Post-1-Jan  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Gate  |  **Labels:** `phase-1,m4,gate,mobile`
 
 **Description:** When the internet returns, the tablet syncs local changes up and server changes down, merging automatically without conflicts (CRDT). The server ingest is idempotent. See the archived offline-gate deep-dive for the technique; most of this task is wiring the sync layer.
 
@@ -336,7 +336,7 @@ _Offline visitor logging, QR passes, number-plate reading._
 
 ### SOC-122 — Visitor check-in and resident approval
 
-- **Points:** 3  |  **Priority:** High  |  **Sprint:** S5  |  **Component:** Gate  |  **Labels:** `phase-1,m4,gate`
+- **Points:** 3  |  **Priority:** High  |  **Sprint:** W3  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Gate  |  **Labels:** `phase-1,m4,gate`
 
 **Description:** Core gate flow: guard logs a visitor, resident gets a notification to approve/deny. Must complete the local check-in in under 1.5 seconds even offline.
 
@@ -347,7 +347,7 @@ _Offline visitor logging, QR passes, number-plate reading._
 
 ### SOC-123 — Pre-approved visitor QR passes
 
-- **Points:** 2  |  **Priority:** Medium  |  **Sprint:** S5  |  **Component:** Gate  |  **Labels:** `phase-1,m4,gate,mobile`
+- **Points:** 2  |  **Priority:** Medium  |  **Sprint:** Post-1-Jan  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Gate  |  **Labels:** `phase-1,m4,gate,mobile`
 
 **Description:** Residents pre-approve a guest in their app and get a QR code; the guard scans it for instant entry. Where to start: QR generation in the resident app + scan+validate in the gate app.
 
@@ -358,7 +358,7 @@ _Offline visitor logging, QR passes, number-plate reading._
 
 ### SOC-124 — Multilingual gate UI + number-plate reading (ANPR)
 
-- **Points:** 3  |  **Priority:** Low  |  **Sprint:** S6  |  **Component:** Gate  |  **Labels:** `phase-1,m4,gate,mobile`
+- **Points:** 3  |  **Priority:** Low  |  **Sprint:** Post-1-Jan  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Gate  |  **Labels:** `phase-1,m4,gate,mobile`
 
 **Description:** Localise the guard UI into the major Indian languages and add automatic vehicle number-plate reading for known vehicles. ANPR can use a third-party library/service. Where to start: i18n framework + an ANPR adapter interface.
 
@@ -375,7 +375,7 @@ _No ads, 30-day auto-delete of visitor data, resident consent._
 
 ### SOC-140 — CI check: no ads or third-party trackers
 
-- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** S2  |  **Component:** Privacy  |  **Labels:** `phase-0,m5,privacy,ci`
+- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** W2  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Privacy  |  **Labels:** `phase-0,m5,privacy,ci`
 
 **Description:** Add an automated check in the build pipeline that fails if any ad/tracking SDK appears in the apps. This enforces our zero-ads promise forever. Why: brand + DPDP law. See docs/04-the-6-modules.md#m5.
 
@@ -386,7 +386,7 @@ _No ads, 30-day auto-delete of visitor data, resident consent._
 
 ### SOC-141 — 30-day automatic deletion of visitor data
 
-- **Points:** 3  |  **Priority:** High  |  **Sprint:** S7  |  **Component:** Privacy  |  **Labels:** `phase-1,m5,privacy`
+- **Points:** 3  |  **Priority:** High  |  **Sprint:** W4  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Privacy  |  **Labels:** `phase-1,m5,privacy`
 
 **Description:** Visitor photos and phone numbers must be hard-deleted 30 days after the visit. Driven by the scheduled jobs. The deletion itself is audited (so we can prove it happened). See glossary (DPDP).
 
@@ -397,7 +397,7 @@ _No ads, 30-day auto-delete of visitor data, resident consent._
 
 ### SOC-142 — Resident consent and directory masking
 
-- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** S7  |  **Component:** Privacy  |  **Labels:** `phase-1,m5,privacy`
+- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** W4  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Privacy  |  **Labels:** `phase-1,m5,privacy`
 
 **Description:** Let residents choose who can see their details (e.g. hide phone number) without losing access to security features. Store granular consent. Where to start: a consent model + applying masking in the directory API.
 
@@ -414,7 +414,7 @@ _Meeting notices, live quorum, secret verifiable voting._
 
 ### SOC-160 — AGM meeting notices with proof of delivery
 
-- **Points:** 2  |  **Priority:** High  |  **Sprint:** S8  |  **Component:** Governance  |  **Labels:** `phase-2,m2,governance`
+- **Points:** 2  |  **Priority:** High  |  **Sprint:** W6  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Governance  |  **Labels:** `phase-2,m2,governance`
 
 **Description:** Create and send the legally-required meeting notices the right number of days in advance, and record proof they were delivered (via the notification service). See docs/04-the-6-modules.md#m2.
 
@@ -425,7 +425,7 @@ _Meeting notices, live quorum, secret verifiable voting._
 
 ### SOC-161 — Live quorum engine
 
-- **Points:** 3  |  **Priority:** High  |  **Sprint:** S8  |  **Component:** Governance  |  **Labels:** `phase-2,m2,governance`
+- **Points:** 3  |  **Priority:** High  |  **Sprint:** W6  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Governance  |  **Labels:** `phase-2,m2,governance`
 
 **Description:** During a meeting, track attendance and voting weight live (owners vs validated proxies) against the legal threshold, so the committee knows when voting can start. State laws set the weights. See glossary (quorum/proxy).
 
@@ -436,7 +436,7 @@ _Meeting notices, live quorum, secret verifiable voting._
 
 ### SOC-162 — Secret, verifiable e-voting (PAIR TASK)
 
-- **Points:** 5  |  **Priority:** High  |  **Sprint:** S9  |  **Component:** Governance  |  **Labels:** `phase-2,m2,governance`
+- **Points:** 5  |  **Priority:** High  |  **Sprint:** W7  |  **Assignee:** Aditya, Shree  |  **Status:** To Do  |  **Component:** Governance  |  **Labels:** `phase-2,m2,governance`
 
 **Description:** The hardest governance piece: online ballots that are secret (no one sees how you voted) yet verifiable (the count can be proven correct and not tampered with). Build as a PAIR. Uses a commit-reveal scheme + the hash-chained audit log - see the archived e-voting deep-dive. Don't start this in a phase's last sprint.
 
@@ -447,7 +447,7 @@ _Meeting notices, live quorum, secret verifiable voting._
 
 ### SOC-163 — Capex voting linked to live fund balances
 
-- **Points:** 2  |  **Priority:** Medium  |  **Sprint:** S10  |  **Component:** Governance  |  **Labels:** `phase-2,m2,governance`
+- **Points:** 2  |  **Priority:** Medium  |  **Sprint:** W7  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Governance  |  **Labels:** `phase-2,m2,governance`
 
 **Description:** When voting on spending from a fund, show the live balance from the Treasury ledger (not a stale copy) so owners vote with real numbers. Depends on M1 ledger (SOC-100).
 
@@ -458,7 +458,7 @@ _Meeting notices, live quorum, secret verifiable voting._
 
 ### SOC-164 — Committee handover pack
 
-- **Points:** 2  |  **Priority:** Low  |  **Sprint:** S10  |  **Component:** Governance  |  **Labels:** `phase-2,m2,governance`
+- **Points:** 2  |  **Priority:** Low  |  **Sprint:** W8  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Governance  |  **Labels:** `phase-2,m2,governance`
 
 **Description:** When a committee changes, produce a pack transferring records, vendor contracts, bank signatory info, and open items to the incoming committee. Where to start: a report that bundles the relevant records.
 
@@ -475,7 +475,7 @@ _Plain-English Q&A, auto minutes, bylaw & tender help._
 
 ### SOC-180 — Set up pgvector and the knowledge index
 
-- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** S11  |  **Component:** Copilot  |  **Labels:** `phase-2,m3,copilot,ai`
+- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** W5  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Copilot  |  **Labels:** `phase-2,m3,copilot,ai`
 
 **Description:** Enable the pgvector extension and build the index of searchable society knowledge (bylaws, state-law rules, ledger summaries) as embeddings. This is what the AI searches. See docs/04-the-6-modules.md#m3 and glossary (RAG/embedding).
 
@@ -486,7 +486,7 @@ _Plain-English Q&A, auto minutes, bylaw & tender help._
 
 ### SOC-181 — Natural-language financial Q&A (RAG)
 
-- **Points:** 5  |  **Priority:** Medium  |  **Sprint:** S11  |  **Component:** Copilot  |  **Labels:** `phase-2,m3,copilot,ai`
+- **Points:** 5  |  **Priority:** Medium  |  **Sprint:** W5  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Copilot  |  **Labels:** `phase-2,m3,copilot,ai`
 
 **Description:** Let a committee member ask plain-English questions and get grounded answers with citations, built on retrieval (find relevant data) + generation (AI writes the answer). Must stay within the user's society and answer in under 2.5s (cache repeats). See the archived RAG deep-dive.
 
@@ -497,7 +497,7 @@ _Plain-English Q&A, auto minutes, bylaw & tender help._
 
 ### SOC-182 — Safe natural-language to data queries
 
-- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** S12  |  **Component:** Copilot  |  **Labels:** `phase-2,m3,copilot,ai`
+- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** W6  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Copilot  |  **Labels:** `phase-2,m3,copilot,ai`
 
 **Description:** Make the NL->data path safe: never run raw AI-generated SQL on production. Use an allow-listed, parameterised, tenant-scoped query layer. Build as a pair with SOC-181. Why: an AI writing arbitrary SQL is a security hole.
 
@@ -508,7 +508,7 @@ _Plain-English Q&A, auto minutes, bylaw & tender help._
 
 ### SOC-183 — Auto-draft meeting minutes + tender comparison
 
-- **Points:** 3  |  **Priority:** Low  |  **Sprint:** S12  |  **Component:** Copilot  |  **Labels:** `phase-2,m3,copilot,ai`
+- **Points:** 3  |  **Priority:** Low  |  **Sprint:** W8  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Copilot  |  **Labels:** `phase-2,m3,copilot,ai`
 
 **Description:** Two smaller copilot features: turn meeting notes into a formatted draft of minutes, and turn a set of vendor quotes into a comparison table. Where to start: a summarise prompt + a structured-extraction prompt.
 
@@ -525,7 +525,7 @@ _Import old data (Tally/Excel/MyGate), verify, parallel run._
 
 ### SOC-200 — Import engine for Tally / Excel exports
 
-- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** S10  |  **Component:** Migration  |  **Labels:** `phase-2,m6,migration`
+- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** W5  |  **Assignee:** Aditya  |  **Status:** To Do  |  **Component:** Migration  |  **Labels:** `phase-2,m6,migration`
 
 **Description:** Build the importer that reads a society's old accounting data (Tally XML / Excel) and loads it into our ledger and member records. Produce a mapping report. See docs/04-the-6-modules.md#m6.
 
@@ -536,7 +536,7 @@ _Import old data (Tally/Excel/MyGate), verify, parallel run._
 
 ### SOC-201 — Import from MyGate exports
 
-- **Points:** 2  |  **Priority:** Low  |  **Sprint:** S10  |  **Component:** Migration  |  **Labels:** `phase-2,m6,migration`
+- **Points:** 2  |  **Priority:** Low  |  **Sprint:** W7  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Migration  |  **Labels:** `phase-2,m6,migration`
 
 **Description:** Add an importer for a competitor (MyGate) export - residents, vehicles, visitor history - so switching societies don't re-enter residents. Where to start: a MyGate format adapter reusing the SOC-200 pipeline.
 
@@ -547,7 +547,7 @@ _Import old data (Tally/Excel/MyGate), verify, parallel run._
 
 ### SOC-202 — Balance verification after import
 
-- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** S11  |  **Component:** Migration  |  **Labels:** `phase-2,m6,migration`
+- **Points:** 3  |  **Priority:** Medium  |  **Sprint:** W6  |  **Assignee:** Aditya  |  **Status:** To Do  |  **Component:** Migration  |  **Labels:** `phase-2,m6,migration`
 
 **Description:** After import, check the loaded opening balances against the source totals and flag any mismatch line-by-line so the Treasurer trusts the numbers. Never silently drop a discrepancy.
 
@@ -558,7 +558,7 @@ _Import old data (Tally/Excel/MyGate), verify, parallel run._
 
 ### SOC-203 — Parallel-run comparison for safe cut-over
 
-- **Points:** 2  |  **Priority:** Low  |  **Sprint:** S11  |  **Component:** Migration  |  **Labels:** `phase-2,m6,migration`
+- **Points:** 2  |  **Priority:** Low  |  **Sprint:** W8  |  **Assignee:** Aditya  |  **Status:** To Do  |  **Component:** Migration  |  **Labels:** `phase-2,m6,migration`
 
 **Description:** Let a society run old + Societix side-by-side for a period and compare outputs before switching fully, so cut-over is zero-risk. Where to start: a daily comparison report of the two systems' key figures.
 

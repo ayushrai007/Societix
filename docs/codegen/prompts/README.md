@@ -19,8 +19,8 @@ merge before the next one. **Do them in order — later tasks assume earlier one
 | 2 | SOC-2 Scaffold Spring Boot backend | [backend/SOC-2](backend/SOC-2-scaffold-the-spring-boot-backend-as-a-mo.md) |
 | 3 | SOC-3 Local Docker environment | [backend/SOC-3](backend/SOC-3-local-dev-environment-with-docker-compos.md) |
 | 4 | SOC-4 CI pipeline | [backend/SOC-4](backend/SOC-4-set-up-the-ci-pipeline-build-test-on-eve.md) |
-| 5 | SOC-10 Society (tenant) entity | [backend/SOC-10](backend/SOC-10-define-the-society-tenant-entity-and-onb.md) |
-| 6 | SOC-5 Flyway migrations | [backend/SOC-5](backend/SOC-5-database-migrations-with-flyway.md) |
+| 5 | SOC-5 Flyway migrations | [backend/SOC-5](backend/SOC-5-database-migrations-with-flyway.md) |
+| 6 | SOC-10 Society (tenant) entity | [backend/SOC-10](backend/SOC-10-define-the-society-tenant-entity-and-onb.md) |
 | 7 | SOC-11 Login (OTP + OIDC → JWT) | [backend/SOC-11](backend/SOC-11-user-login-with-otp-oidc.md) |
 | 8 | SOC-12 Roles & permissions | [backend/SOC-12](backend/SOC-12-roles-and-permissions-rbac.md) |
 | 9 | **SOC-13 Data isolation (RLS)** | [backend/SOC-13](backend/SOC-13-data-isolation-with-row-level-security-r.md) |
@@ -77,6 +77,14 @@ merge before the next one. **Do them in order — later tasks assume earlier one
 
 - **Order matters.** Each prompt lists its preconditions; if one isn't built, Claude is told to stop
   and say so.
+- **Two end-to-end verification checkpoints:**
+  1. *Early check:* **SOC-6 Walking skeleton** (scaffold + compose + DB migrations + basic slice).
+  2. *Full-chain proven milestone:* after **SOC-103 / SOC-104** where the complete chain — tenancy
+     isolation (SOC-13), transactional outbox (SOC-20/21), payment matching (SOC-103), and double-entry
+     ledger posting (SOC-100/104) — is proven end-to-end.
+- **Backend first:** All backend services, scheduled pollers, and database migrations are built first
+  (Weeks 1–8, ending 1 Jan 2027). Tablet and mobile screens (SOC-120, SOC-121, SOC-123, SOC-124) and
+  web console screens start after 1 Jan 2027.
 - **The two PAIR tasks** (SOC-103, SOC-162) are the riskiest — have two people review, and don't
   rush them into a sprint's final days.
 - **Every task ends with passing tests + human review before merge.** That gate is what makes the

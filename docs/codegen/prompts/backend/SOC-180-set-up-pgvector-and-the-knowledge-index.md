@@ -4,7 +4,7 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-180** · component **Copilot** · suggested sprint **S11** ·
+Backlog item **SOC-180** · component **Copilot** · suggested sprint **W5** ·
 size **3 point(s)** · priority **Medium**.
 
 > **Hard internals:** for the algorithm/design, read [`this deep-dive`](../../../archive/deep-dives/dd-04-ai-copilot-rag.md) — follow it rather than improvising.
@@ -13,7 +13,7 @@ size **3 point(s)** · priority **Medium**.
 Enable the pgvector extension and build the index of searchable society knowledge (bylaws, state-law rules, ledger summaries) as embeddings. This is what the AI searches. See docs/04-the-6-modules.md#m3 and glossary (RAG/embedding).
 
 ## Preconditions (must already exist)
-see prompts/README.md build order — ensure earlier tasks exist.
+SOC-5, SOC-13.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

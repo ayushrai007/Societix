@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-10** · component **Platform** · suggested sprint **S0** ·
+Backlog item **SOC-10** · component **Platform** · suggested sprint **W1** ·
 size **2 point(s)** · priority **Highest**.
 
 ## Goal
 Create the Society entity (one row per apartment complex) and an admin endpoint to onboard a new society. This is the 'tenant' every other table will belong to. Where to start: entity + migration + repository + a simple create endpoint. See docs/02-how-it-works.md ('one program, one database').
 
 ## Preconditions (must already exist)
-see prompts/README.md build order — ensure earlier tasks exist.
+SOC-2, SOC-5.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

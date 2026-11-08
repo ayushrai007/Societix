@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-140** · component **Privacy** · suggested sprint **S2** ·
+Backlog item **SOC-140** · component **Privacy** · suggested sprint **W2** ·
 size **2 point(s)** · priority **Highest**.
 
 ## Goal
 Add an automated check in the build pipeline that fails if any ad/tracking SDK appears in the apps. This enforces our zero-ads promise forever. Why: brand + DPDP law. See docs/04-the-6-modules.md#m5.
 
 ## Preconditions (must already exist)
-see prompts/README.md build order — ensure earlier tasks exist.
+SOC-4.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables
