@@ -67,7 +67,8 @@ compatibility or support commitments requires a superseding ADR.
 
 **Pros**
 
-- Developers and CI use one checked-in command (`./mvnw`) and the same Maven distribution.
+- Developers and CI run the checked-in `backend/mvnw` wrapper from `backend/` and use the same
+  Maven distribution.
 - The runtime, framework, libraries, database, cache, containers, and front-end tooling are on
   supported upstream lines with an explicit compatibility trail.
 - Code-generation prompts and onboarding instructions produce the same stack as the actual build.

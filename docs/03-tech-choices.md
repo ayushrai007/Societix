@@ -31,7 +31,7 @@ services. ("Modulith" = modular + monolith.)
 
 ### Maven 3.10.0 + Maven Wrapper 3.3.4
 **What:** our **build tool** — the thing that compiles the code, runs tests, and packages the app
-(`./mvnw ...` commands).
+(`cd backend` followed by `./mvnw ...` commands).
 **Why:** it is a widely used Java build tool with a clear, convention-based project structure. The
 Maven Wrapper (`mvnw`) pins the Maven version, so developers and CI use the same version without a
 separate global Maven install.

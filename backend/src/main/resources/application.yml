@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: societix
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

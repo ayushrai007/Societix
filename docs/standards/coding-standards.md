@@ -71,7 +71,7 @@ import com.societix.treasury.persistence.InvoiceRepository;   // ❌ boundary vi
 | Constant | `UPPER_SNAKE_CASE` | `MAX_REMINDER_STAGES` |
 | REST controller | `<Resource>Controller` | `InvoiceController` |
 | Event record | `<Noun><PastTenseVerb>` | `InvoiceSettled`, `VoteCast` |
-| Test class | `<Subject>Test` (unit) / `<Subject>IT` (integration) | `BallotTallyTest`, `TenancyRlsIT` |
+| Test class | `<Subject>Test` (unit, slice, and integration) | `BallotTallyTest`, `TenancyRlsTest` |
 
 ## 3. Dependency injection — constructor only
 
@@ -222,26 +222,20 @@ public class PayoutService {
 }
 ```
 
-## 11. Formatting & static analysis
+## 11. Build checks
 
-| Gate | Tool | Rule |
-|---|---|---|
-| Formatting | **Spotless + google-java-format** | `./mvnw spotless:apply` before committing; CI runs `spotless:check` |
-| Bug patterns | **Error Prone** | compiler plugin; warnings on `error` level fail the build |
-| Static analysis | **SpotBugs** | runs in `./mvnw verify`; new high-priority bugs block merge |
-| Imports | no wildcard imports | enforced by google-java-format |
-| Line length | 100 cols | google-java-format default |
-
-`./mvnw verify` runs tests + Spotless + Error Prone + SpotBugs + the Modulith `verify()` test.
-CI runs the same — green locally, green in CI.
+Run `cd backend && ./mvnw test` for the configured test suite and
+`cd backend && ./mvnw verify` to test and package the backend. Formatting and static-analysis gates
+will be documented when their Maven plugins are configured.
 
 ## 12. Test naming & structure
 
-- Unit/slice tests: `<Subject>Test`; integration (Testcontainers): `<Subject>IT`.
+- Unit, slice, and integration (Testcontainers) tests: `<Subject>Test`, so `cd backend && ./mvnw test`
+  runs them all.
 - Method names describe behavior: `shouldRejectPayoutWhenMakerEqualsChecker()`.
 - Arrange–Act–Assert, one logical assertion per test. Use JUnit 5 + AssertJ.
 - Every module ships a Modulith `ApplicationModules.verify()` test and at least one tenancy/RLS
-  isolation IT (a cross-tenant read must return zero rows).
+  isolation test (a cross-tenant read must return zero rows).
 
 ```java
 @Test

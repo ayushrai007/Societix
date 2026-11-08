@@ -30,7 +30,7 @@ _Repo, build, local infra, CI skeleton, walking skeleton._
 **Description:** Create the Java 25 + Spring Boot 4.1.2 backend using Maven 3.10.0. Add Spring Modulith 2.1.2 and create empty module packages: treasury, governance, copilot, gate, privacy, migration, platform. One runnable app that starts and serves a /health endpoint. Where to start: Spring Initializr, add WebMVC/Validation/Actuator/Modulith deps. See docs/03-tech-choices.md for why these tools.
 
 **Acceptance criteria:**
-- ./mvnw spring-boot:run starts the app
+- `cd backend && ./mvnw spring-boot:run` starts the app
 - GET /actuator/health returns 200
 - each module is its own package with a package-info marking the module boundary
 

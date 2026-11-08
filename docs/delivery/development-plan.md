@@ -103,7 +103,7 @@ flowchart LR
 
 **Sprint 0 exit criteria**
 
-- [ ] `./mvnw verify` green; Modulith boundary tests pass in CI
+- [ ] `cd backend && ./mvnw verify` green; Modulith boundary tests pass in CI
 - [ ] Cross-tenant read test **fails to return rows** (RLS proven)
 - [ ] Walking-skeleton slice green in staging against PA sandbox
 - [ ] No third-party tracking SDK present (compliance gate green)

@@ -76,8 +76,8 @@ Refs: SOC-123
   ([`../delivery/definition-of-done.md`](../delivery/definition-of-done.md)); use the repo PR
   template checklist.
 - **Required to merge:**
-  - ✅ Green CI — `./mvnw verify` (tests + Spotless + Error Prone + SpotBugs + Modulith
-    `verify()`), web tests, and the OpenAPI contract test.
+  - ✅ Green CI — `cd backend && ./mvnw verify` runs the configured backend tests and packages the
+    application.
   - ✅ **At least one approving review** (two for changes touching `treasury`, `platform` security,
     RLS/tenancy, or DB migrations).
   - ✅ No unresolved review threads.

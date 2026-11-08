@@ -45,7 +45,7 @@ backend/
     ├── main/resources/
     │   ├── application.yml
     │   └── db/migration/        # Flyway V1__*.sql, V2__*.sql, ...
-    └── test/java/               # unit tests + *IT.java Testcontainers tests (Maven Failsafe)
+    └── test/java/               # tests run by the configured Maven test lifecycle
 ```
 
 ## 3. `pom.xml` baseline (shape, not exhaustive)
@@ -101,24 +101,6 @@ backend/
     <plugin><groupId>org.flywaydb</groupId><artifactId>flyway-maven-plugin</artifactId></plugin>
   </plugins>
 </build>
-<profiles>
-  <profile>
-    <id>integration</id>
-    <build>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-failsafe-plugin</artifactId>
-          <executions>
-            <execution>
-              <goals><goal>integration-test</goal><goal>verify</goal></goals>
-            </execution>
-          </executions>
-        </plugin>
-      </plugins>
-    </build>
-  </profile>
-</profiles>
 ```
 
 ## 4. Local infra — `docker-compose.yml` (no broker)
@@ -208,7 +190,7 @@ mobile/
 ## 10. Config & environments
 
 - All config via environment variables (12-factor). `application.yml` reads env with local defaults.
-- Local: `docker compose up -d` then `./mvnw spring-boot:run`.
+- Local: `docker compose up -d` then `cd backend && ./mvnw spring-boot:run`.
 - Environments: `dev` → `staging` → `prod`, single region (Mumbai) to start, managed Postgres/Redis.
 - Secrets from the environment/secret store only — never in the repo.
 
