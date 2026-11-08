@@ -24,7 +24,7 @@ The architecture anchor already commits to "modular monolith first"
 
 ## Decision
 
-**We will build Societix as a single deployable Spring Boot 3 application, partitioned into
+**We will build Societix as a single deployable Spring Boot application, partitioned into
 well-bounded modules enforced by Spring Modulith**, one top-level package per module under
 `com.societix` (`treasury`, `governance`, `copilot`, `gate`, `privacy`, `migration`, plus a shared
 `platform` kernel).

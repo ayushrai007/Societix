@@ -19,6 +19,11 @@ Open `index.html` in any modern browser (double-click, or `open index.html` on m
 Fonts load from Google Fonts over CDN; everything else is local, so the page still works offline
 with system-font fallbacks.
 
+## Project documentation
+
+See the [project documentation](docs/README.md) for product, architecture, development, and
+delivery guidance.
+
 ## What it demonstrates
 
 - **Website view** — hero, problem stats, 6 product modules, legacy-vs-Societix paradigm,

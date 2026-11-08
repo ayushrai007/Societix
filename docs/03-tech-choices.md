@@ -12,34 +12,35 @@ societies.
 
 ## Backend (the server program)
 
-### Java 21
-**What:** a mature, fast, strongly-typed programming language. "21" is the current long-term-support
+### Java 25 (LTS)
+**What:** a mature, fast, strongly-typed programming language. "25" is the current long-term-support
 version (supported for years).
 **Why:** the team already knows Java; it's reliable, has huge library support, and is a safe choice
 for financial software where correctness matters.
 
-### Spring Boot
+### Spring Boot 4.1.2
 **What:** the most widely used framework for building web servers in Java. It handles the boring
 plumbing (HTTP, database connections, security) so we write mostly business logic.
 **Why:** industry standard, enormous community, tons of built-in features we'd otherwise hand-build.
 
-### Spring Modulith
+### Spring Modulith 2.1.2
 **What:** a small add-on to Spring Boot that lets us split our one program into clear internal
 **modules** (Treasury, Gate, etc.) and *enforces* the boundaries between them.
 **Why:** gives us the tidiness of separate services without the pain of actually running separate
 services. ("Modulith" = modular + monolith.)
 
-### Gradle
+### Maven 3.10.0 + Maven Wrapper 3.3.4
 **What:** our **build tool** — the thing that compiles the code, runs tests, and packages the app
-(`./gradlew ...` commands).
-**Why:** standard for modern Java; the "wrapper" (`gradlew`) means everyone uses the exact same
-version with no manual install.
+(`./mvnw ...` commands).
+**Why:** it is a widely used Java build tool with a clear, convention-based project structure. The
+Maven Wrapper (`mvnw`) pins the Maven version, so developers and CI use the same version without a
+separate global Maven install.
 
 ---
 
 ## Data (where information is stored)
 
-### PostgreSQL ("Postgres")
+### PostgreSQL 18 + pgvector 0.8.7
 **What:** a free, open-source **relational database** (stores data in tables with rows and columns,
 like a very powerful spreadsheet you query with SQL).
 **Why:** rock-solid, free, does everything we need (and several things that let us *avoid* buying
@@ -58,7 +59,7 @@ database structure (e.g. "add a `late_fee` column"). Each script runs once, in o
 **Why:** so the database schema is reproducible and every developer/environment is identical. No
 manual "run this SQL on prod" chaos.
 
-### Redis
+### Redis 8.2 (Extended Support)
 **What:** an extremely fast in-memory key-value store — think a shared scratchpad that lives in RAM.
 **Why:** for things that need to be fast and temporary: caching, rate-limiting, and preventing
 duplicate actions. Not our source of truth (Postgres is); just a speed helper.
@@ -115,6 +116,11 @@ instead of two separate native apps saves enormous time.
 **What:** JavaScript with type-checking added (catches a class of bugs before the code runs).
 **Why:** safer than plain JavaScript, now the default for serious React projects.
 
+### Node.js 26 (LTS)
+**What:** the supported JavaScript runtime and package-tooling baseline used by the web and mobile
+projects.
+**Why:** the current LTS line gives front-end developers and CI the same supported runtime.
+
 ---
 
 ## Hosting & running it
@@ -130,6 +136,12 @@ data to stay in India.
 **What:** a tool that packages software into **containers** — self-contained boxes that run the same
 everywhere. Locally, `docker compose` starts Postgres and Redis for us in seconds.
 **Why:** everyone's local setup is identical; no "works on my machine" problems.
+
+### Testcontainers 2.0.5
+**What:** a test library that starts short-lived PostgreSQL and Redis containers for integration
+tests.
+**Why:** database, tenancy, and outbox tests run against the real supported services instead of an
+in-memory substitute that behaves differently.
 
 ### Single region (for now)
 **What:** we run in one data-centre region to start, with automatic backups.
@@ -148,5 +160,5 @@ until we have many paying societies. Documented as a later upgrade.
 | **Multi-region / fancy deploys** (canary, blue-green) | Premature; a simple rolling deploy in one region is fine early on. |
 | **Holding/escrowing money ourselves** | Would make us a regulated financial entity; the payment aggregator avoids that. |
 
-Every one of these is a documented decision in [`archive/adr/`](archive/adr/README.md) if you want
+Every one of these is a documented decision in [`adr/`](adr/README.md) if you want
 the full reasoning.

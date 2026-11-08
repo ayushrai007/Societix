@@ -25,7 +25,7 @@ Tooling and CI gates: [`../delivery/cicd-devops.md`](../delivery/cicd-devops.md)
 |---|---|
 | `feat/SOC-123-van-provisioning` | new treasury feature |
 | `fix/SOC-145-rls-guc-null` | bug fix |
-| `chore/SOC-150-bump-spring-3.3.4` | maintenance |
+| `chore/SOC-150-bump-spring-4.1.2` | maintenance |
 | `docs/SOC-160-api-guidelines` | docs only |
 
 `<type>` matches the Conventional Commit type (§2). `<ticket>` is the issue key.
@@ -76,7 +76,7 @@ Refs: SOC-123
   ([`../delivery/definition-of-done.md`](../delivery/definition-of-done.md)); use the repo PR
   template checklist.
 - **Required to merge:**
-  - ✅ Green CI — `./gradlew check` (tests + Spotless + Error Prone + SpotBugs + Modulith
+  - ✅ Green CI — `./mvnw verify` (tests + Spotless + Error Prone + SpotBugs + Modulith
     `verify()`), web tests, and the OpenAPI contract test.
   - ✅ **At least one approving review** (two for changes touching `treasury`, `platform` security,
     RLS/tenancy, or DB migrations).

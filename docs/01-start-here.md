@@ -66,15 +66,15 @@ is in the [Glossary](06-glossary.md).
 > This is the target workflow for once the project skeleton exists (the first tasks in the
 > [backlog](jira/backlog.md) set this up). Keeping it here so we all aim for the same thing.
 
-You need: **Java 21**, **Docker Desktop** (runs the database/cache in containers so you don't install
-them by hand), and **Node.js** (for the web/app front-ends).
+You need: **Java 25 (LTS)**, **Docker Desktop** (runs the database/cache in containers so you don't
+install them by hand), and **Node.js 26 (LTS)** (for the web/app front-ends).
 
 ```bash
 # 1. start the database + cache locally (Docker reads a file called docker-compose.yml)
 docker compose up -d
 
-# 2. run the backend (Gradle is our build tool; this compiles + starts the server)
-./gradlew bootRun
+# 2. run the backend (Maven Wrapper compiles + starts the server)
+./mvnw spring-boot:run
 
 # 3. run the web app in another terminal
 cd web && npm install && npm run dev

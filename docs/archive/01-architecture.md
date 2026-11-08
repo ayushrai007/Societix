@@ -66,7 +66,7 @@ graph TB
     subgraph Edge
       GW[API Gateway / BFF<br/>Spring Cloud Gateway]
     end
-    subgraph Core["Societix Modular Monolith (Spring Boot 3 + Modulith)"]
+    subgraph Core["Societix Modular Monolith (Spring Boot 4.1.2 + Modulith 2.1.2)"]
       M1[M1 Treasury/ERP]
       M2[M2 Governance/AGM]
       M3[M3 AI Copilot]
@@ -78,7 +78,7 @@ graph TB
       AUDIT[Audit Log]
     end
     subgraph Data
-      PG[(PostgreSQL 16<br/>RLS + pgvector<br/>+ outbox/events)]
+      PG[(PostgreSQL 18<br/>RLS + pgvector 0.8.7<br/>+ outbox/events)]
       REDIS[(Redis<br/>cache · locks · idempotency)]
       OBJ[(Object Storage<br/>docs, audit packs)]
     end

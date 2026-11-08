@@ -12,16 +12,17 @@ Where a term is unfamiliar, see [../06-glossary.md](../06-glossary.md).
 
 | Area | Fixed choice |
 |---|---|
-| Language | Java 21 |
-| Framework | Spring Boot 3.3.x + Spring Modulith |
-| Build | Gradle 8.x, Kotlin DSL, with the Gradle wrapper committed |
-| Database | PostgreSQL 16 (+ `pgvector` extension for M3) |
+| Language | Java 25 (LTS) |
+| Framework | Spring Boot 4.1.2 + Spring Modulith 2.1.2 |
+| Build | Apache Maven 3.10.0, with Maven Wrapper 3.3.4 committed |
+| Test infrastructure | Testcontainers 2.0.5 |
+| Database | PostgreSQL 18 + pgvector 0.8.7 (`pgvector/pgvector:0.8.7-pg18`) |
 | Migrations | Flyway (`V<n>__<desc>.sql`, applied on startup) |
-| Cache/locks | Redis 7 |
+| Cache/locks | Redis 8.2 (Extended Support) |
 | Events | Postgres **outbox table** + scheduled poller (ShedLock). **No Kafka/broker.** |
 | Payments | Razorpay/Cashfree aggregator; mock locally. **We never hold funds.** |
-| Web | React 18 + TypeScript + Vite + TanStack Query |
-| Mobile | React Native (Expo) + TypeScript |
+| Web | Node.js 26 (LTS) + React 18 + TypeScript + Vite + TanStack Query |
+| Mobile | Node.js 26 (LTS) + React Native (Expo) + TypeScript |
 | Auth | OIDC login → signed JWT carrying `userId`, `societyId`, `roles` |
 
 ## 2. Backend repository layout (package-by-module)

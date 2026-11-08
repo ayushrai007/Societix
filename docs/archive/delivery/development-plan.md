@@ -81,7 +81,7 @@ payments, ledger) end-to-end before any feature breadth.
 
 | Area | Deliverable |
 |---|---|
-| Repo & build | Gradle 8 Kotlin DSL multi-module project; Spring Modulith module boundaries (`:treasury`, `:governance`, `:copilot`, `:gate`, `:privacy`, `:smartswitch`, `:iam`, `:notification`, `:audit`); `ArchUnit`/Modulith verification in CI |
+| Repo & build | Maven project configured by a root `pom.xml`; Spring Modulith package boundaries for `treasury`, `governance`, `copilot`, `gate`, `privacy`, `migration`, and `platform`; `ArchUnit`/Modulith verification in CI |
 | CI/CD skeleton | GitHub Actions: build + unit test on PR, Testcontainers integration lane, SAST/secret/dependency scan, image build to registry, deploy-to-dev — see [`cicd-devops.md`](cicd-devops.md) |
 | Auth | OIDC login (Auth Code + PKCE), JWT validation at gateway, role claims (`SECRETARY`, `TREASURER`, `OWNER`, `GUARD`, …) per [`../02-system-design.md`](../02-system-design.md) §1 |
 | Tenancy / RLS | `tenant_id` on every table; `OncePerRequestFilter` sets `SET LOCAL app.tenant_id`; Flyway baseline with RLS policies; a tenancy isolation test that fails a cross-tenant read |
@@ -103,7 +103,7 @@ flowchart LR
 
 **Sprint 0 exit criteria**
 
-- [ ] `./gradlew build` green; Modulith boundary tests pass in CI
+- [ ] `./mvnw verify` green; Modulith boundary tests pass in CI
 - [ ] Cross-tenant read test **fails to return rows** (RLS proven)
 - [ ] Walking-skeleton slice green in staging against PA sandbox
 - [ ] No third-party tracking SDK present (compliance gate green)

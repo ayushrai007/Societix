@@ -2,7 +2,7 @@
 
 **Document:** `SOC-DOC-CS` · **Status:** Standard (prescriptive)
 
-Conventions for the Societix backend (Java 21, Spring Boot 3.3+, Spring Modulith). A reviewer may
+Conventions for the Societix backend (Java 25, Spring Boot 4.1.2, Spring Modulith 2.1.2). A reviewer may
 block a PR that violates these. Architecture: [`../01-architecture.md`](../01-architecture.md).
 Multi-tenancy/RLS: [`../03-data-model.md`](../03-data-model.md) §3. API rules:
 [`api-guidelines.md`](api-guidelines.md).
@@ -226,13 +226,13 @@ public class PayoutService {
 
 | Gate | Tool | Rule |
 |---|---|---|
-| Formatting | **Spotless + google-java-format** | `./gradlew spotlessApply` before committing; CI runs `spotlessCheck` |
+| Formatting | **Spotless + google-java-format** | `./mvnw spotless:apply` before committing; CI runs `spotless:check` |
 | Bug patterns | **Error Prone** | compiler plugin; warnings on `error` level fail the build |
-| Static analysis | **SpotBugs** | runs in `./gradlew check`; new high-priority bugs block merge |
+| Static analysis | **SpotBugs** | runs in `./mvnw verify`; new high-priority bugs block merge |
 | Imports | no wildcard imports | enforced by google-java-format |
 | Line length | 100 cols | google-java-format default |
 
-`./gradlew check` runs tests + Spotless + Error Prone + SpotBugs + the Modulith `verify()` test.
+`./mvnw verify` runs tests + Spotless + Error Prone + SpotBugs + the Modulith `verify()` test.
 CI runs the same — green locally, green in CI.
 
 ## 12. Test naming & structure
