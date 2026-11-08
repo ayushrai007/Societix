@@ -222,18 +222,11 @@ public class PayoutService {
 }
 ```
 
-## 11. Formatting & static analysis
+## 11. Build checks
 
-| Gate | Tool | Rule |
-|---|---|---|
-| Formatting | **Spotless + google-java-format** | `./mvnw spotless:apply` before committing; CI runs `spotless:check` |
-| Bug patterns | **Error Prone** | compiler plugin; warnings on `error` level fail the build |
-| Static analysis | **SpotBugs** | runs in `./mvnw verify`; new high-priority bugs block merge |
-| Imports | no wildcard imports | enforced by google-java-format |
-| Line length | 100 cols | google-java-format default |
-
-`./mvnw verify` runs tests + Spotless + Error Prone + SpotBugs + the Modulith `verify()` test.
-CI runs the same — green locally, green in CI.
+Run `cd backend && ./mvnw test` for the configured test suite and
+`cd backend && ./mvnw verify` to test and package the backend. Formatting and static-analysis gates
+will be documented when their Maven plugins are configured.
 
 ## 12. Test naming & structure
 
