@@ -17,7 +17,7 @@ must stay consistent with it.
 | [0001](0001-modular-monolith-spring-modulith.md) | Modular monolith with Spring Modulith | Accepted |
 | [0002](0002-postgres-rls-multitenancy.md) | Shared-schema multi-tenancy via PostgreSQL RLS | Accepted |
 | [0003](0003-payment-aggregator-no-float.md) | Licensed Payment Aggregator; Societix holds no float | Accepted |
-| [0004](0004-kafka-event-driven-cadence.md) | Kafka event backbone with transactional outbox | Accepted |
+| [0004](0004-kafka-event-driven-cadence.md) | Kafka event backbone with transactional outbox | Superseded by ADR-0008 |
 | [0005](0005-offline-gate-sqlite-crdt.md) | Offline-authoritative gate: SQLite + CRDT | Accepted |
 | [0006](0006-crypto-evoting-scheme.md) | Commit-reveal + hash-chained e-voting (not blockchain) | Accepted |
 

@@ -69,7 +69,7 @@ For each task prompt, Claude produces its answer in **this order**:
 Claude **does:** write backend/web/mobile code, tests, migrations, config samples, and the commands
 to run them.
 
-Claude **does not:** merge to main, approve its own PR, deploy, run against production data, create
+Claude **does not:** merge to master, approve its own PR, deploy, run against production data, create
 or commit real secrets, or declare something "done" without passing tests. Those are **human**
 actions — see the limits in [`README.md`](README.md).
 

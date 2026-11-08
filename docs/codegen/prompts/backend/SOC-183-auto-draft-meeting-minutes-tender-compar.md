@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-183** · component **Copilot** · suggested sprint **S12** ·
+Backlog item **SOC-183** · component **Copilot** · suggested sprint **W8** ·
 size **3 point(s)** · priority **Low**.
 
 ## Goal
 Two smaller copilot features: turn meeting notes into a formatted draft of minutes, and turn a set of vendor quotes into a comparison table. Where to start: a summarise prompt + a structured-extraction prompt.
 
 ## Preconditions (must already exist)
-SOC-180.
+SOC-160, SOC-180.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

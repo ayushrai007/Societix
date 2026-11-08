@@ -1,11 +1,11 @@
 # Architecture Decision Records
 
-**Document:** `SOC-DOC-ADR` · Index of Societix Architecture Decision Records (ADRs).
+Index of Societix Architecture Decision Records (ADRs).
 
 An **ADR** captures a single significant architectural decision: the context that forced it, the
 decision taken, and the consequences we accept. ADRs are **immutable once Accepted** — we don't edit
 history; we supersede a decision with a new ADR. The canonical stack in
-[`../README.md`](../README.md) is authoritative; these ADRs record *why* the stack is what it is and
+[`../03-tech-choices.md`](../03-tech-choices.md) is authoritative; these ADRs record *why* the stack is what it is and
 must stay consistent with it.
 
 ---
@@ -14,13 +14,14 @@ must stay consistent with it.
 
 | ADR | Title | Status |
 |---|---|---|
-| [0001](0001-modular-monolith-spring-modulith.md) | Modular monolith with Spring Modulith | Accepted |
-| [0002](0002-postgres-rls-multitenancy.md) | Shared-schema multi-tenancy via PostgreSQL RLS | Accepted |
-| [0003](0003-payment-aggregator-no-float.md) | Licensed Payment Aggregator; Societix holds no float | Accepted |
-| [0004](0004-kafka-event-driven-cadence.md) | Kafka event backbone with transactional outbox | Accepted |
-| [0005](0005-offline-gate-sqlite-crdt.md) | Offline-authoritative gate: SQLite + CRDT | Accepted |
-| [0006](0006-crypto-evoting-scheme.md) | Commit-reveal + hash-chained e-voting (not blockchain) | Accepted |
+| [0001](../archive/adr/0001-modular-monolith-spring-modulith.md) | Modular monolith with Spring Modulith | Accepted |
+| [0002](../archive/adr/0002-postgres-rls-multitenancy.md) | Shared-schema multi-tenancy via PostgreSQL RLS | Accepted |
+| [0003](../archive/adr/0003-payment-aggregator-no-float.md) | Licensed Payment Aggregator; Societix holds no float | Accepted |
+| [0004](../archive/adr/0004-kafka-event-driven-cadence.md) | Kafka event backbone with transactional outbox | Superseded by [0008](0008-postgres-outbox-no-broker.md) |
+| [0005](../archive/adr/0005-offline-gate-sqlite-crdt.md) | Offline-authoritative gate: SQLite + CRDT | Accepted |
+| [0006](../archive/adr/0006-crypto-evoting-scheme.md) | Commit-reveal + hash-chained e-voting (not blockchain) | Accepted |
 | [0007](0007-maven-supported-version-baseline.md) | Maven build and supported version baseline | Accepted |
+| [0008](0008-postgres-outbox-no-broker.md) | PostgreSQL transactional outbox, no message broker in v1 | Accepted |
 
 ## How & when to add an ADR
 
@@ -69,5 +70,5 @@ Each option, why it was viable, and why it was not chosen.
 
 ---
 
-**Related:** [`../README.md`](../README.md) · [`../01-architecture.md`](../01-architecture.md) ·
+**Related:** [`../README.md`](../README.md) · [`../archive/01-architecture.md`](../archive/01-architecture.md) ·
 [`../standards/coding-standards.md`](../standards/coding-standards.md)

@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-101** · component **Treasury** · suggested sprint **S3** ·
+Backlog item **SOC-101** · component **Treasury** · suggested sprint **W3** ·
 size **3 point(s)** · priority **Highest**.
 
 ## Goal
 Generate monthly invoices for each flat. Support the common formulas: flat rate, by carpet area (per sq.ft), by metered usage (water), or a mix. Where to start: a BillingFormula strategy per type + an invoice generator job.
 
 ## Preconditions (must already exist)
-SOC-100.
+SOC-20, SOC-100.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

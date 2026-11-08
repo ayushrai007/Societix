@@ -118,7 +118,7 @@ another module's entities directly.
 
 ## 11. Git & PR
 
-- Trunk-based: short-lived branches off `main`, named `type/short-desc` (e.g. `feat/soc-13-rls`).
+- Trunk-based: short-lived branches off `master`, named `type/short-desc` (e.g. `feat/soc-13-rls`).
 - **Conventional Commits** (`feat:`, `fix:`, `test:`, `docs:`, `refactor:`…).
 - Small PRs (ideally one task). PR description links the backlog ID and lists how acceptance criteria
   were verified. One approval + green CI required to merge. No self-merge.

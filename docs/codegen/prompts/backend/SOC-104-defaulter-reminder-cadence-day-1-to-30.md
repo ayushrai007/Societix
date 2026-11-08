@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-104** · component **Treasury** · suggested sprint **S5** ·
+Backlog item **SOC-104** · component **Treasury** · suggested sprint **W5** ·
 size **3 point(s)** · priority **High**.
 
 ## Goal
 Automatic chasing of unpaid bills: day 1 gentle in-app/WhatsApp nudge, day 10 SMS/call, day 15 late fee added (respecting state-law caps), day 30 a formal notice document. Stops instantly when they pay. Uses the scheduled jobs (SOC-22) and notifications (SOC-30).
 
 ## Preconditions (must already exist)
-SOC-103, SOC-22, SOC-30.
+SOC-22, SOC-30, SOC-40, SOC-103.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

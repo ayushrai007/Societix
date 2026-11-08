@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-41** · component **Platform** · suggested sprint **S1** ·
+Backlog item **SOC-41** · component **Platform** · suggested sprint **W2** ·
 size **2 point(s)** · priority **Medium**.
 
 ## Goal
 Expose health and basic metrics via Spring Boot Actuator and structured logging. Enough to see if the app is up and spot errors. Full dashboards (Grafana) come later. Why: we need visibility without heavy tooling now.
 
 ## Preconditions (must already exist)
-see prompts/README.md build order — ensure earlier tasks exist.
+SOC-2.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

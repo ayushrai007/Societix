@@ -4,7 +4,7 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-181** · component **Copilot** · suggested sprint **S11** ·
+Backlog item **SOC-181** · component **Copilot** · suggested sprint **W5** ·
 size **5 point(s)** · priority **Medium**.
 
 > **Hard internals:** for the algorithm/design, read [`this deep-dive`](../../../archive/deep-dives/dd-04-ai-copilot-rag.md) — follow it rather than improvising.
@@ -13,7 +13,7 @@ size **5 point(s)** · priority **Medium**.
 Let a committee member ask plain-English questions and get grounded answers with citations, built on retrieval (find relevant data) + generation (AI writes the answer). Must stay within the user's society and answer in under 2.5s (cache repeats). See the archived RAG deep-dive.
 
 ## Preconditions (must already exist)
-SOC-180.
+SOC-100, SOC-180.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

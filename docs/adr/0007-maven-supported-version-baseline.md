@@ -91,6 +91,6 @@ compatibility or support commitments requires a superseding ADR.
 
 ---
 
-**Related:** [ADR-0001](0001-modular-monolith-spring-modulith.md) ·
+**Related:** [ADR-0001](../archive/adr/0001-modular-monolith-spring-modulith.md) ·
 [`../codegen/01-conventions.md`](../codegen/01-conventions.md) ·
 [`../codegen/02-tech-blueprint.md`](../codegen/02-tech-blueprint.md)

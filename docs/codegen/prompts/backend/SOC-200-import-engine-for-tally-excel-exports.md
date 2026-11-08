@@ -4,14 +4,14 @@
 > `01-conventions.md`, and `02-tech-blueprint.md` as context. Build only this task.
 
 ## Context
-Backlog item **SOC-200** · component **Migration** · suggested sprint **S10** ·
+Backlog item **SOC-200** · component **Migration** · suggested sprint **W5** ·
 size **3 point(s)** · priority **Medium**.
 
 ## Goal
 Build the importer that reads a society's old accounting data (Tally XML / Excel) and loads it into our ledger and member records. Produce a mapping report. See docs/04-the-6-modules.md#m6.
 
 ## Preconditions (must already exist)
-see prompts/README.md build order — ensure earlier tasks exist.
+SOC-10, SOC-100.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables
