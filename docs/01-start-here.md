@@ -74,7 +74,7 @@ install them by hand), and **Node.js 26 (LTS)** (for the web/app front-ends).
 docker compose up -d
 
 # 2. run the backend (Maven Wrapper compiles + starts the server)
-./mvnw spring-boot:run
+(cd backend && ./mvnw spring-boot:run)
 
 # 3. run the web app in another terminal
 cd web && npm install && npm run dev

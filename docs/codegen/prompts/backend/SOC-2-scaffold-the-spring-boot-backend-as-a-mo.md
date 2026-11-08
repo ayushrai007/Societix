@@ -20,7 +20,7 @@ Produce the code **and tests** for this task, following the per-task loop in the
 every acceptance criterion below. Keep strictly to this task's scope.
 
 ## Acceptance criteria (all must be demonstrably met)
-- ./mvnw spring-boot:run starts the app
+- `cd backend && ./mvnw spring-boot:run` starts the app
 - GET /actuator/health returns 200
 - each module is its own package with a package-info marking the module boundary
 

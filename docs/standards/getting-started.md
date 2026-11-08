@@ -7,8 +7,8 @@ backend, local infra, and web console — with a seeded demo society. Follow it 
 every command is copy-pasteable. Architecture context: [`../01-architecture.md`](../01-architecture.md).
 Data model & RLS: [`../03-data-model.md`](../03-data-model.md). Terms: [`../glossary.md`](../glossary.md).
 
-> **TL;DR** — `docker compose up -d` → `./mvnw flyway:migrate` →
-> `./mvnw spring-boot:run -Dspring-boot.run.profiles=local,seed-demo` →
+> **TL;DR** — `docker compose up -d` → `(cd backend && ./mvnw flyway:migrate)` →
+> `(cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=local,seed-demo)` →
 > `cd web && npm i && npm run dev` → log in as `secretary@maple.demo` / `Password123!`.
 
 ---
@@ -20,7 +20,7 @@ Install these **exact** major versions. Others may work but CI pins these.
 | Tool | Version | Install (macOS) | Verify |
 |---|---|---|---|
 | JDK | **Temurin 25 (LTS)** | `brew install --cask temurin@25` | `java -version` → `25.x` |
-| Maven | **use the wrapper** (`./mvnw`, Maven 3.10.0 / Wrapper 3.3.4) | committed in repo — do **not** install Maven globally | `./mvnw --version` |
+| Maven | **use the wrapper** (`backend/mvnw`, Maven 3.10.0 / Wrapper 3.3.4) | committed in `backend/` — do **not** install Maven globally | `(cd backend && ./mvnw --version)` |
 | Docker Desktop | latest; ≥ 6 GB RAM allocated | `brew install --cask docker` | `docker info` |
 | Node.js | **26 LTS** | `brew install node@26` | `node -v` → `v26.x` |
 | Git | ≥ 2.40 | `brew install git` | `git --version` |
@@ -41,14 +41,16 @@ Repo layout (top level):
 
 ```
 societix/
-├── pom.xml                     # Maven parent/build configuration
-├── .mvn/wrapper/               # pinned Maven Wrapper configuration
-├── mvnw / mvnw.cmd             # Maven Wrapper — always use this
+├── backend/                    # Spring Boot modular monolith (com.societix.*)
+│   ├── pom.xml                 # Maven build configuration
+│   ├── .mvn/wrapper/           # pinned Maven Wrapper configuration
+│   ├── mvnw / mvnw.cmd         # Maven Wrapper — always use this
+│   └── src/
 ├── docker-compose.yml          # local infra (this guide)
 ├── .env.sample                 # copy to .env
-├── app/                        # Spring Boot modular monolith (com.societix.*)
-│   └── src/main/resources/db/migration/   # Flyway V__/R__ scripts
-└── web/                        # React 18 + TS + Vite console
+├── web/                        # React + TypeScript + Vite console
+├── mobile/                     # React Native apps
+└── docs/                       # project documentation
 ```
 
 ## 3. Local infrastructure (Docker Compose)
@@ -166,12 +168,12 @@ JWT_ISSUER=https://local.societix.dev
 ## 5. Database migrations (Flyway) + seed a demo tenant
 
 Flyway runs the versioned `V__`/repeatable `R__` scripts under
-`app/src/main/resources/db/migration` — including the RLS enable/force + `tenant_isolation`
+`backend/src/main/resources/db/migration` — including the RLS enable/force + `tenant_isolation`
 policies and the `pgvector` extension (see [`../03-data-model.md`](../03-data-model.md) §3, §6).
 
 ```bash
 # 1. Apply schema + RLS policies + pgvector
-./mvnw flyway:migrate
+(cd backend && ./mvnw flyway:migrate)
 
 # Demo seed data is loaded by the `seed-demo` Spring profile when the app starts (see §6).
 ```
@@ -188,12 +190,12 @@ The `seed-demo` profile creates:
 | Sample invoices | one `RAISED` maintenance invoice per unit, current month |
 
 > If a migration fails mid-way, see the troubleshooting table (§10). To start completely clean:
-> `docker compose down -v && docker compose up -d && ./mvnw flyway:migrate`.
+> `docker compose down -v && docker compose up -d && (cd backend && ./mvnw flyway:migrate)`.
 
 ## 6. Run the backend
 
 ```bash
-./mvnw spring-boot:run -Dspring-boot.run.profiles=local,seed-demo
+(cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=local,seed-demo)
 ```
 
 The app reads `.env` (via the Spring config import) and starts on `http://localhost:8080`.
@@ -239,7 +241,8 @@ curl -s -X POST http://localhost:1080/pa/simulate/payment \
 ## 9. Run the tests
 
 ```bash
-./mvnw test             # unit + slice tests
+cd backend
+./mvnw test                  # unit + slice tests
 ./mvnw verify -Pintegration  # Testcontainers-backed (Postgres, Redis)
 ./mvnw verify                # tests + formatting + static analysis
 ```
@@ -248,7 +251,7 @@ curl -s -X POST http://localhost:1080/pa/simulate/payment \
 > automatically — it does **not** use the `docker-compose` stack, so it is safe to
 > run while `docker compose up` is live. You only need Docker running; no manual container setup.
 > On CI the Docker socket is provided by the runner. First run pulls images (slow); later runs are
-> cached. Tenancy/RLS isolation tests live under `app/src/test/java` as `*IT.java` tests and assert that a query
+> cached. Tenancy/RLS isolation tests live under `backend/src/test/java` as `*IT.java` tests and assert that a query
 > without `app.tenant_id` fails closed.
 
 Frontend tests:
@@ -269,7 +272,7 @@ cd web && npm test         # Vitest + React Testing Library
 | Copilot returns `"(stub answer)"` | `LLM_API_KEY` blank | Paste a key in `.env`; restart `spring-boot:run` |
 | Payment webhook 401 | `PA_WEBHOOK_SECRET` mismatch | Match `.env` to the value in `infra/pa-mock/pa-expectations.json` |
 | Web console: CORS / 404 on `/api/v1` | Wrong `VITE_API_BASE_URL` | Set it to `http://localhost:8080/api/v1` in `web/.env.local` |
-| `./mvnw` wrong Java | `JAVA_HOME` points elsewhere | `export JAVA_HOME=$(/usr/libexec/java_home -v 25)` |
+| `backend/mvnw` uses wrong Java | `JAVA_HOME` points elsewhere | `export JAVA_HOME=$(/usr/libexec/java_home -v 25)` |
 | Testcontainers: `Could not find a valid Docker environment` | Docker not running | Start Docker Desktop; `docker info` must succeed |
 
 ---

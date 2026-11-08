@@ -208,7 +208,7 @@ mobile/
 ## 10. Config & environments
 
 - All config via environment variables (12-factor). `application.yml` reads env with local defaults.
-- Local: `docker compose up -d` then `./mvnw spring-boot:run`.
+- Local: `docker compose up -d` then `cd backend && ./mvnw spring-boot:run`.
 - Environments: `dev` → `staging` → `prod`, single region (Mumbai) to start, managed Postgres/Redis.
 - Secrets from the environment/secret store only — never in the repo.
 
