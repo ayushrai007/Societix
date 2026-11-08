@@ -11,7 +11,7 @@ size **3 point(s)** · priority **Highest**.
 Integrate the payment provider to assign each flat a unique virtual account number and UPI address, so incoming money is auto-identified. Use the mock provider locally. See glossary (VAN/UPI VPA). Pairs with SOC-103.
 
 ## Preconditions (must already exist)
-SOC-3, SOC-101.
+SOC-3, SOC-14, SOC-101.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables

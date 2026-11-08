@@ -11,7 +11,7 @@ size **3 point(s)** · priority **Medium**.
 Build the importer that reads a society's old accounting data (Tally XML / Excel) and loads it into our ledger and member records. Produce a mapping report. See docs/04-the-6-modules.md#m6.
 
 ## Preconditions (must already exist)
-SOC-10, SOC-100.
+SOC-10, SOC-14, SOC-100.
 If a precondition is missing, **stop and tell me** instead of building around it.
 
 ## Deliverables
