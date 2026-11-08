@@ -8,7 +8,7 @@ Backlog item **SOC-3** · component **Platform** · suggested sprint **S0** ·
 size **2 point(s)** · priority **Highest**.
 
 ## Goal
-Write docker-compose.yml that starts PostgreSQL 16 (with pgvector) and Redis 7 locally, plus a mock payment provider. Add a sample .env and document the commands in docs/01-start-here.md. No message broker (we use the outbox). Where to start: copy the compose snippet from the archived getting-started doc and trim Kafka.
+Write docker-compose.yml that starts PostgreSQL 18 with pgvector 0.8.7 (`pgvector/pgvector:0.8.7-pg18`) and Redis 8.2 (`redis:8.2-alpine`) locally, plus a mock payment provider. Add a sample .env and document the commands in docs/01-start-here.md. No message broker (we use the outbox). Where to start: copy the compose snippet from the archived getting-started doc and trim Kafka.
 
 ## Preconditions (must already exist)
 SOC-2.

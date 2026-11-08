@@ -20,6 +20,7 @@ must stay consistent with it.
 | [0004](0004-kafka-event-driven-cadence.md) | Kafka event backbone with transactional outbox | Accepted |
 | [0005](0005-offline-gate-sqlite-crdt.md) | Offline-authoritative gate: SQLite + CRDT | Accepted |
 | [0006](0006-crypto-evoting-scheme.md) | Commit-reveal + hash-chained e-voting (not blockchain) | Accepted |
+| [0007](0007-maven-supported-version-baseline.md) | Maven build and supported version baseline | Accepted |
 
 ## How & when to add an ADR
 

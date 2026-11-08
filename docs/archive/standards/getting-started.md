@@ -19,15 +19,15 @@ Install these **exact** major versions. Others may work but CI pins these.
 
 | Tool | Version | Install (macOS) | Verify |
 |---|---|---|---|
-| JDK | **Temurin 21 (LTS)** | `brew install --cask temurin@21` | `java -version` → `21.x` |
-| Maven | **use the wrapper** (`./mvnw`, 3.9.x) | committed in repo — do **not** install Maven globally | `./mvnw --version` |
+| JDK | **Temurin 25 (LTS)** | `brew install --cask temurin@25` | `java -version` → `25.x` |
+| Maven | **use the wrapper** (`./mvnw`, Maven 3.10.0 / Wrapper 3.3.4) | committed in repo — do **not** install Maven globally | `./mvnw --version` |
 | Docker Desktop | latest; ≥ 6 GB RAM allocated | `brew install --cask docker` | `docker info` |
-| Node.js | **20 LTS** | `brew install node@20` | `node -v` → `v20.x` |
+| Node.js | **26 LTS** | `brew install node@26` | `node -v` → `v26.x` |
 | Git | ≥ 2.40 | `brew install git` | `git --version` |
 
-> Set `JAVA_HOME` to the Temurin 21 path, e.g.
-> `export JAVA_HOME=$(/usr/libexec/java_home -v 21)` (add to your shell profile).
-> On Linux/Windows install the equivalent Temurin 21 JDK and Docker Engine; the Maven Wrapper and
+> Set `JAVA_HOME` to the Temurin 25 path, e.g.
+> `export JAVA_HOME=$(/usr/libexec/java_home -v 25)` (add to your shell profile).
+> On Linux/Windows install the equivalent Temurin 25 JDK and Docker Engine; the Maven Wrapper and
 > `docker compose` commands are identical.
 
 ## 2. Clone
@@ -53,8 +53,8 @@ societix/
 
 ## 3. Local infrastructure (Docker Compose)
 
-Create / use the repo's `docker-compose.yml`. It brings up **PostgreSQL 16 (with pgvector)**,
-**Redis 7**, and a **Payment-Aggregator sandbox mock**. There is **no message broker** — the
+Create / use the repo's `docker-compose.yml`. It brings up **PostgreSQL 18 with pgvector 0.8.7**,
+**Redis 8.2 (Extended Support)**, and a **Payment-Aggregator sandbox mock**. There is **no message broker** — the
 event backbone is a Postgres transactional outbox (see
 [ADR-0004](../adr/0004-kafka-event-driven-cadence.md)), so local setup is one container lighter.
 
@@ -62,7 +62,7 @@ event backbone is a Postgres transactional outbox (see
 # docker-compose.yml
 services:
   postgres:
-    image: pgvector/pgvector:pg16          # PostgreSQL 16 + pgvector preinstalled
+    image: pgvector/pgvector:0.8.7-pg18    # PostgreSQL 18 + pgvector 0.8.7
     container_name: soc-postgres
     environment:
       POSTGRES_DB: societix
@@ -77,7 +77,7 @@ services:
       retries: 20
 
   redis:
-    image: redis:7-alpine
+    image: redis:8.2-alpine
     container_name: soc-redis
     command: ["redis-server", "--appendonly", "yes"]
     ports: ["6379:6379"]
@@ -127,12 +127,12 @@ cp .env.sample .env
 ```dotenv
 # .env.sample  — local development defaults
 
-# --- Database (PostgreSQL 16 + pgvector) ---
+# --- Database (PostgreSQL 18 + pgvector 0.8.7) ---
 DB_URL=jdbc:postgresql://localhost:5432/societix
 DB_USER=societix
 DB_PASSWORD=societix
 
-# --- Redis 7 ---
+# --- Redis 8.2 ---
 REDIS_HOST=localhost
 REDIS_PORT=6379
 
@@ -244,7 +244,7 @@ curl -s -X POST http://localhost:1080/pa/simulate/payment \
 ./mvnw verify                # tests + formatting + static analysis
 ```
 
-> **Testcontainers note:** the Maven `integration` profile runs integration tests with **real** Postgres 16 and Redis containers
+> **Testcontainers note:** the Maven `integration` profile runs Testcontainers 2.0.5 integration tests with **real** PostgreSQL 18 and Redis 8.2 containers
 > automatically — it does **not** use the `docker-compose` stack, so it is safe to
 > run while `docker compose up` is live. You only need Docker running; no manual container setup.
 > On CI the Docker socket is provided by the runner. First run pulls images (slow); later runs are
@@ -269,7 +269,7 @@ cd web && npm test         # Vitest + React Testing Library
 | Copilot returns `"(stub answer)"` | `LLM_API_KEY` blank | Paste a key in `.env`; restart `spring-boot:run` |
 | Payment webhook 401 | `PA_WEBHOOK_SECRET` mismatch | Match `.env` to the value in `infra/pa-mock/pa-expectations.json` |
 | Web console: CORS / 404 on `/api/v1` | Wrong `VITE_API_BASE_URL` | Set it to `http://localhost:8080/api/v1` in `web/.env.local` |
-| `./mvnw` wrong Java | `JAVA_HOME` points elsewhere | `export JAVA_HOME=$(/usr/libexec/java_home -v 21)` |
+| `./mvnw` wrong Java | `JAVA_HOME` points elsewhere | `export JAVA_HOME=$(/usr/libexec/java_home -v 25)` |
 | Testcontainers: `Could not find a valid Docker environment` | Docker not running | Start Docker Desktop; `docker info` must succeed |
 
 ---

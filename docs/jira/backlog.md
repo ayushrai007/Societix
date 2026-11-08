@@ -27,7 +27,7 @@ _Repo, build, local infra, CI skeleton, walking skeleton._
 
 - **Points:** 2  |  **Priority:** Highest  |  **Sprint:** S0  |  **Component:** Platform  |  **Labels:** `phase-0,setup`
 
-**Description:** Create the Java 21 + Spring Boot backend using Maven. Add Spring Modulith and create empty module packages: treasury, governance, copilot, gate, privacy, migration, platform. One runnable app that starts and serves a /health endpoint. Where to start: Spring Initializr, add Web/Validation/Actuator/Modulith deps. See docs/03-tech-choices.md for why these tools.
+**Description:** Create the Java 25 + Spring Boot 4.1.2 backend using Maven 3.10.0. Add Spring Modulith 2.1.2 and create empty module packages: treasury, governance, copilot, gate, privacy, migration, platform. One runnable app that starts and serves a /health endpoint. Where to start: Spring Initializr, add WebMVC/Validation/Actuator/Modulith deps. See docs/03-tech-choices.md for why these tools.
 
 **Acceptance criteria:**
 - ./mvnw spring-boot:run starts the app
@@ -38,7 +38,7 @@ _Repo, build, local infra, CI skeleton, walking skeleton._
 
 - **Points:** 2  |  **Priority:** Highest  |  **Sprint:** S0  |  **Component:** Platform  |  **Labels:** `phase-0,setup`
 
-**Description:** Write docker-compose.yml that starts PostgreSQL 16 (with pgvector) and Redis 7 locally, plus a mock payment provider. Add a sample .env and document the commands in docs/01-start-here.md. No message broker (we use the outbox). Where to start: copy the compose snippet from the archived getting-started doc and trim Kafka.
+**Description:** Write docker-compose.yml that starts PostgreSQL 18 with pgvector 0.8.7 and Redis 8.2 locally, plus a mock payment provider. Add a sample .env and document the commands in docs/01-start-here.md. No message broker (we use the outbox). Where to start: copy the compose snippet from the archived getting-started doc and trim Kafka.
 
 **Acceptance criteria:**
 - docker compose up -d starts Postgres + Redis + payment mock
