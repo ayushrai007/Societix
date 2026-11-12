@@ -86,7 +86,7 @@ _Login, roles, and keeping each society's data private (RLS)._
 
 ### SOC-10 — Define the Society (tenant) entity and onboarding
 
-- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** W1  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,auth,tenancy`
+- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** W1  |  **Assignee:** Aditya  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,auth,tenancy`
 
 **Description:** Create the Society entity (one row per apartment complex) and an admin endpoint to onboard a new society. This is the 'tenant' every other table will belong to. Where to start: entity + migration + repository + a simple create endpoint. See docs/02-how-it-works.md ('one program, one database').
 

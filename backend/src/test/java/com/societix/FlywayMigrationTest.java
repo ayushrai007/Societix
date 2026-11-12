@@ -20,6 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * <ul>
  *   <li>"Flyway runs migrations on app startup" — {@link #flywayRunsMigrationsOnApplicationStartup()}</li>
  *   <li>"a sample V1 migration applies cleanly" — {@link #baselineV1MigrationAppliesCleanly()}</li>
+ *   <li>"the Society table and RLS policy are stored by Flyway" — {@link #societyMigrationAppliesCleanly()}</li>
  * </ul>
  */
 @SpringBootTest
@@ -51,24 +52,39 @@ class FlywayMigrationTest {
     @Test
     void baselineV1MigrationAppliesCleanly() {
         List<MigrationInfo> applied = Arrays.asList(flyway.info().applied());
-        assertThat(applied)
-                .singleElement()
-                .satisfies(migration -> {
-                    assertThat(migration.getVersion().getVersion()).isEqualTo("1");
-                    assertThat(migration.getDescription()).isEqualTo("baseline");
-                    assertThat(migration.getState()).isEqualTo(MigrationState.SUCCESS);
-                });
+        assertThat(applied).anySatisfy(migration -> {
+            assertThat(migration.getVersion().getVersion()).isEqualTo("1");
+            assertThat(migration.getDescription()).isEqualTo("baseline");
+            assertThat(migration.getState()).isEqualTo(MigrationState.SUCCESS);
+        });
 
         List<Map<String, Object>> history = jdbcTemplate.queryForList(
                 "select version, script, success from flyway_schema_history where version is not null");
-        assertThat(history)
-                .singleElement()
-                .satisfies(row -> {
-                    assertThat(row).containsEntry("version", "1");
-                    assertThat(row).containsEntry("script", "V1__baseline.sql");
-                    assertThat(row).containsEntry("success", true);
-                });
+        assertThat(history).anySatisfy(row -> {
+            assertThat(row).containsEntry("version", "1");
+            assertThat(row).containsEntry("script", "V1__baseline.sql");
+            assertThat(row).containsEntry("success", true);
+        });
 
         assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
+    }
+
+    @Test
+    void societyMigrationAppliesCleanly() {
+        List<Map<String, Object>> history = jdbcTemplate.queryForList(
+                "select version, script, success from flyway_schema_history where version = '2'");
+        assertThat(history).singleElement().satisfies(row -> {
+            assertThat(row).containsEntry("version", "2");
+            assertThat(row).containsEntry("script", "V2__create_society.sql");
+            assertThat(row).containsEntry("success", true);
+        });
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from information_schema.columns where table_name = 'society' and column_name in ('id', 'tenant_id', 'name', 'address', 'state')",
+                        Integer.class))
+                .isEqualTo(5);
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from pg_policies where tablename = 'society' and policyname = 'society_tenant_isolation'",
+                        Integer.class))
+                .isEqualTo(1);
     }
 }
