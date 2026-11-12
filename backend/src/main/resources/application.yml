@@ -1,11 +1,14 @@
 spring:
   application:
     name: societix
+  config:
+    # Local overrides from the repository-root .env (see .env.example); optional, so the
+    # defaults below apply when it is absent. Real environments set environment variables.
+    import: optional:file:../.env[.properties]
   datasource:
-    # Local defaults; override with SPRING_DATASOURCE_URL / SPRING_DATASOURCE_USERNAME.
-    # The password is never committed: set SPRING_DATASOURCE_PASSWORD in the environment.
-    url: jdbc:postgresql://localhost:5432/societix
-    username: societix
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/societix}
+    username: ${SPRING_DATASOURCE_USERNAME:societix}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   flyway:
     # Versioned SQL migrations are applied automatically on application startup.
     locations: classpath:db/migration

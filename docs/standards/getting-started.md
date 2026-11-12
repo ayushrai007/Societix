@@ -172,6 +172,7 @@ The current scaffold does not yet configure demo seed data. That arrives in back
 ## 6. Run the backend
 
 ```bash
+set -a; source .env; set +a
 cd backend
 ./mvnw spring-boot:run
 ```

@@ -61,34 +61,62 @@ outside services (a payment provider to collect money, WhatsApp/SMS to send remi
 Full reasoning for each choice is in [03 — Tech Choices](03-tech-choices.md). Every unfamiliar word
 is in the [Glossary](06-glossary.md).
 
-## Run it on your laptop (the short version)
+## Run it on your laptop
 
-**Current running baseline:**
+You need: **Java 25 (LTS)**, **Docker** (Docker Desktop, or Docker Engine with the Compose plugin;
+it runs the database, cache and payment mock in containers so you don't install them by hand), and
+**Git**. **Node.js 26 (LTS)** is only needed once the web/mobile apps exist (later backlog tasks).
 
 ```bash
-# 1. run the backend (Maven Wrapper compiles + starts the server on :8080)
+# 1. get the code (work happens on the master branch)
+git clone --branch master https://github.com/ayushrai007/Societix.git societix
+cd societix
+
+# 2. create your local settings file (git-ignored; the defaults work as-is)
+cp .env.example .env
+set -a; source .env; set +a
+
+# 3. start Postgres + Redis + the payment mock and wait until they are all healthy
+docker compose up -d --wait
+docker compose ps            # postgres, redis and pa-sandbox should all show (healthy)
+
+# 4. run the backend (the Maven Wrapper downloads Maven, compiles and starts the server)
 cd backend
 ./mvnw spring-boot:run
-
-# 2. check the health endpoints in another terminal
-curl -s http://localhost:8080/health
-curl -s http://localhost:8080/actuator/health
 ```
 
-**Target workflow once local infrastructure (SOC-3) and web console land:**
+In another terminal, check the backend is up and connected to the database:
 
 ```bash
-# 1. start the database + cache locally (arriving in SOC-3)
-docker compose up -d
-
-# 2. run the backend
-cd backend && ./mvnw spring-boot:run
-
-# 3. run the web app in another terminal (arriving in front-end milestones)
-cd web && npm install && npm run dev
+curl -s http://localhost:8080/actuator/health    # {"groups":["liveness","readiness"],"status":"UP"}
 ```
 
-Detailed instructions and environment setup live in [`standards/getting-started.md`](standards/getting-started.md).
+The health check includes the database, so it reports `DOWN` (HTTP 503) if the backend can't reach
+Postgres. Stop the backend with `Ctrl+C`.
+
+What `docker compose up` starts (defined in `docker-compose.yml`, settings in `.env`):
+
+| Service | What it is | Local address |
+|---|---|---|
+| `postgres` | PostgreSQL 18 with pgvector 0.8.7 (`pgvector/pgvector:0.8.7-pg18`) | `localhost:5432`, database/user/password `societix` |
+| `redis` | Redis 8.2 (`redis:8.2-alpine`) | `localhost:6379` |
+| `pa-sandbox` | Payment-aggregator mock (MockServer) standing in for Razorpay/Cashfree; responses in `infra/pa-mock/pa-expectations.json` | `http://localhost:1080` (try `curl http://localhost:1080/pa/status`) |
+
+There is no message broker: events go through a table in Postgres (the "outbox", see
+[ADR-0008](adr/0008-postgres-outbox-no-broker.md)).
+
+Everyday commands (run from the repository root):
+
+```bash
+docker compose ps              # what's running and whether it's healthy
+docker compose logs -f postgres  # follow one service's logs
+docker compose down            # stop everything (your data is kept)
+docker compose down -v         # stop and delete the local database for a clean start
+cd backend && ./mvnw test      # run the backend tests (needs Docker running; they start their own containers)
+```
+
+If a port is already taken on your machine (say another Postgres on 5432), change `DB_PORT`,
+`REDIS_PORT` or `PA_MOCK_PORT` in `.env`; both Docker Compose and the backend read it.
 
 ## Where things live (once we start)
 
@@ -98,7 +126,8 @@ societix/
 ├── web/          # the React web dashboard (for the committee)
 ├── mobile/       # the React Native app (residents) + the gate app (guards)
 ├── docs/         # you are here
-└── docker-compose.yml   # local database + cache
+├── infra/        # local-only support files (e.g. the payment mock's responses)
+└── docker-compose.yml   # local database + cache + payment mock
 ```
 
 ## Next

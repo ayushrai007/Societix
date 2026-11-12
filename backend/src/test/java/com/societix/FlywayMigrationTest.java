@@ -52,19 +52,26 @@ class FlywayMigrationTest {
     @Test
     void baselineV1MigrationAppliesCleanly() {
         List<MigrationInfo> applied = Arrays.asList(flyway.info().applied());
-        assertThat(applied).anySatisfy(migration -> {
-            assertThat(migration.getVersion().getVersion()).isEqualTo("1");
-            assertThat(migration.getDescription()).isEqualTo("baseline");
-            assertThat(migration.getState()).isEqualTo(MigrationState.SUCCESS);
-        });
+        assertThat(applied)
+                .filteredOn(migration -> migration.getVersion() != null
+                        && migration.getVersion().getVersion().equals("1"))
+                .singleElement()
+                .satisfies(migration -> {
+                    assertThat(migration.getVersion().getVersion()).isEqualTo("1");
+                    assertThat(migration.getDescription()).isEqualTo("baseline");
+                    assertThat(migration.getState()).isEqualTo(MigrationState.SUCCESS);
+                });
 
         List<Map<String, Object>> history = jdbcTemplate.queryForList(
                 "select version, script, success from flyway_schema_history where version is not null");
-        assertThat(history).anySatisfy(row -> {
-            assertThat(row).containsEntry("version", "1");
-            assertThat(row).containsEntry("script", "V1__baseline.sql");
-            assertThat(row).containsEntry("success", true);
-        });
+        assertThat(history)
+                .filteredOn(row -> "1".equals(row.get("version")))
+                .singleElement()
+                .satisfies(row -> {
+                    assertThat(row).containsEntry("version", "1");
+                    assertThat(row).containsEntry("script", "V1__baseline.sql");
+                    assertThat(row).containsEntry("success", true);
+                });
 
         assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
     }
