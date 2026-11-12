@@ -25,17 +25,17 @@ added.
 
 ## Verification
 
-From `backend/`:
+From `backend/`, with a Java 25 JDK on `JAVA_HOME` and a running Docker daemon:
 
 ```bash
-JAVA_HOME=/home/ubuntu/.treehouse/firstmate-8bf1b0/1/firstmate/data/soc-step1-versions-merge/jdk-25 ./mvnw test
+./mvnw test
 ```
 
 The suite is intended to start `pgvector/pgvector:0.8.7-pg18` through Testcontainers. The focused
 SOC-10 suite is:
 
 ```bash
-JAVA_HOME=/home/ubuntu/.treehouse/firstmate-8bf1b0/1/firstmate/data/soc-step1-versions-merge/jdk-25 ./mvnw -Dtest=SocietyOnboardingIT test
+./mvnw -Dtest=SocietyOnboardingIT test
 ```
 
 Acceptance mapping:
@@ -46,20 +46,24 @@ Acceptance mapping:
 3. `FlywayMigrationTest.societyMigrationAppliesCleanly` proves V2 created the table, columns, and
    RLS policy.
 4. `SocietyOnboardingIT.societyRowsAreIsolatedByTenantRls` proves tenant A cannot read tenant B,
-   and missing/invalid tenant context is fail-closed.
+   and missing/invalid tenant context is fail-closed;
+   `SocietyOnboardingIT.societyCannotWriteAnotherTenantsRow` proves tenant A cannot insert a row
+   owned by tenant B and that the rejected row is not persisted.
 5. `SocietyOnboardingIT.invalidSocietyRequestReturnsProblemJson` proves validation errors use
    `application/problem+json`.
 
-The current local verification is blocked by Docker runtime HTTP 500 errors while Testcontainers
-starts the PostgreSQL container; the Docker socket itself is reachable. The previously completed
-compile/package verification passed.
+Verification status at the time of writing: the branch compiles (`./mvnw test-compile`) and
+`ModularityTest` passes on Java 25. Every other suite, including `SocietyOnboardingIT` and
+`FlywayMigrationTest`, needs Testcontainers, and the Docker daemon on the authoring machine was
+down, so those suites have not yet been run green locally. CI (`./mvnw -B verify` on
+pull requests to `master`) runs them with Docker available.
 
 ## Configuration and environment
 
 - Runtime database configuration uses `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, and
   `SPRING_DATASOURCE_PASSWORD`; no credentials are committed.
 - Local tests require Docker and the Testcontainers image above.
-- The local verification command uses the existing Java 25 installation through `JAVA_HOME`.
+- `./mvnw` uses the Java 25 JDK found on `JAVA_HOME` (or `PATH`).
 
 ## Decisions and reasons
 
