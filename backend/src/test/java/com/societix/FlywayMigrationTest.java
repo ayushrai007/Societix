@@ -52,6 +52,8 @@ class FlywayMigrationTest {
     void baselineV1MigrationAppliesCleanly() {
         List<MigrationInfo> applied = Arrays.asList(flyway.info().applied());
         assertThat(applied)
+                .filteredOn(migration -> migration.getVersion() != null
+                        && migration.getVersion().getVersion().equals("1"))
                 .singleElement()
                 .satisfies(migration -> {
                     assertThat(migration.getVersion().getVersion()).isEqualTo("1");
@@ -62,6 +64,7 @@ class FlywayMigrationTest {
         List<Map<String, Object>> history = jdbcTemplate.queryForList(
                 "select version, script, success from flyway_schema_history where version is not null");
         assertThat(history)
+                .filteredOn(row -> "1".equals(row.get("version")))
                 .singleElement()
                 .satisfies(row -> {
                     assertThat(row).containsEntry("version", "1");

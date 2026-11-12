@@ -1,0 +1,22 @@
+[
+  {
+    "id": "pa-sandbox-status",
+    "httpRequest": {
+      "method": "GET",
+      "path": "/pa/status"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": ["application/json"]
+      },
+      "body": {
+        "type": "JSON",
+        "json": {
+          "provider": "mock",
+          "status": "UP"
+        }
+      }
+    }
+  }
+]

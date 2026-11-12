@@ -1,0 +1,63 @@
+# Local development infrastructure for Societix.
+#
+#   docker compose up -d --wait   # start everything and wait until all services are healthy
+#   docker compose ps             # every service should show (healthy)
+#   docker compose down           # stop (add -v to also delete the local database)
+#
+# Values come from .env when present (copy .env.example); the defaults below match it.
+# Ports are bound to 127.0.0.1 so nothing is reachable from the rest of the network.
+# There is deliberately no message broker: events go through the Postgres outbox (ADR-0004).
+name: societix
+
+services:
+  postgres:
+    image: pgvector/pgvector:0.8.7-pg18 # PostgreSQL 18 + pgvector 0.8.7
+    environment:
+      POSTGRES_DB: societix
+      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME:-societix}
+      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-societix}
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      # PostgreSQL 18+ images keep data in /var/lib/postgresql/18/docker, so the volume is
+      # mounted at /var/lib/postgresql (not /var/lib/postgresql/data as on 17 and older).
+      - postgres-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:8.2-alpine # Redis 8.2 (Extended Support)
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Payment-aggregator sandbox: a local stand-in for Razorpay/Cashfree. No real money moves.
+  # Its canned responses live in infra/pa-mock/pa-expectations.json.
+  pa-sandbox:
+    image: mockserver/mockserver:9.2.0
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /pa-mock/pa-expectations.json
+      # The official image enables dashboard usage analytics by default; keep it off locally.
+      MOCKSERVER_DASHBOARD_ANALYTICS_ENABLED: "false"
+      MOCKSERVER_DASHBOARD_ANALYTICS_ENDPOINT: ""
+      MOCKSERVER_DASHBOARD_ANALYTICS_KEY: ""
+    ports:
+      - "127.0.0.1:${PA_MOCK_PORT:-1080}:1080"
+    volumes:
+      - ./infra/pa-mock:/pa-mock:ro
+    healthcheck:
+      test: ["CMD", "/mockserver-healthcheck"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+
+volumes:
+  postgres-data:

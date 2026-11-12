@@ -74,7 +74,7 @@ Refs: SOC-123
 - PR title follows Conventional Commits (it becomes the squash-merge commit).
 - The PR description must **link the ticket** and reference the **Definition of Done**
   ([`../archive/delivery/definition-of-done.md`](../archive/delivery/definition-of-done.md)); use the repo PR
-  template checklist.
+  template ([`.github/pull_request_template.md`](../../.github/pull_request_template.md)).
 - **Required to merge:**
   - ✅ Green CI — `cd backend && ./mvnw verify` runs the configured backend tests and packages the
     application.
@@ -93,15 +93,21 @@ Refs: SOC-123
 - Comment on the code, not the person. Prefix non-blocking suggestions with `nit:`.
 - Authors respond to every thread; a reviewer resolves the threads they opened.
 
-## 5. Protected `main`
+## 5. Branch and PR rule (`master`)
 
-Branch protection on `main`:
+GitHub branch protection is not available on our current plan, so this is a **process rule** that
+every developer follows by hand:
 
-- No direct pushes; PR only.
-- Required status checks must pass (CI, contract test).
-- Required review approvals (see §3).
-- Linear history (squash merge) enforced; force-push and deletion disabled.
-- Administrators are **not** exempt.
+- **Work off `master`.** Cut every branch from `master` and open every PR against `master`. Never
+  push to `master` directly.
+- **One task per PR.** One backlog item (`SOC-<n>`) per branch and PR; never combine tasks.
+- **At least one review.** Every PR needs at least one approving review from a developer other than
+  the author (two where §3 asks for two). [`.github/CODEOWNERS`](../../.github/CODEOWNERS) requests
+  reviews automatically.
+- **No self-merge.** The author never merges their own PR; a reviewer who approved it merges it.
+
+When branch protection becomes available, enforce these rules (plus required checks, linear
+history, no force-push or deletion) in repository settings.
 
 ## 6. Database migrations in branches
 
