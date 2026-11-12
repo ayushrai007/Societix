@@ -85,4 +85,4 @@ compile/package verification passed.
 
 ## Pull request
 
-PR link: pending creation.
+PR link: https://github.com/ayushrai007/Societix/pull/13
