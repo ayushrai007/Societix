@@ -115,7 +115,7 @@ services:
     image: redis:8.2-alpine
     ports: ["6379:6379"]
   pa-sandbox:                      # payment-aggregator mock (Razorpay/Cashfree stand-in)
-    image: mockserver/mockserver:5.15.0
+    image: mockserver/mockserver:9.2.0
     ports: ["1080:1080"]
 # NOTE: no Kafka — the event backbone is the Postgres outbox (see ../03-tech-choices.md).
 ```
