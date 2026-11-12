@@ -1,6 +1,7 @@
 package com.societix;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -8,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
 import javax.sql.DataSource;
@@ -29,6 +31,7 @@ import org.junit.jupiter.api.TestInstance;
  *   <li>"society has id, name, address, state" — {@link #createdSocietyContainsIdNameAddressAndState()}</li>
  *   <li>"invalid input uses problem+json" — {@link #invalidSocietyRequestReturnsProblemJson()}</li>
  *   <li>"society A cannot read society B" — {@link #societyRowsAreIsolatedByTenantRls()}</li>
+ *   <li>"society A cannot write society B" — {@link #societyCannotWriteAnotherTenantsRow()}</li>
  * </ul>
  */
 @SpringBootTest
@@ -54,7 +57,7 @@ class SocietyOnboardingIT {
     void grantRlsTestRole() {
         jdbcTemplate.execute("create role " + TEST_ROLE + " nologin nosuperuser nobypassrls");
         jdbcTemplate.execute("grant usage on schema public to " + TEST_ROLE);
-        jdbcTemplate.execute("grant select on table society to " + TEST_ROLE);
+        jdbcTemplate.execute("grant select, insert on table society to " + TEST_ROLE);
     }
 
     @Test
@@ -121,6 +124,25 @@ class SocietyOnboardingIT {
         assertThat(visibleWithInvalidTenant).isZero();
     }
 
+    @Test
+    void societyCannotWriteAnotherTenantsRow() throws Exception {
+        UUID societyA = createSociety("Cedar Court", "3 C Road, Mumbai", "MH");
+        UUID societyB = UUID.randomUUID();
+
+        assertThatThrownBy(() -> withRlsRoleAndTenantForWrite(
+                        societyA,
+                        "insert into society (id, tenant_id, name, address, state) values ('"
+                                + societyB
+                                + "', '"
+                                + societyB
+                                + "', 'Dahlia Court', '4 D Road, Mumbai', 'MH')"))
+                .isInstanceOf(SQLException.class)
+                .hasMessageContaining("row-level security policy");
+
+        assertThat(jdbcTemplate.queryForObject("select count(*) from society where id = ?", Integer.class, societyB))
+                .isZero();
+    }
+
     private UUID createSociety(String name, String address, String state) throws Exception {
         String response = mockMvc.perform(post("/api/v1/societies")
                         .header("X-Admin-Role", "PLATFORM_ADMIN")
@@ -151,6 +173,21 @@ class SocietyOnboardingIT {
                 int count = result.getInt(1);
                 connection.rollback();
                 return count;
+            }
+        }
+    }
+
+    private void withRlsRoleAndTenantForWrite(UUID tenantId, String sql) throws Exception {
+        try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
+            connection.setAutoCommit(false);
+            try {
+                statement.execute("set local role " + TEST_ROLE);
+                statement.execute("select set_config('app.tenant_id', '" + tenantId + "', true)");
+                statement.executeUpdate(sql);
+                connection.commit();
+            } catch (SQLException exception) {
+                connection.rollback();
+                throw exception;
             }
         }
     }
