@@ -74,7 +74,6 @@ cd societix
 
 # 2. create your local settings file (git-ignored; the defaults work as-is)
 cp .env.example .env
-set -a; source .env; set +a
 
 # 3. start Postgres + Redis + the payment mock and wait until they are all healthy
 docker compose up -d --wait
@@ -98,7 +97,7 @@ What `docker compose up` starts (defined in `docker-compose.yml`, settings in `.
 
 | Service | What it is | Local address |
 |---|---|---|
-| `postgres` | PostgreSQL 18 with pgvector 0.8.7 (`pgvector/pgvector:0.8.7-pg18`) | `localhost:5432`, database/user/password `societix` |
+| `postgres` | PostgreSQL 18 with pgvector 0.8.7 (`pgvector/pgvector:0.8.7-pg18`) | `localhost:5432`, database `societix`; owner `societix`, runtime user `societix_app` |
 | `redis` | Redis 8.2 (`redis:8.2-alpine`) | `localhost:6379` |
 | `pa-sandbox` | Payment-aggregator mock (MockServer) standing in for Razorpay/Cashfree; responses in `infra/pa-mock/pa-expectations.json` | `http://localhost:1080` (try `curl http://localhost:1080/pa/status`) |
 

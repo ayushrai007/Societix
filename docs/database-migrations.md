@@ -11,7 +11,9 @@ application starts. That way every laptop, CI run, and server ends up with the i
 
 ```
 backend/src/main/resources/db/migration/
-└── V1__baseline.sql      # empty baseline: the start of the schema history
+├── V1__baseline.sql                    # empty baseline: the start of the schema history
+├── V2__create_society.sql              # society tenant table and RLS policy
+└── V3__grant_app_runtime_role.sql      # runtime-role privileges for society
 ```
 
 When the backend starts, Flyway compares the files in that folder with the
@@ -78,9 +80,9 @@ only on an empty data volume, so a database created before the runtime role exis
 (for example `V3__grant_app_runtime_role.sql`); a migration that adds a tenant table must grant
 it too.
 
-Passwords are never committed. The backend reads the repository-root `.env` (copied from
-`.env.example`) when started from `backend/`; otherwise set the four variables in your
-environment before starting the app:
+Real passwords are never committed; `.env.example` contains only throwaway local defaults. The
+backend reads the repository-root `.env` when started from `backend/`; otherwise set the four
+variables in your environment before starting the app:
 
 ```bash
 cd backend
