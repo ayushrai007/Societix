@@ -52,8 +52,12 @@ class LocalDevEnvironmentTest {
         ContainerState postgres = service("postgres");
         registry.add("spring.datasource.url", () -> "jdbc:postgresql://%s:%d/societix"
                 .formatted(postgres.getHost(), publishedPort(postgres, 5432)));
-        registry.add("spring.datasource.username", () -> "societix");
-        registry.add("spring.datasource.password", () -> "societix");
+        // The compose defaults: the application connects as the runtime role and Flyway as the
+        // owner role (see docker-compose.yml and .env.example).
+        registry.add("spring.datasource.username", () -> "societix_app");
+        registry.add("spring.datasource.password", () -> "societix_app");
+        registry.add("spring.flyway.user", () -> "societix");
+        registry.add("spring.flyway.password", () -> "societix");
     }
 
     private final JdbcTemplate jdbcTemplate;
@@ -101,6 +105,10 @@ class LocalDevEnvironmentTest {
         String pgvectorVersion = jdbcTemplate.queryForObject(
                 "select default_version from pg_available_extensions where name = 'vector'", String.class);
 
+        assertThat(jdbcTemplate.queryForObject("select current_user", String.class)).isEqualTo("societix_app");
+        assertThat(jdbcTemplate.queryForObject(
+                        "select rolsuper or rolbypassrls from pg_roles where rolname = current_user", Boolean.class))
+                .isFalse();
         assertThat(serverVersion).isBetween(180000, 189999);
         assertThat(pgvectorVersion).isEqualTo("0.8.7");
         assertThat(healthEndpoint.healthForPath("db").getStatus()).isEqualTo(Status.UP);

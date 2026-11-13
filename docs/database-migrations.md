@@ -59,14 +59,32 @@ Examples: `V2__create_society_table.sql`, `V3__add_unit_number_index.sql`.
 
 ## Running the backend against a local database
 
-The backend connects to `jdbc:postgresql://localhost:5432/societix` as user `societix` by default.
-The password is never committed — set it in your environment before starting the app:
+The backend uses two database roles on `jdbc:postgresql://localhost:5432/societix`:
+
+| Role (default name) | Used by | Settings |
+|---|---|---|
+| `societix` (owner) | Flyway, to run migrations; owns the schema and tables | `SPRING_FLYWAY_USER`, `SPRING_FLYWAY_PASSWORD` |
+| `societix_app` (runtime) | The application's own queries | `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` |
+
+The runtime role is not a superuser, cannot bypass row-level security and owns no tables, so the
+tenant RLS policies apply to every query the application makes; a query without a valid
+`app.tenant_id` sees no tenant rows. Superusers and table owners bypass RLS, which is why the
+application must never connect as the owner role.
+
+Locally, `docker compose up` creates both roles: the owner is the image's `POSTGRES_USER`, and
+`infra/postgres/initdb/10-create-app-runtime-role.sh` creates the runtime role. Init scripts run
+only on an empty data volume, so a database created before the runtime role existed needs
+`docker compose down -v` once. Migrations grant the runtime role the table privileges it needs
+(for example `V3__grant_app_runtime_role.sql`); a migration that adds a tenant table must grant
+it too.
+
+Passwords are never committed. The backend reads the repository-root `.env` (copied from
+`.env.example`) when started from `backend/`; otherwise set the four variables in your
+environment before starting the app:
 
 ```bash
-export SPRING_DATASOURCE_PASSWORD=<your local password>
 cd backend
 ./mvnw spring-boot:run
 ```
 
-To point at a different database, also set `SPRING_DATASOURCE_URL` and
-`SPRING_DATASOURCE_USERNAME`.
+To point at a different database, also set `SPRING_DATASOURCE_URL`.

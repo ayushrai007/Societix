@@ -8,12 +8,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.societix.platform.society.data.SocietyRepository;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,10 +22,13 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
-import org.junit.jupiter.api.TestInstance;
 
 /**
  * SOC-10 acceptance tests against the real PostgreSQL Testcontainer.
+ *
+ * <p>Every database check here goes through the application's own datasource, which connects as
+ * the runtime role (not a superuser, no BYPASSRLS, not the table owner). No test switches role,
+ * so the isolation they prove is the isolation the running application gets.
  *
  * <ul>
  *   <li>"can create a society via an admin endpoint" — {@link #adminCanCreateSocietyViaEndpoint()}</li>
@@ -32,32 +36,27 @@ import org.junit.jupiter.api.TestInstance;
  *   <li>"invalid input uses problem+json" — {@link #invalidSocietyRequestReturnsProblemJson()}</li>
  *   <li>"society A cannot read society B" — {@link #societyRowsAreIsolatedByTenantRls()}</li>
  *   <li>"society A cannot write society B" — {@link #societyCannotWriteAnotherTenantsRow()}</li>
+ *   <li>"a query without tenant context fails closed for the application's runtime role" —
+ *       {@link #untenantedQueryFailsClosedForTheApplicationRuntimeRole()}</li>
  * </ul>
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SocietyOnboardingIT {
-
-    private static final String TEST_ROLE = "societix_rls_test";
 
     private final MockMvc mockMvc;
     private final JdbcTemplate jdbcTemplate;
     private final DataSource dataSource;
+    private final SocietyRepository societies;
 
     @Autowired
-    SocietyOnboardingIT(MockMvc mockMvc, JdbcTemplate jdbcTemplate, DataSource dataSource) {
+    SocietyOnboardingIT(
+            MockMvc mockMvc, JdbcTemplate jdbcTemplate, DataSource dataSource, SocietyRepository societies) {
         this.mockMvc = mockMvc;
         this.jdbcTemplate = jdbcTemplate;
         this.dataSource = dataSource;
-    }
-
-    @BeforeAll
-    void grantRlsTestRole() {
-        jdbcTemplate.execute("create role " + TEST_ROLE + " nologin nosuperuser nobypassrls");
-        jdbcTemplate.execute("grant usage on schema public to " + TEST_ROLE);
-        jdbcTemplate.execute("grant select, insert on table society to " + TEST_ROLE);
+        this.societies = societies;
     }
 
     @Test
@@ -90,7 +89,12 @@ class SocietyOnboardingIT {
                 .getContentAsString();
 
         UUID id = responseId(response);
-        assertThat(jdbcTemplate.queryForObject("select id from society where id = ?", UUID.class, id)).isEqualTo(id);
+        assertThat(countAsTenant(
+                        id,
+                        "select count(*) from society where id = '" + id
+                                + "' and name = 'Lakeview Heights' and address = '88 Residency Road, Bengaluru'"
+                                + " and state = 'KA'"))
+                .isEqualTo(1);
     }
 
     @Test
@@ -113,10 +117,10 @@ class SocietyOnboardingIT {
         UUID societyA = createSociety("Aster Court", "1 A Road, Mumbai", "MH");
         UUID societyB = createSociety("Birch Court", "2 B Road, Mumbai", "MH");
 
-        Integer visibleFromA = withRlsRoleAndTenant(societyA, "select count(*) from society");
-        Integer otherTenantFromA = withRlsRoleAndTenant(societyA, "select count(*) from society where id = '" + societyB + "'");
-        Integer visibleWithoutTenant = withRlsRoleAndTenant(null, "select count(*) from society");
-        Integer visibleWithInvalidTenant = withRlsRoleAndTenant("not-a-uuid", "select count(*) from society");
+        Integer visibleFromA = countAsTenant(societyA, "select count(*) from society");
+        Integer otherTenantFromA = countAsTenant(societyA, "select count(*) from society where id = '" + societyB + "'");
+        Integer visibleWithoutTenant = countAsTenant(null, "select count(*) from society");
+        Integer visibleWithInvalidTenant = countAsTenant("not-a-uuid", "select count(*) from society");
 
         assertThat(visibleFromA).isEqualTo(1);
         assertThat(otherTenantFromA).isZero();
@@ -129,7 +133,7 @@ class SocietyOnboardingIT {
         UUID societyA = createSociety("Cedar Court", "3 C Road, Mumbai", "MH");
         UUID societyB = UUID.randomUUID();
 
-        assertThatThrownBy(() -> withRlsRoleAndTenantForWrite(
+        assertThatThrownBy(() -> executeAsTenant(
                         societyA,
                         "insert into society (id, tenant_id, name, address, state) values ('"
                                 + societyB
@@ -139,8 +143,39 @@ class SocietyOnboardingIT {
                 .isInstanceOf(SQLException.class)
                 .hasMessageContaining("row-level security policy");
 
-        assertThat(jdbcTemplate.queryForObject("select count(*) from society where id = ?", Integer.class, societyB))
+        // Tenant B's own context would see the row if the insert had been persisted.
+        assertThat(countAsTenant(societyB, "select count(*) from society where id = '" + societyB + "'"))
                 .isZero();
+    }
+
+    @Test
+    void untenantedQueryFailsClosedForTheApplicationRuntimeRole() throws Exception {
+        UUID societyA = createSociety("Elm Court", "5 E Road, Mumbai", "MH");
+        UUID societyB = createSociety("Fir Court", "6 F Road, Mumbai", "MH");
+
+        // The application's datasource really is the restricted runtime role, so RLS applies to it.
+        Map<String, Object> role = jdbcTemplate.queryForMap("""
+                select current_user as name, r.rolsuper, r.rolbypassrls,
+                       (select tableowner from pg_tables where tablename = 'society') as society_owner
+                from pg_roles r
+                where r.rolname = current_user
+                """);
+        assertThat(role).containsEntry("name", TestcontainersConfiguration.APP_RUNTIME_ROLE);
+        assertThat(role).containsEntry("rolsuper", false);
+        assertThat(role).containsEntry("rolbypassrls", false);
+        assertThat(role.get("society_owner")).isNotEqualTo(TestcontainersConfiguration.APP_RUNTIME_ROLE);
+
+        // Both rows exist and each is visible to its own tenant ...
+        assertThat(countAsTenant(societyA, "select count(*) from society where id = '" + societyA + "'"))
+                .isEqualTo(1);
+        assertThat(countAsTenant(societyB, "select count(*) from society where id = '" + societyB + "'"))
+                .isEqualTo(1);
+
+        // ... but the application's queries with no tenant context see nothing at all.
+        assertThat(jdbcTemplate.queryForObject("select count(*) from society", Integer.class)).isZero();
+        assertThat(societies.findAll()).isEmpty();
+        assertThat(societies.findById(societyA)).isEmpty();
+        assertThat(societies.count()).isZero();
     }
 
     private UUID createSociety(String name, String address, String state) throws Exception {
@@ -159,30 +194,28 @@ class SocietyOnboardingIT {
         return UUID.fromString(response.replaceFirst(".*\\\"id\\\":\\\"([^\\\"]+)\\\".*", "$1"));
     }
 
-    private Integer withRlsRoleAndTenant(Object tenantId, String query) throws Exception {
+    /** Runs a count query on an application connection, inside a transaction scoped to {@code tenantId}. */
+    private Integer countAsTenant(Object tenantId, String query) throws Exception {
         try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
             connection.setAutoCommit(false);
-            statement.execute("set local role " + TEST_ROLE);
-            if (tenantId == null) {
-                statement.execute("select set_config('app.tenant_id', '', true)");
-            } else {
-                statement.execute("select set_config('app.tenant_id', '" + tenantId + "', true)");
-            }
-            try (var result = statement.executeQuery(query)) {
-                result.next();
-                int count = result.getInt(1);
+            try {
+                setTenant(statement, tenantId);
+                try (var result = statement.executeQuery(query)) {
+                    result.next();
+                    return result.getInt(1);
+                }
+            } finally {
                 connection.rollback();
-                return count;
             }
         }
     }
 
-    private void withRlsRoleAndTenantForWrite(UUID tenantId, String sql) throws Exception {
+    /** Runs a write on an application connection, inside a transaction scoped to {@code tenantId}. */
+    private void executeAsTenant(UUID tenantId, String sql) throws Exception {
         try (Connection connection = dataSource.getConnection(); Statement statement = connection.createStatement()) {
             connection.setAutoCommit(false);
             try {
-                statement.execute("set local role " + TEST_ROLE);
-                statement.execute("select set_config('app.tenant_id', '" + tenantId + "', true)");
+                setTenant(statement, tenantId);
                 statement.executeUpdate(sql);
                 connection.commit();
             } catch (SQLException exception) {
@@ -192,4 +225,8 @@ class SocietyOnboardingIT {
         }
     }
 
+    private void setTenant(Statement statement, Object tenantId) throws SQLException {
+        String value = tenantId == null ? "" : tenantId.toString();
+        statement.execute("select set_config('app.tenant_id', '" + value + "', true)");
+    }
 }

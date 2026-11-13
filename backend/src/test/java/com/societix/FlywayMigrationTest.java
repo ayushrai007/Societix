@@ -31,9 +31,11 @@ class FlywayMigrationTest {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    FlywayMigrationTest(Flyway flyway, JdbcTemplate jdbcTemplate) {
+    FlywayMigrationTest(Flyway flyway) {
         this.flyway = flyway;
-        this.jdbcTemplate = jdbcTemplate;
+        // Migration metadata is read as the owner role Flyway migrates with: the application's
+        // runtime role has no access to flyway_schema_history.
+        this.jdbcTemplate = new JdbcTemplate(flyway.getConfiguration().getDataSource());
     }
 
     @Test

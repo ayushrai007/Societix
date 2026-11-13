@@ -115,6 +115,11 @@ docker compose down -v         # stop and delete the local database for a clean 
 cd backend && ./mvnw test      # run the backend tests (needs Docker running; they start their own containers)
 ```
 
+The database has two roles: `societix` owns the schema and runs migrations, and the backend
+itself connects as `societix_app`, which row-level security applies to (see
+[database-migrations.md](database-migrations.md)). If your local database was created before
+`societix_app` existed, run `docker compose down -v` once so it is recreated with both roles.
+
 If a port is already taken on your machine (say another Postgres on 5432), change `DB_PORT`,
 `REDIS_PORT` or `PA_MOCK_PORT` in `.env`; both Docker Compose and the backend read it.
 

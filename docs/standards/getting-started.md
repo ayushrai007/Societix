@@ -124,8 +124,10 @@ Planned local defaults:
 
 # --- Database (PostgreSQL 18 + pgvector 0.8.7) ---
 SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/societix
-SPRING_DATASOURCE_USERNAME=societix
-SPRING_DATASOURCE_PASSWORD=societix
+SPRING_DATASOURCE_USERNAME=societix_app   # runtime role: not a superuser, so tenant RLS applies
+SPRING_DATASOURCE_PASSWORD=societix_app
+SPRING_FLYWAY_USER=societix               # owner role: runs the Flyway migrations
+SPRING_FLYWAY_PASSWORD=societix
 
 # --- Redis 8.2 ---
 REDIS_HOST=localhost
