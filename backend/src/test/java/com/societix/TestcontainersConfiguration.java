@@ -19,6 +19,7 @@ import org.testcontainers.utility.MountableFile;
  *       cannot bypass row-level security. The application's datasource connects as this role,
  *       so tests see the same RLS behaviour as the running application.</li>
  * </ul>
+
  */
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {

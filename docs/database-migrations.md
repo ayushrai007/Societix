@@ -14,6 +14,7 @@ backend/src/main/resources/db/migration/
 ├── V1__baseline.sql                    # empty baseline: the start of the schema history
 ├── V2__create_society.sql              # society tenant table and RLS policy
 └── V3__grant_app_runtime_role.sql      # runtime-role privileges for society
+
 ```
 
 When the backend starts, Flyway compares the files in that folder with the
@@ -85,8 +86,10 @@ backend reads the repository-root `.env` when started from `backend/`; otherwise
 variables in your environment before starting the app:
 
 ```bash
+
 cd backend
 ./mvnw spring-boot:run
 ```
 
 To point at a different database, also set `SPRING_DATASOURCE_URL`.
+

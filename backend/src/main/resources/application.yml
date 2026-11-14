@@ -10,6 +10,7 @@ spring:
     # tenant row-level security policies apply to every query the application makes.
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/societix}
     username: ${SPRING_DATASOURCE_USERNAME:societix_app}
+
     password: ${SPRING_DATASOURCE_PASSWORD}
   flyway:
     # Versioned SQL migrations are applied automatically on application startup.
@@ -24,6 +25,7 @@ spring:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+
 
 management:
   endpoints:

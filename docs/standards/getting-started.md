@@ -76,6 +76,10 @@ cp .env.example .env
 The backend imports the repository-root `.env` when it starts from `backend/`. See
 [`../database-migrations.md`](../database-migrations.md) for the owner/runtime database roles.
 
+> Spring does not read `.env` by itself. Export these variables into the shell that runs the
+> backend (for example `set -a; source .env; set +a`); `SPRING_DATASOURCE_PASSWORD` has no default
+> and startup fails without it. See [`../database-migrations.md`](../database-migrations.md).
+
 > **Never** commit a real `LLM_API_KEY`, `PA_KEY_SECRET`, or any production secret. CI and prod
 > inject these from the secret manager (see [`../archive/delivery/cicd-devops.md`](../archive/delivery/cicd-devops.md)).
 
@@ -90,11 +94,13 @@ The current scaffold does not configure demo seed data; there is no seed profile
 ## 6. Run the backend
 
 ```bash
+set -a; source .env; set +a
 cd backend
 ./mvnw spring-boot:run
 ```
 
-The Spring Boot modular monolith starts on `http://localhost:8080`.
+With the `.env` variables exported (see §4), the Spring Boot modular monolith starts on
+`http://localhost:8080`.
 Verify:
 
 ```bash

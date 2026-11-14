@@ -21,6 +21,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
  *   <li>"Flyway runs migrations on app startup" — {@link #flywayRunsMigrationsOnApplicationStartup()}</li>
  *   <li>"a sample V1 migration applies cleanly" — {@link #baselineV1MigrationAppliesCleanly()}</li>
  *   <li>"the Society table and RLS policy are stored by Flyway" — {@link #societyMigrationAppliesCleanly()}</li>
+
  * </ul>
  */
 @SpringBootTest
@@ -36,6 +37,7 @@ class FlywayMigrationTest {
         // Migration metadata is read as the owner role Flyway migrates with: the application's
         // runtime role has no access to flyway_schema_history.
         this.jdbcTemplate = new JdbcTemplate(flyway.getConfiguration().getDataSource());
+
     }
 
     @Test
@@ -96,4 +98,5 @@ class FlywayMigrationTest {
                         Integer.class))
                 .isEqualTo(1);
     }
+
 }

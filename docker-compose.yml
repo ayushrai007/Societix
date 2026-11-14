@@ -21,6 +21,7 @@ services:
       # Created by infra/postgres/initdb/10-create-app-runtime-role.sh on first start.
       APP_DB_USER: ${SPRING_DATASOURCE_USERNAME:-societix_app}
       APP_DB_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-societix_app}
+
     ports:
       - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:

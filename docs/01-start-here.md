@@ -74,6 +74,7 @@ cd societix
 
 # 2. create your local settings file (git-ignored; the defaults work as-is)
 cp .env.example .env
+set -a; source .env; set +a
 
 # 3. start Postgres + Redis + the payment mock and wait until they are all healthy
 docker compose up -d --wait

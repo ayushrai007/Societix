@@ -58,6 +58,7 @@ class LocalDevEnvironmentTest {
         registry.add("spring.datasource.password", () -> "societix_app");
         registry.add("spring.flyway.user", () -> "societix");
         registry.add("spring.flyway.password", () -> "societix");
+
     }
 
     private final JdbcTemplate jdbcTemplate;
