@@ -98,7 +98,7 @@ What `docker compose up` starts (defined in `docker-compose.yml`, settings in `.
 
 | Service | What it is | Local address |
 |---|---|---|
-| `postgres` | PostgreSQL 18 with pgvector 0.8.7 (`pgvector/pgvector:0.8.7-pg18`) | `localhost:5432`, database/user/password `societix` |
+| `postgres` | PostgreSQL 18 with pgvector 0.8.7 (`pgvector/pgvector:0.8.7-pg18`) | `localhost:5432`, database `societix`; owner `societix`, runtime user `societix_app` |
 | `redis` | Redis 8.2 (`redis:8.2-alpine`) | `localhost:6379` |
 | `pa-sandbox` | Payment-aggregator mock (MockServer) standing in for Razorpay/Cashfree; responses in `infra/pa-mock/pa-expectations.json` | `http://localhost:1080` (try `curl http://localhost:1080/pa/status`) |
 
@@ -114,6 +114,11 @@ docker compose down            # stop everything (your data is kept)
 docker compose down -v         # stop and delete the local database for a clean start
 cd backend && ./mvnw test      # run the backend tests (needs Docker running; they start their own containers)
 ```
+
+The database has two roles: `societix` owns the schema and runs migrations, and the backend
+itself connects as `societix_app`, which row-level security applies to (see
+[database-migrations.md](database-migrations.md)). If your local database was created before
+`societix_app` existed, run `docker compose down -v` once so it is recreated with both roles.
 
 If a port is already taken on your machine (say another Postgres on 5432), change `DB_PORT`,
 `REDIS_PORT` or `PA_MOCK_PORT` in `.env`; both Docker Compose and the backend read it.

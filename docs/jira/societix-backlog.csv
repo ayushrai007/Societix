@@ -30,7 +30,7 @@ Story,,Foundations: Project Setup,[SOC-6] Walking skeleton: one feature end-to-e
 - the flow has one integration test",3,High,"phase-0,setup",Platform,W1,Shree,To Do
 Story,,Foundations: Auth & Tenancy,[SOC-10] Define the Society (tenant) entity and onboarding,"Create the Society entity (one row per apartment complex) and an admin endpoint to onboard a new society. This is the 'tenant' every other table will belong to. Where to start: entity + migration + repository + a simple create endpoint. See docs/02-how-it-works.md ('one program, one database').","- can create a society via an admin endpoint 
 - society has id, name, address, state (for later law rules) 
-- stored via a Flyway migration",2,Highest,"phase-0,auth,tenancy",Platform,W1,Ayush,To Do
+- stored via a Flyway migration",2,Highest,"phase-0,auth,tenancy",Platform,W1,Aditya,To Do
 Story,,Foundations: Auth & Tenancy,[SOC-11] User login with OTP + OIDC,"Let a user log in. Phone OTP for first contact, bound to a standard OIDC identity, issuing a signed JWT that carries the user id, their society, and their roles. Why OIDC/JWT: standard, secure, we don't invent our own. See glossary for JWT/OIDC.","- a user can log in and receive a JWT 
 - the JWT contains society id + roles 
 - expired/invalid tokens are rejected",3,Highest,"phase-0,auth",Platform,W1,Shree,To Do

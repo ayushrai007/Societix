@@ -20,6 +20,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
  * <ul>
  *   <li>"Flyway runs migrations on app startup" — {@link #flywayRunsMigrationsOnApplicationStartup()}</li>
  *   <li>"a sample V1 migration applies cleanly" — {@link #baselineV1MigrationAppliesCleanly()}</li>
+ *   <li>"the Society table and RLS policy are stored by Flyway" — {@link #societyMigrationAppliesCleanly()}</li>
+
  * </ul>
  */
 @SpringBootTest
@@ -30,9 +32,12 @@ class FlywayMigrationTest {
     private final JdbcTemplate jdbcTemplate;
 
     @Autowired
-    FlywayMigrationTest(Flyway flyway, JdbcTemplate jdbcTemplate) {
+    FlywayMigrationTest(Flyway flyway) {
         this.flyway = flyway;
-        this.jdbcTemplate = jdbcTemplate;
+        // Migration metadata is read as the owner role Flyway migrates with: the application's
+        // runtime role has no access to flyway_schema_history.
+        this.jdbcTemplate = new JdbcTemplate(flyway.getConfiguration().getDataSource());
+
     }
 
     @Test
@@ -74,4 +79,24 @@ class FlywayMigrationTest {
 
         assertThat(flyway.validateWithResult().validationSuccessful).isTrue();
     }
+
+    @Test
+    void societyMigrationAppliesCleanly() {
+        List<Map<String, Object>> history = jdbcTemplate.queryForList(
+                "select version, script, success from flyway_schema_history where version = '2'");
+        assertThat(history).singleElement().satisfies(row -> {
+            assertThat(row).containsEntry("version", "2");
+            assertThat(row).containsEntry("script", "V2__create_society.sql");
+            assertThat(row).containsEntry("success", true);
+        });
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from information_schema.columns where table_name = 'society' and column_name in ('id', 'tenant_id', 'name', 'address', 'state')",
+                        Integer.class))
+                .isEqualTo(5);
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from pg_policies where tablename = 'society' and policyname = 'society_tenant_isolation'",
+                        Integer.class))
+                .isEqualTo(1);
+    }
+
 }

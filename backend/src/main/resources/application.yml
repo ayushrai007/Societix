@@ -6,12 +6,26 @@ spring:
     # defaults below apply when it is absent. Real environments set environment variables.
     import: optional:file:../.env[.properties]
   datasource:
+    # The application's runtime role: not a superuser, no BYPASSRLS, owns no tables, so the
+    # tenant row-level security policies apply to every query the application makes.
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/societix}
-    username: ${SPRING_DATASOURCE_USERNAME:societix}
+    username: ${SPRING_DATASOURCE_USERNAME:societix_app}
+
     password: ${SPRING_DATASOURCE_PASSWORD}
   flyway:
     # Versioned SQL migrations are applied automatically on application startup.
     locations: classpath:db/migration
+    # Flyway connects to the same database as the schema owner role, not as the runtime role.
+    user: ${SPRING_FLYWAY_USER:societix}
+    password: ${SPRING_FLYWAY_PASSWORD}
+    placeholders:
+      # Role that the migrations grant table privileges to.
+      app_runtime_role: ${spring.datasource.username}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
 
 management:
   endpoints:

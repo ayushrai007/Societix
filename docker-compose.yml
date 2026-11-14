@@ -14,16 +14,26 @@ services:
     image: pgvector/pgvector:0.8.7-pg18 # PostgreSQL 18 + pgvector 0.8.7
     environment:
       POSTGRES_DB: societix
-      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME:-societix}
-      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-societix}
+      # Owner role: owns the schema and runs the Flyway migrations.
+      POSTGRES_USER: ${SPRING_FLYWAY_USER:-societix}
+      POSTGRES_PASSWORD: ${SPRING_FLYWAY_PASSWORD:-societix}
+      # Runtime role the application connects as (not a superuser, so RLS applies to it).
+      # Created by infra/postgres/initdb/10-create-app-runtime-role.sh on first start.
+      APP_DB_USER: ${SPRING_DATASOURCE_USERNAME:-societix_app}
+      APP_DB_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-societix_app}
+
     ports:
       - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:
       # PostgreSQL 18+ images keep data in /var/lib/postgresql/18/docker, so the volume is
       # mounted at /var/lib/postgresql (not /var/lib/postgresql/data as on 17 and older).
       - postgres-data:/var/lib/postgresql
+      # Init scripts run only when the data volume is empty (first start, or after down -v).
+      - ./infra/postgres/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      # Check over TCP: during first-start initialisation the image runs a temporary server
+      # that listens only on its Unix socket, so this stays unhealthy until init scripts finish.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 5s
       timeout: 3s
       retries: 20

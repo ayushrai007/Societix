@@ -51,107 +51,30 @@ societix/
 └── web/                        # [arrives in web front-end tasks] React 18 + TS console
 ```
 
-## 3. Local infrastructure (Docker Compose — arriving in SOC-3)
+## 3. Local infrastructure (Docker Compose)
 
-Local container infrastructure is being delivered in backlog task **SOC-3**. Once merged,
-`docker-compose.yml` brings up **PostgreSQL 18 with pgvector 0.8.7**, **Redis 8.2 (Extended Support)**,
-and a **Payment-Aggregator sandbox mock**. There is **no message broker** — the event backbone is a
-Postgres transactional outbox (see [ADR-0008](../adr/0008-postgres-outbox-no-broker.md)), so local setup is one container lighter.
+`docker-compose.yml` brings up **PostgreSQL 18 with pgvector 0.8.7**, **Redis 8.2 (Extended
+Support)**, and a **Payment-Aggregator sandbox mock**. The Compose file is the authoritative service
+configuration. There is **no message broker** — the event backbone is a Postgres transactional
+outbox (see [ADR-0008](../adr/0008-postgres-outbox-no-broker.md)).
 
-The planned configuration in SOC-3:
-
-```yaml
-# docker-compose.yml (introduced in SOC-3)
-services:
-  postgres:
-    image: pgvector/pgvector:0.8.7-pg18    # PostgreSQL 18 + pgvector 0.8.7
-    container_name: soc-postgres
-    environment:
-      POSTGRES_DB: societix
-      POSTGRES_USER: societix
-      POSTGRES_PASSWORD: societix
-    ports: ["5432:5432"]
-    volumes: ["soc-pgdata:/var/lib/postgresql/data"]
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U societix -d societix"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-  redis:
-    image: redis:8.2-alpine
-    container_name: soc-redis
-    command: ["redis-server", "--appendonly", "yes"]
-    ports: ["6379:6379"]
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-
-  pa-sandbox:
-    image: mockserver/mockserver:5.15.0
-    container_name: soc-pa-sandbox
-    ports: ["1080:1080"]
-    environment:
-      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/pa-expectations.json
-    volumes:
-      - ./infra/pa-mock:/config:ro
-
-volumes:
-  soc-pgdata:
-```
-
-Once SOC-3 lands, start it with:
+Start the local services with:
 
 ```bash
-docker compose up -d
+docker compose up -d --wait
 docker compose ps          # all services should show (healthy)
 ```
 
-## 4. Environment variables (`.env.example` — arriving in SOC-3)
+## 4. Environment variables (`.env.example`)
 
-Task SOC-3 introduces `.env.example` (which is tracked by git, while `.env` and `.env.*` remain ignored):
+Copy the tracked local defaults from `.env.example`; `.env` and `.env.*` remain ignored:
 
 ```bash
 cp .env.example .env
 ```
 
-Planned local defaults:
-
-```dotenv
-# .env.example — local development defaults
-
-# --- Database (PostgreSQL 18 + pgvector 0.8.7) ---
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/societix
-SPRING_DATASOURCE_USERNAME=societix
-SPRING_DATASOURCE_PASSWORD=societix
-
-# --- Redis 8.2 ---
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-# --- Event backbone (Postgres Outbox, ADR-0008) ---
-OUTBOX_POLL_INTERVAL_MS=1000
-OUTBOX_BATCH_SIZE=100
-
-# --- Payment Aggregator sandbox (Razorpay/Cashfree stand-in) ---
-PA_PROVIDER=mock                         # mock | razorpay | cashfree
-PA_BASE_URL=http://localhost:1080
-PA_KEY_ID=rzp_test_LOCALSANDBOXKEY
-PA_KEY_SECRET=local_sandbox_secret_do_not_commit
-PA_WEBHOOK_SECRET=whsec_local_dev_only   # HMAC used to verify inbound webhooks
-
-# --- LLM provider (AI Copilot RAG) — placeholder, leave blank to run in stub mode ---
-LLM_PROVIDER=anthropic
-LLM_MODEL=claude-sonnet-5-5              # default per canonical stack
-LLM_API_KEY=                            # paste your key; blank => copilot returns stub answers
-
-# --- App ---
-SPRING_PROFILES_ACTIVE=local
-SERVER_PORT=8080
-JWT_ISSUER=https://local.societix.dev
-```
+The backend imports the repository-root `.env` when it starts from `backend/`. See
+[`../database-migrations.md`](../database-migrations.md) for the owner/runtime database roles.
 
 > Spring does not read `.env` by itself. Export these variables into the shell that runs the
 > backend (for example `set -a; source .env; set +a`); `SPRING_DATASOURCE_PASSWORD` has no default
@@ -166,8 +89,7 @@ Flyway applies the versioned SQL migrations in `backend/src/main/resources/db/mi
 automatically when `./mvnw spring-boot:run` starts; there is no separate migration command. See
 [`../database-migrations.md`](../database-migrations.md) for how to add a migration.
 
-The current scaffold does not yet configure demo seed data. That arrives in backlog task SOC-10
-(tenancy onboarding); there is no seed profile to run at this stage.
+The current scaffold does not configure demo seed data; there is no seed profile to run.
 
 ## 6. Run the backend
 
