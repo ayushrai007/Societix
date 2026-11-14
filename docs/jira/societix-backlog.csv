@@ -40,6 +40,9 @@ Story,,Foundations: Auth & Tenancy,[SOC-12] Roles and permissions (RBAC),"Define
 Story,,Foundations: Auth & Tenancy,[SOC-13] Data isolation with Row-Level Security (RLS),"The big one for privacy. Add a tenant_id column to tenant-owned tables and PostgreSQL RLS policies that filter by the current society, set from the JWT on each request. If code forgets to filter, the DATABASE still hides other societies' rows. Why: a bug here is a privacy breach, so we enforce it at the DB. See docs/02-how-it-works.md.","- a request for society A returns zero rows from society B 
 - a query with no society set returns zero rows (fail-closed) 
 - there is an automated test proving cross-society reads are blocked",5,Highest,"phase-0,auth,tenancy,privacy",Platform,W2,Aditya,To Do
+Story,,Foundations: Auth & Tenancy,[SOC-14] Flat/Unit and Member master records,"Create and manage flat/unit records and resident member mappings (owners and tenants) per society, tenant-scoped under PostgreSQL Row-Level Security (RLS). Required structural master data for billing, VAN assignment, and accounting migration.","- can create, update, and list flats/units with unit number, wing, floor, and carpet area 
+- can associate resident members (owners and tenants) with flats 
+- all flat and member records are strictly tenant-scoped under RLS",2,Highest,"phase-0,tenancy",Platform,W2,Shree,To Do
 Story,,Foundations: Outbox & Jobs,[SOC-20] Create the outbox table and event model,"Add the 'outbox' table: a simple list of 'things that happened' (event type, payload, tenant, created time, processed flag). Producers insert a row in the SAME database save as their change. Why: reliable automatic behaviour with no Kafka. See docs/02-how-it-works.md ('the outbox').","- outbox table exists via migration 
 - a helper lets any module write an event inside its transaction 
 - events carry the society id",2,Highest,"phase-0,events",Platform,W1,Ayush,To Do

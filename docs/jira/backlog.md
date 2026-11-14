@@ -1,6 +1,6 @@
 # Societix — Jira Backlog (readable mirror)
 **What this is:** every epic and task for the whole project, mirroring `societix-backlog.csv` exactly (same IDs). Import the CSV into Jira, or read here to plan.
-**Totals:** 11 epics · 45 tasks · 125 story points (~1 point ≈ 1 developer-day).
+**Totals:** 11 epics · 46 tasks · 127 story points (~1 point ≈ 1 developer-day).
 > Task size target: 1–3 days. A few genuinely bigger items are 5 points and marked **PAIR TASK** where two of us should build together.
 > Sprints W1–W8 are 1-week calendar sprints (Mon 9 Nov 2026 – Fri 1 Jan 2027) from the backend time plan in [05-building-it.md](../05-building-it.md); mobile tasks are scheduled for Post-1-Jan.
 
@@ -82,7 +82,7 @@ _Repo, build, local infra, CI skeleton, walking skeleton._
 
 _Login, roles, and keeping each society's data private (RLS)._
 
-**4 tasks · 12 points**
+**5 tasks · 14 points**
 
 ### SOC-10 — Define the Society (tenant) entity and onboarding
 
@@ -127,6 +127,17 @@ _Login, roles, and keeping each society's data private (RLS)._
 - a request for society A returns zero rows from society B
 - a query with no society set returns zero rows (fail-closed)
 - there is an automated test proving cross-society reads are blocked
+
+### SOC-14 — Flat/Unit and Member master records
+
+- **Points:** 2  |  **Priority:** Highest  |  **Sprint:** W2  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,tenancy`
+
+**Description:** Create and manage flat/unit records and resident member mappings (owners and tenants) per society, tenant-scoped under PostgreSQL Row-Level Security (RLS). Required structural master data for billing, VAN assignment, and accounting migration.
+
+**Acceptance criteria:**
+- can create, update, and list flats/units with unit number, wing, floor, and carpet area
+- can associate resident members (owners and tenants) with flats
+- all flat and member records are strictly tenant-scoped under RLS
 
 ## Epic: Foundations: Outbox & Jobs
 

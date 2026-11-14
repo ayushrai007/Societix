@@ -11,7 +11,7 @@
 | **`backlog.md`** | Read/plan without Jira — same tasks, same IDs, nicely formatted. |
 | this `README.md` | Understand the format and import steps. |
 
-**45 tasks across 11 epics, ~125 story points** (1 point ≈ 1 developer-day). Tasks are small
+**46 tasks across 11 epics, ~127 story points** (1 point ≈ 1 developer-day). Tasks are small
 (1–3 days); a few genuinely harder ones are 5 points and marked **PAIR TASK**.
 
 ## Import into Jira (CSV)
@@ -33,7 +33,7 @@
    - `Labels` → Labels
    - `Component` → Component/s
    - `Sprint` → Sprint (or import as a label if your board isn't set up yet)
-5. Run the import. Jira creates the 11 epics first, then links the 45 tasks to them.
+5. Run the import. Jira creates the 11 epics first, then links the 46 tasks to them.
 
 > **Tip:** if a mapping (e.g. Sprint or Acceptance Criteria) gives trouble on your Jira plan, import
 > those columns as **Labels** or fold them into **Description** — the task content is what matters.
