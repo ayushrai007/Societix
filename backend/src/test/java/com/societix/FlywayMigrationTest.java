@@ -21,6 +21,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
  *   <li>"Flyway runs migrations on app startup" — {@link #flywayRunsMigrationsOnApplicationStartup()}</li>
  *   <li>"a sample V1 migration applies cleanly" — {@link #baselineV1MigrationAppliesCleanly()}</li>
  *   <li>"the Society table and RLS policy are stored by Flyway" — {@link #societyMigrationAppliesCleanly()}</li>
+ *   <li>"the outbox table and its RLS policy are stored by Flyway" — {@link #outboxMigrationAppliesCleanly()}</li>
+ *   <li>"outbox dispatch infrastructure is migrated" — {@link #outboxDispatchMigrationAppliesCleanly()}</li>
 
  * </ul>
  */
@@ -97,6 +99,74 @@ class FlywayMigrationTest {
                         "select count(*) from pg_policies where tablename = 'society' and policyname = 'society_tenant_isolation'",
                         Integer.class))
                 .isEqualTo(1);
+    }
+
+    @Test
+    void outboxMigrationAppliesCleanly() {
+        List<Map<String, Object>> history = jdbcTemplate.queryForList(
+                "select version, script, success from flyway_schema_history where version = '4'");
+        assertThat(history).singleElement().satisfies(row -> {
+            assertThat(row).containsEntry("version", "4");
+            assertThat(row).containsEntry("script", "V4__create_outbox.sql");
+            assertThat(row).containsEntry("success", true);
+        });
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from information_schema.columns where table_name = 'outbox' "
+                                + "and column_name in ('id', 'tenant_id', 'event_type', 'payload', 'created_at', 'processed_at', 'attempts')",
+                        Integer.class))
+                .isEqualTo(7);
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from pg_policies where tablename = 'outbox' "
+                                + "and policyname = 'outbox_tenant_isolation'",
+                        Integer.class))
+                .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "select relrowsecurity and relforcerowsecurity from pg_class where oid = 'outbox'::regclass",
+                        Boolean.class))
+                .isTrue();
+    }
+
+    @Test
+    void outboxDispatchMigrationAppliesCleanly() {
+        List<Map<String, Object>> history = jdbcTemplate.queryForList(
+                "select version, script, success from flyway_schema_history where version = '5'");
+        assertThat(history).singleElement().satisfies(row -> {
+            assertThat(row).containsEntry("version", "5");
+            assertThat(row).containsEntry("script", "V5__configure_outbox_dispatch.sql");
+            assertThat(row).containsEntry("success", true);
+        });
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from information_schema.columns where table_name = 'outbox' "
+                                + "and column_name = 'next_attempt_at'",
+                        Integer.class))
+                .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "select relrowsecurity and relforcerowsecurity from pg_class "
+                                + "where oid = 'outbox_handler_receipt'::regclass",
+                        Boolean.class))
+                .isTrue();
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from pg_policies where tablename = 'outbox_handler_receipt' "
+                                + "and policyname = 'outbox_handler_receipt_tenant_isolation'",
+                        Integer.class))
+                .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from information_schema.tables where table_name = 'shedlock'",
+                        Integer.class))
+                .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from pg_proc where proname = 'outbox_pending_tenants'",
+                        Integer.class))
+                .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "select has_function_privilege('societix_app', 'outbox_pending_tenants(integer)', 'EXECUTE')",
+                        Boolean.class))
+                .isTrue();
+        assertThat(jdbcTemplate.queryForObject(
+                        "select has_table_privilege('societix_outbox_queue_reader', 'outbox', 'SELECT') "
+                                + "and not has_table_privilege('societix_outbox_queue_reader', 'society', 'SELECT')",
+                        Boolean.class))
+                .isTrue();
     }
 
 }
