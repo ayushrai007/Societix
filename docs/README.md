@@ -39,3 +39,10 @@ startup and how to add a new `V<n>__<description>.sql` migration.
 The original, detailed docs (exact schemas, algorithms, decision records) live in
 **[archive/](archive/README.md)**. The simple docs link into them where useful. You don't need them
 to get started.
+
+## Completed task notes
+
+- [SOC-1 — repository process](tasks/SOC-1.md)
+- [SOC-3 — local development environment](tasks/SOC-3.md)
+- [SOC-4 — pull-request CI](tasks/SOC-4.md)
+- [SOC-5 — Flyway baseline](tasks/SOC-5.md)
