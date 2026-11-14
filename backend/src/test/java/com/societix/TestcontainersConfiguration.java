@@ -7,8 +7,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * Real PostgreSQL for tests that start the full application context, using the same image as
- * the local docker-compose environment.
+ * Supplies a real PostgreSQL 18 (with pgvector) container for tests that start the application
+ * context. Spring Boot wires the datasource to it through {@link ServiceConnection}.
  */
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {

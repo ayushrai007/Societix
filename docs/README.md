@@ -29,6 +29,11 @@ read **[jira/backlog.md](jira/backlog.md)** to see every task with a full descri
 for how Claude builds, plus one ready-to-paste prompt per task. It builds the codebase incrementally
 (task-by-task, tests gating each step) — the realistic, trustworthy path, not a one-shot dump.
 
+## Changing the database?
+
+Read **[Database Migrations](database-migrations.md)** — how Flyway applies schema changes on
+startup and how to add a new `V<n>__<description>.sql` migration.
+
 ## Looking for deep technical detail?
 
 The original, detailed docs (exact schemas, algorithms, decision records) live in

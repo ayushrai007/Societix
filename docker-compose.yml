@@ -13,9 +13,9 @@ services:
   postgres:
     image: pgvector/pgvector:0.8.7-pg18 # PostgreSQL 18 + pgvector 0.8.7
     environment:
-      POSTGRES_DB: ${DB_NAME:-societix}
-      POSTGRES_USER: ${DB_USER:-societix}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-societix}
+      POSTGRES_DB: societix
+      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME:-societix}
+      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-societix}
     ports:
       - "127.0.0.1:${DB_PORT:-5432}:5432"
     volumes:

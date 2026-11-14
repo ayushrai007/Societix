@@ -50,8 +50,10 @@ class LocalDevEnvironmentTest {
     @DynamicPropertySource
     static void useComposeDatabase(DynamicPropertyRegistry registry) {
         ContainerState postgres = service("postgres");
-        registry.add("DB_HOST", postgres::getHost);
-        registry.add("DB_PORT", () -> publishedPort(postgres, 5432));
+        registry.add("spring.datasource.url", () -> "jdbc:postgresql://%s:%d/societix"
+                .formatted(postgres.getHost(), publishedPort(postgres, 5432)));
+        registry.add("spring.datasource.username", () -> "societix");
+        registry.add("spring.datasource.password", () -> "societix");
     }
 
     private final JdbcTemplate jdbcTemplate;
