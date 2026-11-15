@@ -51,6 +51,9 @@ For each task prompt, Claude produces its answer in **this order**:
    expected output).
 6. **Self-review** against the checklist below and state the result honestly (including anything not
    done or any assumption made).
+7. **Write the task record:** create `docs/tasks/<SOC-ID>.md` summarizing the delivery, touched files,
+   acceptance-criteria-to-test mapping, verification status, decisions, and follow-ups. Record what
+   was actually verified; distinguish completed checks from suggested commands.
 
 ## Self-review checklist (Claude runs this before finishing a task)
 
