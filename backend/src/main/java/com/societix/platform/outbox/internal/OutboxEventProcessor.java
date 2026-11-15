@@ -31,7 +31,7 @@ public class OutboxEventProcessor {
     }
 
     /** Returns false if the row is already processed, missing, or not due yet. */
-    @Transactional
+    @Transactional(timeout = 60)
     public boolean process(UUID societyId, UUID eventId) {
         jdbcTemplate.queryForObject(
                 "select set_config('app.tenant_id', ?, true)", String.class, societyId.toString());
@@ -39,8 +39,9 @@ public class OutboxEventProcessor {
                 """
                 SELECT id, tenant_id, event_type, payload::text AS payload, created_at
                 FROM outbox
-                WHERE id = ? AND tenant_id = ? AND processed_at IS NULL AND next_attempt_at <= now()
-                FOR UPDATE
+                WHERE id = ? AND tenant_id = ? AND processed_at IS NULL
+                  AND failed_at IS NULL AND next_attempt_at <= now()
+                FOR UPDATE SKIP LOCKED
                 """,
                 (resultSet, rowNumber) -> mapMessage(resultSet),
                 eventId,

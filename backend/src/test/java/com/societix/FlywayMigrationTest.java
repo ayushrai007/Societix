@@ -167,6 +167,11 @@ class FlywayMigrationTest {
                                 + "and not has_table_privilege('societix_outbox_queue_reader', 'society', 'SELECT')",
                         Boolean.class))
                 .isTrue();
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from information_schema.columns where table_name = 'outbox' "
+                                + "and column_name = 'failed_at'",
+                        Integer.class))
+                .isEqualTo(1);
     }
 
 }

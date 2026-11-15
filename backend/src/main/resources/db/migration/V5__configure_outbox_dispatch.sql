@@ -2,7 +2,6 @@ ALTER TABLE outbox
     ADD COLUMN next_attempt_at timestamptz NOT NULL DEFAULT now(),
     ADD CONSTRAINT outbox_id_tenant_id_key UNIQUE (id, tenant_id);
 
-DROP INDEX outbox_unprocessed_by_tenant_created_at_idx;
 CREATE INDEX outbox_due_by_tenant_created_at_idx
     ON outbox (tenant_id, next_attempt_at, created_at, id)
     WHERE processed_at IS NULL;

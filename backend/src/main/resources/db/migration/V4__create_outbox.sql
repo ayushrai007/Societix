@@ -10,10 +10,6 @@ CREATE TABLE outbox (
     CONSTRAINT outbox_attempts_non_negative CHECK (attempts >= 0)
 );
 
-CREATE INDEX outbox_unprocessed_by_tenant_created_at_idx
-    ON outbox (tenant_id, created_at, id)
-    WHERE processed_at IS NULL;
-
 ALTER TABLE outbox ENABLE ROW LEVEL SECURITY;
 ALTER TABLE outbox FORCE ROW LEVEL SECURITY;
 

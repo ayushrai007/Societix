@@ -35,3 +35,8 @@ management:
   endpoint:
     health:
       show-details: never
+
+societix:
+  outbox:
+    poll-delay-ms: ${SOCIETIX_OUTBOX_POLL_DELAY_MS:3000}
+    batch-size: ${SOCIETIX_OUTBOX_BATCH_SIZE:100}

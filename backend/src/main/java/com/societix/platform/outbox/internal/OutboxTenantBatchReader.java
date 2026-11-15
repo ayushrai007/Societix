@@ -24,7 +24,8 @@ public class OutboxTenantBatchReader {
                 """
                 SELECT id
                 FROM outbox
-                WHERE tenant_id = ? AND processed_at IS NULL AND next_attempt_at <= now()
+                WHERE tenant_id = ? AND processed_at IS NULL
+                  AND failed_at IS NULL AND next_attempt_at <= now()
                 ORDER BY created_at, id
                 LIMIT ?
                 """,

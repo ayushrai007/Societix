@@ -9,7 +9,7 @@ import org.testcontainers.utility.MountableFile;
 
 /**
  * Supplies a real PostgreSQL 18 (with pgvector) container for tests that start the application
- * context, set up with the same two roles as docker-compose.yml.
+ * context, set up with the same three roles as docker-compose.yml.
  *
  * <ul>
  *   <li>The container's own user is the owner role. It is a superuser, owns the schema and is
@@ -18,6 +18,8 @@ import org.testcontainers.utility.MountableFile;
  *       {@code infra/postgres/initdb/10-create-app-runtime-role.sh}. It is not a superuser and
  *       cannot bypass row-level security. The application's datasource connects as this role,
  *       so tests see the same RLS behaviour as the running application.</li>
+ *   <li>{@code societix_outbox_queue_reader} is a no-login, narrowly privileged role used as the
+ *       owner of the outbox tenant-queue function.</li>
  * </ul>
 
  */

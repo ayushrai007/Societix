@@ -79,7 +79,13 @@ Locally, `docker compose up` creates these roles: the owner is the image's `POST
 `infra/postgres/initdb/10-create-app-runtime-role.sh` creates the runtime role and the outbox queue
 reader. The queue reader cannot log in and can read only pending outbox tenant IDs through one
 function; it does not make the application runtime role a `BYPASSRLS` role. Production provisioning
-must create the same no-login role and let the Flyway owner transfer ownership of that function.
+must create the same no-login role and grant it as a member to the Flyway migration role, so that
+the migration role can transfer ownership of the function. For example, when `societix` is the
+migration role:
+
+```sql
+GRANT societix_outbox_queue_reader TO societix;
+```
 For an existing local database whose volume predates SOC-21, provision the role once as the database
 owner before starting the application:
 

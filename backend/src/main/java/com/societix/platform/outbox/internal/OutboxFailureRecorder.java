@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 public class OutboxFailureRecorder {
 
+    private static final int MAX_ATTEMPTS = 10;
+
     private final JdbcTemplate jdbcTemplate;
 
     public OutboxFailureRecorder(JdbcTemplate jdbcTemplate) {
@@ -23,10 +25,14 @@ public class OutboxFailureRecorder {
                 """
                 UPDATE outbox
                 SET attempts = attempts + 1,
-                    next_attempt_at = now() + (LEAST(256, 1 << LEAST(attempts, 8)) * interval '1 second')
+                    next_attempt_at = now() + (LEAST(256, 1 << LEAST(attempts, 8)) * interval '1 second'),
+                    failed_at = CASE WHEN attempts + 1 >= ? THEN now() ELSE failed_at END
                 WHERE id = ? AND tenant_id = ? AND processed_at IS NULL
+                  AND failed_at IS NULL AND attempts < ?
                 """,
+                MAX_ATTEMPTS,
                 eventId,
-                societyId);
+                societyId,
+                MAX_ATTEMPTS);
     }
 }

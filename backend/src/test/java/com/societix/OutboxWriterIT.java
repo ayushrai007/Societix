@@ -2,6 +2,7 @@ package com.societix;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import com.societix.platform.outbox.OutboxEvent;
 import com.societix.platform.outbox.OutboxWriter;
@@ -22,7 +23,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
 /** SOC-20 outbox acceptance tests against the real PostgreSQL Testcontainer. */
-@SpringBootTest
+@SpringBootTest(properties = "societix.outbox.poller.enabled=false")
 @Import(TestcontainersConfiguration.class)
 class OutboxWriterIT {
 
@@ -93,8 +94,11 @@ class OutboxWriterIT {
         OutboxEvent event = new OutboxEvent(
                 societyB.getId(), "payment.settled", objectMapper.createObjectNode().put("paymentId", "p-789"));
 
-        assertThatThrownBy(() -> inTenantTransaction(societyA.getId(), () -> outboxWriter.append(event)))
+        Throwable failure = catchThrowable(
+                () -> inTenantTransaction(societyA.getId(), () -> outboxWriter.append(event)));
+        assertThat(failure)
                 .isInstanceOf(org.springframework.dao.DataAccessException.class)
+                .rootCause()
                 .hasMessageContaining("row-level security policy");
         assertThat(countAsTenant(societyB.getId(), "select count(*) from outbox")).isZero();
     }
