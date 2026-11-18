@@ -24,6 +24,7 @@ merge before the next one. **Do them in order — later tasks assume earlier one
 | 7 | SOC-11 Login (OTP + OIDC → JWT) | [backend/SOC-11](backend/SOC-11-user-login-with-otp-oidc.md) |
 | 8 | SOC-12 Roles & permissions | [backend/SOC-12](backend/SOC-12-roles-and-permissions-rbac.md) |
 | 9 | **SOC-13 Data isolation (RLS)** | [backend/SOC-13](backend/SOC-13-data-isolation-with-row-level-security-r.md) |
+| 9a | SOC-14 Flat/Unit & member master records | [backend/SOC-14](backend/SOC-14-flat-unit-and-member-master-records.md) |
 | 10 | SOC-20 Outbox table & events | [backend/SOC-20](backend/SOC-20-create-the-outbox-table-and-event-model.md) |
 | 11 | SOC-21 Outbox poller | [backend/SOC-21](backend/SOC-21-background-job-that-drains-the-outbox.md) |
 | 12 | SOC-22 Scheduled jobs | [backend/SOC-22](backend/SOC-22-scheduled-jobs-for-time-based-automation.md) |
