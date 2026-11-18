@@ -160,7 +160,7 @@ test suites are added.
 | `FATAL: database "societix" does not exist` | Volume created before env set | `docker compose down -v && docker compose up -d` |
 | Flyway: `relation already exists` / checksum mismatch | Edited an applied `V__` script | Never edit applied migrations — add a new `V__`; or reset DB (`down -v`) locally |
 | Query returns 0 rows but data exists | `app.tenant_id` GUC not set (RLS fail-closed) | Ensure you hit the API via a JWT; don't query the DB directly without `SET LOCAL app.tenant_id` |
-| Outbox events never dispatched | Poller not running / ShedLock held | Check app logs for the outbox poller once SOC-20/21 land; confirm `OUTBOX_POLL_INTERVAL_MS` is set |
+| Outbox events never dispatched | Poller not running / ShedLock held | Check app logs for the outbox poller once SOC-20/21 land; confirm `SOCIETIX_OUTBOX_POLL_DELAY_MS` is set (default: 3000 ms) |
 | Payment webhook 401 | `PA_WEBHOOK_SECRET` mismatch | Match `.env` to the value in `infra/pa-mock/pa-expectations.json` |
 | `backend/mvnw` uses the wrong Java | `JAVA_HOME` points elsewhere | `export JAVA_HOME=$(/usr/libexec/java_home -v 25)` |
 | Testcontainers: `Could not find a valid Docker environment` | Docker not running | Start Docker Desktop; `docker info` must succeed |
