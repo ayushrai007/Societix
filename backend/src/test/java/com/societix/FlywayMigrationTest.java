@@ -1,6 +1,7 @@
 package com.societix;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
  * SOC-5 acceptance tests, run against a real PostgreSQL container.
@@ -32,10 +34,12 @@ class FlywayMigrationTest {
 
     private final Flyway flyway;
     private final JdbcTemplate jdbcTemplate;
+    private final PostgreSQLContainer postgres;
 
     @Autowired
-    FlywayMigrationTest(Flyway flyway) {
+    FlywayMigrationTest(Flyway flyway, PostgreSQLContainer postgres) {
         this.flyway = flyway;
+        this.postgres = postgres;
         // Migration metadata is read as the owner role Flyway migrates with: the application's
         // runtime role has no access to flyway_schema_history.
         this.jdbcTemplate = new JdbcTemplate(flyway.getConfiguration().getDataSource());
@@ -172,6 +176,30 @@ class FlywayMigrationTest {
                                 + "and column_name = 'failed_at'",
                         Integer.class))
                 .isEqualTo(1);
+    }
+
+    @Test
+    void outboxMigrationFailsWhenQueueReaderIsSuperuser() {
+        String guardTestDatabase = "societix_outbox_guard_test";
+        jdbcTemplate.execute("ALTER ROLE societix_outbox_queue_reader SUPERUSER");
+        try {
+            jdbcTemplate.execute("DROP DATABASE IF EXISTS " + guardTestDatabase);
+            jdbcTemplate.execute("CREATE DATABASE " + guardTestDatabase);
+            String testJdbcUrl = postgres.getJdbcUrl().replace(
+                    "/" + postgres.getDatabaseName(), "/" + guardTestDatabase);
+            Flyway guardTestFlyway = Flyway.configure()
+                    .dataSource(testJdbcUrl, postgres.getUsername(), postgres.getPassword())
+                    .locations("classpath:db/migration")
+                    .placeholders(flyway.getConfiguration().getPlaceholders())
+                    .load();
+
+            assertThatThrownBy(guardTestFlyway::migrate)
+                    .rootCause()
+                    .hasMessageContaining("NOLOGIN NOSUPERUSER BYPASSRLS");
+        } finally {
+            jdbcTemplate.execute("ALTER ROLE societix_outbox_queue_reader NOSUPERUSER");
+            jdbcTemplate.execute("DROP DATABASE IF EXISTS " + guardTestDatabase);
+        }
     }
 
 }

@@ -11,10 +11,11 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM pg_roles
         WHERE rolname = 'societix_outbox_queue_reader'
+          AND NOT rolsuper
           AND rolbypassrls
           AND NOT rolcanlogin
     ) THEN
-        RAISE EXCEPTION 'Provision societix_outbox_queue_reader as NOLOGIN BYPASSRLS before applying SOC-21';
+        RAISE EXCEPTION 'Provision societix_outbox_queue_reader as NOLOGIN NOSUPERUSER BYPASSRLS before applying SOC-21';
     END IF;
 END
 $$;
