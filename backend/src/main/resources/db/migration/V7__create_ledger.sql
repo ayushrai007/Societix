@@ -134,7 +134,6 @@ CREATE FUNCTION backfill_ledger_funds() RETURNS void
 LANGUAGE sql
 SECURITY DEFINER
 SET search_path = pg_catalog, public
-SET row_security = off
 AS $$
     INSERT INTO public.ledger_account(tenant_id, code, name, type, normal_side, is_fund)
     SELECT society.id, funds.code, funds.name, 'EQUITY', 'C', TRUE
@@ -146,16 +145,17 @@ AS $$
     ON CONFLICT (tenant_id, code) DO NOTHING;
 $$;
 REVOKE ALL ON FUNCTION backfill_ledger_funds() FROM PUBLIC;
-GRANT USAGE ON SCHEMA public TO societix_outbox_queue_reader;
+GRANT USAGE, CREATE ON SCHEMA public TO societix_outbox_queue_reader; -- CREATE is required to receive ownership
 GRANT SELECT ON society TO societix_outbox_queue_reader;
-GRANT INSERT ON ledger_account TO societix_outbox_queue_reader;
+GRANT SELECT, INSERT ON ledger_account TO societix_outbox_queue_reader; -- ON CONFLICT reads the conflict key
 GRANT USAGE ON SEQUENCE ledger_account_id_seq TO societix_outbox_queue_reader;
 ALTER FUNCTION backfill_ledger_funds() OWNER TO societix_outbox_queue_reader;
+REVOKE CREATE ON SCHEMA public FROM societix_outbox_queue_reader;
 DO $$ BEGIN
     EXECUTE format('GRANT EXECUTE ON FUNCTION backfill_ledger_funds() TO %I', session_user);
 END $$;
 SELECT backfill_ledger_funds();
 DROP FUNCTION backfill_ledger_funds();
 REVOKE SELECT ON society FROM societix_outbox_queue_reader;
-REVOKE INSERT ON ledger_account FROM societix_outbox_queue_reader;
+REVOKE SELECT, INSERT ON ledger_account FROM societix_outbox_queue_reader;
 REVOKE USAGE ON SEQUENCE ledger_account_id_seq FROM societix_outbox_queue_reader;

@@ -79,7 +79,8 @@ Locally, `docker compose up` creates these roles: the owner is the image's `POST
 `infra/postgres/initdb/10-create-app-runtime-role.sh` creates the runtime role and the outbox queue
 reader. The queue reader cannot log in and normally can read only pending outbox tenant IDs through
 one function. SOC-100 temporarily grants it only the society and ledger privileges needed by a
-security-definer fund backfill, then drops the helper and revokes those grants. It does not make the
+security-definer fund backfill (including `CREATE` on schema `public`, so the migration role must own
+the schema or database), then drops the helper and revokes those grants. It does not make the
 application runtime or Flyway migration role a `BYPASSRLS` role. Production provisioning
 must create the same no-login role and grant it as a member to the Flyway migration role, so that
 the migration role can transfer ownership of the function. For example, when `societix` is the
