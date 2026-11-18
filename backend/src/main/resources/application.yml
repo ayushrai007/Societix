@@ -26,12 +26,16 @@ spring:
       ddl-auto: validate
     open-in-view: false
 
+logging:
+  structured:
+    format:
+      console: ecs
 
 management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,metrics
   endpoint:
     health:
       show-details: never

@@ -106,7 +106,13 @@ Verify:
 ```bash
 curl -s http://localhost:8080/health | jq .            # {"status":"UP"}
 curl -s http://localhost:8080/actuator/health | jq .   # {"status":"UP"}
+curl -s http://localhost:8080/actuator/metrics | jq .   # available metric names
+curl -s 'http://localhost:8080/actuator/metrics/http.server.requests?tag=status:400' | jq .
 ```
+
+Actuator metrics use the same application port and are intended for local diagnostics. They expose
+request and JVM measurements; keep this endpoint behind trusted network access when deploying the
+service.
 
 API conventions: base path `/api/v1`, RFC 9457 problem+json errors, idempotency keys — see
 [`../archive/standards/api-guidelines.md`](../archive/standards/api-guidelines.md).
