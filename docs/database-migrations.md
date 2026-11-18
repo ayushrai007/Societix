@@ -13,8 +13,11 @@ application starts. That way every laptop, CI run, and server ends up with the i
 backend/src/main/resources/db/migration/
 ├── V1__baseline.sql                    # empty baseline: the start of the schema history
 ├── V2__create_society.sql              # society tenant table and RLS policy
-└── V3__grant_app_runtime_role.sql      # runtime-role privileges for society
-
+├── V3__grant_app_runtime_role.sql      # runtime-role privileges for society
+├── V4__create_outbox.sql               # transactional outbox table
+├── V5__configure_outbox_dispatch.sql   # outbox dispatch and queue-reader function
+├── V6__park_exhausted_outbox_events.sql # park outbox events that exhaust retries
+└── V7__create_ledger.sql               # SOC-100 chart of accounts, balanced ledger, fund seeds
 ```
 
 When the backend starts, Flyway compares the files in that folder with the
