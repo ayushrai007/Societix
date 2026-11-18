@@ -48,6 +48,11 @@ class LedgerIT {
                         .isEqualTo(true);
                 value(c, "select count(*) from " + table);
             }
+            assertThat(value(c, "select to_regprocedure('backfill_ledger_funds()') is null")).isEqualTo(true);
+            assertThat(value(c, "select not has_table_privilege('societix_outbox_queue_reader', 'society', 'SELECT') "
+                    + "and not has_table_privilege('societix_outbox_queue_reader', 'ledger_account', 'INSERT') "
+                    + "and not has_sequence_privilege('societix_outbox_queue_reader', 'ledger_account_id_seq', 'USAGE')"))
+                    .isEqualTo(true);
         });
     }
 

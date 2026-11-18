@@ -117,16 +117,45 @@ END $$;
 CREATE TRIGGER society_ledger_funds AFTER INSERT ON society
     FOR EACH ROW EXECUTE FUNCTION seed_new_society_ledger();
 
--- Backfill through the migration owner. Fail rather than silently skip societies if it cannot
--- read the tenant registry; row_security=off does not grant a bypass to an unprivileged role.
 DO $$
-DECLARE society_id UUID; previous_tenant TEXT := current_setting('app.tenant_id', true);
 BEGIN
-    SET LOCAL row_security = off;
-    FOR society_id IN SELECT id FROM society LOOP
-        PERFORM set_config('app.tenant_id', society_id::text, true);
-        PERFORM seed_ledger_funds(society_id);
-    END LOOP;
-    PERFORM set_config('app.tenant_id', coalesce(previous_tenant, ''), true);
-    SET LOCAL row_security = on;
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_roles
+        WHERE rolname = 'societix_outbox_queue_reader'
+          AND NOT rolsuper
+          AND rolbypassrls
+          AND NOT rolcanlogin
+    ) THEN
+        RAISE EXCEPTION 'Provision societix_outbox_queue_reader as NOLOGIN NOSUPERUSER BYPASSRLS before applying SOC-100';
+    END IF;
 END $$;
+
+CREATE FUNCTION backfill_ledger_funds() RETURNS void
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = pg_catalog, public
+SET row_security = off
+AS $$
+    INSERT INTO public.ledger_account(tenant_id, code, name, type, normal_side, is_fund)
+    SELECT society.id, funds.code, funds.name, 'EQUITY', 'C', TRUE
+    FROM public.society
+    CROSS JOIN (VALUES
+        ('3000', 'Common Maintenance Fund'), ('3100', 'Sinking Fund'),
+        ('3200', 'Repair & Maintenance Fund'), ('3300', 'Reserve Fund')
+    ) AS funds(code, name)
+    ON CONFLICT (tenant_id, code) DO NOTHING;
+$$;
+REVOKE ALL ON FUNCTION backfill_ledger_funds() FROM PUBLIC;
+GRANT USAGE ON SCHEMA public TO societix_outbox_queue_reader;
+GRANT SELECT ON society TO societix_outbox_queue_reader;
+GRANT INSERT ON ledger_account TO societix_outbox_queue_reader;
+GRANT USAGE ON SEQUENCE ledger_account_id_seq TO societix_outbox_queue_reader;
+ALTER FUNCTION backfill_ledger_funds() OWNER TO societix_outbox_queue_reader;
+DO $$ BEGIN
+    EXECUTE format('GRANT EXECUTE ON FUNCTION backfill_ledger_funds() TO %I', session_user);
+END $$;
+SELECT backfill_ledger_funds();
+DROP FUNCTION backfill_ledger_funds();
+REVOKE SELECT ON society FROM societix_outbox_queue_reader;
+REVOKE INSERT ON ledger_account FROM societix_outbox_queue_reader;
+REVOKE USAGE ON SEQUENCE ledger_account_id_seq FROM societix_outbox_queue_reader;
