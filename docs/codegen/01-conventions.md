@@ -23,7 +23,7 @@ Where a term is unfamiliar, see [../06-glossary.md](../06-glossary.md).
 | Payments | Razorpay/Cashfree aggregator; mock locally. **We never hold funds.** |
 | Web | Node.js 26 (LTS) + React 18 + TypeScript + Vite + TanStack Query |
 | Mobile | Node.js 26 (LTS) + React Native (Expo) + TypeScript |
-| Auth | OIDC login → signed JWT carrying `userId`, `societyId`, `roles` |
+| Auth | Firebase Phone Auth → Firebase ID token, verified by Societix; Societix custom claims `userId`, `tenantId`, `roles`, `authorizationVersion` |
 
 ## 2. Backend repository layout (package-by-module)
 

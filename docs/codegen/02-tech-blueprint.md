@@ -143,22 +143,34 @@ outbox table:
 ## 6. The tenancy filter (RLS) — how a request becomes tenant-scoped
 
 ```
-1. A request arrives with a JWT (userId, societyId, roles).
-2. A security filter validates the JWT and puts societyId into a request-scoped TenantContext.
-3. A transaction-aware step runs `SET LOCAL app.tenant_id = :societyId` at the start of the
+1. A request arrives with a Firebase ID token (Firebase `sub` plus Societix custom claims).
+2. Spring Security validates its signature, issuer, audience, and expiry. Firebase's reserved `sub`
+   remains the Firebase UID; Societix claims are `userId`, `tenantId`, `roles`, and
+   `authorizationVersion`.
+3. The backend checks the current account status and compares `authorizationVersion` with Societix's
+   current identity record. A stale token is rejected and the client is told to refresh it.
+4. A security filter puts the validated `tenantId` into a request-scoped TenantContext.
+5. A transaction-aware step runs `SET LOCAL app.tenant_id = :tenantId` at the start of the
    request's DB transaction.
-4. Every tenant table has an RLS policy: USING (tenant_id = current_setting('app.tenant_id')::uuid).
-5. Result: the database itself only returns the current society's rows. No tenant set → no rows.
+6. Every tenant table has an RLS policy: USING (tenant_id = current_setting('app.tenant_id')::uuid).
+7. Result: the database itself only returns the current society's rows. No tenant set → no rows.
 ```
 
 Every tenant table's Flyway migration ships **with** its `ENABLE ROW LEVEL SECURITY` + `CREATE POLICY`.
 
 ## 7. Auth / JWT shape
 
-- Login (OIDC + phone OTP for first contact) issues a short-lived signed JWT.
-- Claims: `sub` (userId), `societyId`, `roles` (array), `exp`.
-- A Spring Security filter validates the token, builds the authentication, and populates
-  `TenantContext`. Endpoints are guarded by role (`@PreAuthorize` or equivalent). Deny by default.
+- Firebase Phone Auth handles OTP verification and issues the Firebase ID token. Societix accepts
+  that token directly as the API bearer token; it does not exchange it for a second token.
+- Societix custom claims are `userId`, `tenantId`, `roles` (array), and `authorizationVersion`;
+  only the trusted backend writes these, after approval and role assignment.
+- A Spring Security resource-server filter validates the token and creates authorities only from the
+  signed `roles` claim. Endpoints are guarded by role (`@PreAuthorize` or equivalent); deny by default.
+- Society assignment, approval, and current account status remain in Societix's database. Never
+  trust role or tenant values supplied in request headers or bodies.
+- Custom-claim changes are written through the Postgres outbox. The client refreshes its Firebase
+  ID token after Societix confirms claim synchronization; stale `authorizationVersion` values are
+  rejected. Only a restricted operator bootstrap can create the first `PLATFORM_ADMIN`.
 
 ## 8. Web app layout
 

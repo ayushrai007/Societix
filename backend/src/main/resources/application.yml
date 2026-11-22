@@ -41,6 +41,12 @@ management:
       show-details: never
 
 societix:
+  security:
+    firebase:
+      # Configure per environment; local defaults intentionally cannot validate production tokens.
+      project-id: ${FIREBASE_PROJECT_ID:societix-local}
+      issuer-uri: ${FIREBASE_ISSUER_URI:https://securetoken.google.com/societix-local}
+      jwk-set-uri: ${FIREBASE_JWK_SET_URI:https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com}
   outbox:
     poll-delay-ms: ${SOCIETIX_OUTBOX_POLL_DELAY_MS:3000}
     batch-size: ${SOCIETIX_OUTBOX_BATCH_SIZE:100}

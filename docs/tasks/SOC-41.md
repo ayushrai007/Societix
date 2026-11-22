@@ -74,7 +74,7 @@ change.
 
 - Metrics currently provide basic in-process diagnostics, not dashboards, alerting, or long-term
   storage.
-- Confirm Actuator endpoint authorization when SOC-11/12 authentication and authorization are
-  implemented; until then, keep deployed access behind trusted network controls.
+s- SOC-11/12 now require `PLATFORM_ADMIN` for `/actuator/metrics/**`; health remains public and
+  detailed health data stays hidden. Deployed access should still use trusted network controls.
 - Run the automated suite on Java 25 with Docker available to verify the testcontainers-backed
   project test setup as well as these SOC-41 tests.

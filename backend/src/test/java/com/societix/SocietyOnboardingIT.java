@@ -3,6 +3,7 @@ package com.societix;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -62,7 +63,7 @@ class SocietyOnboardingIT {
     @Test
     void adminCanCreateSocietyViaEndpoint() throws Exception {
         mockMvc.perform(post("/api/v1/societies")
-                        .header("X-Admin-Role", "PLATFORM_ADMIN")
+                        .with(user("platform-admin").roles("PLATFORM_ADMIN"))
                         .contentType("application/json")
                         .content("""
                                 {"name":"Maple Residency","address":"12 MG Road, Pune","state":"MH"}
@@ -74,7 +75,7 @@ class SocietyOnboardingIT {
     @Test
     void createdSocietyContainsIdNameAddressAndState() throws Exception {
         String response = mockMvc.perform(post("/api/v1/societies")
-                        .header("X-Admin-Role", "PLATFORM_ADMIN")
+                        .with(user("platform-admin").roles("PLATFORM_ADMIN"))
                         .contentType("application/json")
                         .content("""
                                 {"name":"Lakeview Heights","address":"88 Residency Road, Bengaluru","state":"KA"}
@@ -100,7 +101,7 @@ class SocietyOnboardingIT {
     @Test
     void invalidSocietyRequestReturnsProblemJson() throws Exception {
         mockMvc.perform(post("/api/v1/societies")
-                        .header("X-Admin-Role", "PLATFORM_ADMIN")
+                        .with(user("platform-admin").roles("PLATFORM_ADMIN"))
                         .contentType("application/json")
                         .content("""
                                 {"name":"","address":"","state":"Maharashtra"}
@@ -110,6 +111,40 @@ class SocietyOnboardingIT {
                 .andExpect(jsonPath("$.type").value("https://errors.societix.dev/validation"))
                 .andExpect(jsonPath("$.code").value("SOC-400-VALIDATION"))
                 .andExpect(jsonPath("$.errors").isArray());
+    }
+
+    @Test
+    void callerControlledAdminRoleHeaderDoesNotAuthorizeSocietyCreation() throws Exception {
+        mockMvc.perform(post("/api/v1/societies")
+                        .header("X-Admin-Role", "PLATFORM_ADMIN")
+                        .contentType("application/json")
+                        .content("""
+                                {"name":"Spoofed Society","address":"No access","state":"MH"}
+                                """))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void malformedBearerTokenDoesNotAuthorizeSocietyCreation() throws Exception {
+        mockMvc.perform(post("/api/v1/societies")
+                        .header("Authorization", "Bearer not-a-valid-jwt")
+                        .contentType("application/json")
+                        .content("""
+                                {"name":"Invalid Token Society","address":"No access","state":"MH"}
+                                """))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void authenticatedNonPlatformAdminCannotCreateSociety() throws Exception {
+        mockMvc.perform(post("/api/v1/societies")
+                        .with(user("resident").roles("OWNER"))
+                        .header("X-Admin-Role", "PLATFORM_ADMIN")
+                        .contentType("application/json")
+                        .content("""
+                                {"name":"Unauthorized Society","address":"No access","state":"MH"}
+                                """))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -180,7 +215,7 @@ class SocietyOnboardingIT {
 
     private UUID createSociety(String name, String address, String state) throws Exception {
         String response = mockMvc.perform(post("/api/v1/societies")
-                        .header("X-Admin-Role", "PLATFORM_ADMIN")
+                        .with(user("platform-admin").roles("PLATFORM_ADMIN"))
                         .contentType("application/json")
                         .content("{\"name\":\"" + name + "\",\"address\":\"" + address + "\",\"state\":\"" + state + "\"}"))
                 .andExpect(status().isCreated())

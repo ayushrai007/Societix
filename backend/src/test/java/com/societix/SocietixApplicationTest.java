@@ -2,6 +2,7 @@ package com.societix;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,7 +53,8 @@ class SocietixApplicationTest {
 
     @Test
     void actuatorMetricsEndpointExposesHttpRequestMetrics() throws Exception {
-        mockMvc.perform(get("/actuator/metrics"))
+        mockMvc.perform(get("/actuator/metrics")
+                        .with(user("platform-admin").roles("PLATFORM_ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.names").value(Matchers.hasItem("http.server.requests")));
     }
@@ -78,7 +80,7 @@ class SocietixApplicationTest {
     @Test
     void httpClientErrorIsVisibleInMetricsWithoutLoggingPersonalData(CapturedOutput output) throws Exception {
         mockMvc.perform(post("/api/v1/societies")
-                        .header("X-Admin-Role", "PLATFORM_ADMIN")
+                        .with(user("platform-admin").roles("PLATFORM_ADMIN"))
                         .contentType("application/json")
                         .content("""
                                 {"name":"Test 9876543210","address":"Test address","state":"invalid"}
@@ -86,6 +88,7 @@ class SocietixApplicationTest {
                 .andExpect(status().isBadRequest());
 
         String metricsResponse = mockMvc.perform(get("/actuator/metrics/http.server.requests")
+                        .with(user("platform-admin").roles("PLATFORM_ADMIN"))
                         .queryParam("tag", "status:400"))
                 .andExpect(status().isOk())
                 .andReturn()

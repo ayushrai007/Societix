@@ -21,7 +21,7 @@ merge before the next one. **Do them in order — later tasks assume earlier one
 | 4 | SOC-4 CI pipeline | [backend/SOC-4](backend/SOC-4-set-up-the-ci-pipeline-build-test-on-eve.md) |
 | 5 | SOC-5 Flyway migrations | [backend/SOC-5](backend/SOC-5-database-migrations-with-flyway.md) |
 | 6 | SOC-10 Society (tenant) entity | [backend/SOC-10](backend/SOC-10-define-the-society-tenant-entity-and-onb.md) |
-| 7 | SOC-11 Login (OTP + OIDC → JWT) | [backend/SOC-11](backend/SOC-11-user-login-with-otp-oidc.md) |
+| 7 | SOC-11 Login (Firebase Phone Auth → Firebase ID token) | [backend/SOC-11](backend/SOC-11-user-login-with-otp-oidc.md) |
 | 8 | SOC-12 Roles & permissions | [backend/SOC-12](backend/SOC-12-roles-and-permissions-rbac.md) |
 | 9 | **SOC-13 Data isolation (RLS)** | [backend/SOC-13](backend/SOC-13-data-isolation-with-row-level-security-r.md) |
 | 10 | SOC-20 Outbox table & events | [backend/SOC-20](backend/SOC-20-create-the-outbox-table-and-event-model.md) |
