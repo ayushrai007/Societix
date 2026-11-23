@@ -46,3 +46,4 @@ to get started.
 - [SOC-3 — local development environment](tasks/SOC-3.md)
 - [SOC-4 — pull-request CI](tasks/SOC-4.md)
 - [SOC-5 — Flyway baseline](tasks/SOC-5.md)
+- [DOCS — architecture and SOC brief PDFs](tasks/DOCS-soc-artifact-pdfs.md)
