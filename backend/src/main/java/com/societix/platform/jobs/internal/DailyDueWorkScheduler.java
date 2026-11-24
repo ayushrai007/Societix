@@ -25,7 +25,7 @@ public class DailyDueWorkScheduler {
         this.jobs = List.copyOf(jobs);
     }
 
-    @Scheduled(cron = "${societix.jobs.daily-cron:0 0 2 * * *}", zone = "${societix.jobs.zone:UTC}")
+    @Scheduled(cron = "${societix.jobs.daily-cron}", zone = "${societix.jobs.zone}")
     @SchedulerLock(name = LOCK_NAME, lockAtMostFor = "PT1H", lockAtLeastFor = "PT1M")
     public void runDailyDueWork() {
         LockAssert.assertLocked();

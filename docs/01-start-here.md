@@ -115,8 +115,9 @@ docker compose down -v         # stop and delete the local database for a clean 
 cd backend && ./mvnw test      # run the backend tests (needs Docker running; they start their own containers)
 ```
 
-The database has two roles: `societix` owns the schema and runs migrations, and the backend
-itself connects as `societix_app`, which row-level security applies to (see
+The database has three roles: `societix` owns the schema and runs migrations, the backend
+connects as `societix_app` (which remains subject to row-level security), and a narrowly scoped
+`NOLOGIN` queue-reader role owns the outbox tenant-queue function (see
 [database-migrations.md](database-migrations.md)). If your local database was created before
 `societix_app` existed, run `docker compose down -v` once so the init script can create the runtime
 role. Flyway provisions the outbox queue-reader role during migration startup, including when an

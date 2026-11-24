@@ -6,6 +6,7 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Database-backed Treasury and Privacy contributors used to verify the shared jobs contract. */
 @TestConfiguration(proxyBeanMethods = false)
@@ -40,9 +41,23 @@ class ScheduledJobsTestConfiguration {
 
     static final class ScheduledJobsTestTable {}
 
-    private record JdbcDueWorkJob(String jobKey, JdbcTemplate jdbcTemplate) implements DueWorkJob {
+    static class JdbcDueWorkJob implements DueWorkJob {
+
+        private final String jobKey;
+        private final JdbcTemplate jdbcTemplate;
+
+        JdbcDueWorkJob(String jobKey, JdbcTemplate jdbcTemplate) {
+            this.jobKey = jobKey;
+            this.jdbcTemplate = jdbcTemplate;
+        }
 
         @Override
+        public String jobKey() {
+            return jobKey;
+        }
+
+        @Override
+        @Transactional
         public void runDueWork() {
             jdbcTemplate.update(
                     """

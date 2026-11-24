@@ -84,10 +84,18 @@ reader exists with unsafe attributes, startup fails closed. V5 grants it `SELECT
 and uses it only for the function that returns pending tenant IDs. The application runtime role
 remains `NOBYPASSRLS`.
 
-The callback needs a Flyway login with PostgreSQL privileges to create a role and grant membership;
-the local Compose owner is the PostgreSQL bootstrap superuser. Production must give its controlled
-Flyway release identity the equivalent role administration privileges, while keeping the runtime
-role unprivileged.
+Creating a `BYPASSRLS` role requires a PostgreSQL superuser; `CREATEROLE` alone is not enough.
+The local Compose owner is the PostgreSQL bootstrap superuser. Production must run this callback
+with a controlled Flyway identity that has superuser privileges for this provisioning step, while
+the application runtime role remains unprivileged. The callback validates all queue-reader
+attributes, tolerates concurrent creation by application instances, and avoids repeating a role
+membership grant when the Flyway identity is already a member.
+
+Rollout: deploy with the controlled Flyway provisioning privilege available so the callback can
+create the role and V5 can transfer ownership of the queue function. Rollback: retain the role while
+V5's function is owned by it; if the change must be reversed, first transfer the function back to
+the migration owner and revoke the queue-reader's outbox/schema grants, then remove the role. Do not
+remove it while the function still depends on it.
 
 Init scripts run only on an empty data volume. Migrations grant the runtime role the table privileges it needs
 (for example `V3__grant_app_runtime_role.sql`); a migration that adds a tenant table must grant

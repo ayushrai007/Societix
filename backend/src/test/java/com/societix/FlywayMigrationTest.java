@@ -178,7 +178,9 @@ class FlywayMigrationTest {
                         Boolean.class))
                 .isTrue();
         assertThat(jdbcTemplate.queryForObject(
-                        "select pg_has_role(current_user, 'societix_outbox_queue_reader', 'MEMBER')",
+                        "select exists (select 1 from pg_auth_members "
+                                + "where roleid = 'societix_outbox_queue_reader'::regrole "
+                                + "and member = current_user::regrole)",
                         Boolean.class))
                 .isTrue();
         assertThat(jdbcTemplate.queryForObject(
@@ -191,6 +193,30 @@ class FlywayMigrationTest {
                                 + "and column_name = 'failed_at'",
                         Integer.class))
                 .isEqualTo(1);
+    }
+
+    @Test
+    void outboxMigrationFailsWhenQueueReaderHasRoleCreationPrivileges() {
+        String guardTestDatabase = "societix_outbox_attr_guard_test";
+        jdbcTemplate.execute("ALTER ROLE societix_outbox_queue_reader CREATEROLE");
+        try {
+            jdbcTemplate.execute("DROP DATABASE IF EXISTS " + guardTestDatabase);
+            jdbcTemplate.execute("CREATE DATABASE " + guardTestDatabase);
+            String testJdbcUrl = postgres.getJdbcUrl().replace(
+                    "/" + postgres.getDatabaseName(), "/" + guardTestDatabase);
+            Flyway guardTestFlyway = Flyway.configure()
+                    .dataSource(testJdbcUrl, postgres.getUsername(), postgres.getPassword())
+                    .locations("classpath:db/migration")
+                    .placeholders(flyway.getConfiguration().getPlaceholders())
+                    .load();
+
+            assertThatThrownBy(guardTestFlyway::migrate)
+                    .rootCause()
+                    .hasMessageContaining("NOCREATEROLE NOREPLICATION");
+        } finally {
+            jdbcTemplate.execute("ALTER ROLE societix_outbox_queue_reader NOCREATEROLE");
+            jdbcTemplate.execute("DROP DATABASE IF EXISTS " + guardTestDatabase);
+        }
     }
 
     @Test

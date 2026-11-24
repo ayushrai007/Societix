@@ -76,6 +76,10 @@ cp .env.example .env
 The backend imports the repository-root `.env` when it starts from `backend/`. See
 [`../database-migrations.md`](../database-migrations.md) for the owner/runtime database roles.
 
+The daily due-work scheduler reads `SOCIETIX_JOBS_DAILY_CRON` (default `0 0 2 * * *`, 02:00)
+and `SOCIETIX_JOBS_ZONE` (default `UTC`) from this file. Choose `Asia/Kolkata` explicitly if
+jobs should run at 02:00 India time; the cron is interpreted in the configured zone.
+
 > Spring does not read `.env` by itself. Export these variables into the shell that runs the
 > backend (for example `set -a; source .env; set +a`); `SPRING_DATASOURCE_PASSWORD` has no default
 > and startup fails without it. See [`../database-migrations.md`](../database-migrations.md).
@@ -167,6 +171,7 @@ test suites are added.
 | Flyway: `relation already exists` / checksum mismatch | Edited an applied `V__` script | Never edit applied migrations — add a new `V__`; or reset DB (`down -v`) locally |
 | Query returns 0 rows but data exists | `app.tenant_id` GUC not set (RLS fail-closed) | Ensure you hit the API via a JWT; don't query the DB directly without `SET LOCAL app.tenant_id` |
 | Outbox events never dispatched | Poller not running / ShedLock held | Check app logs for the outbox poller once SOC-20/21 land; confirm `SOCIETIX_OUTBOX_POLL_DELAY_MS` is set (default: 3000 ms) |
+| Daily due-work job runs at the wrong time | Cron interpreted in the configured zone | Check `SOCIETIX_JOBS_DAILY_CRON` and `SOCIETIX_JOBS_ZONE` in `.env`; use `Asia/Kolkata` for India local time |
 | Payment webhook 401 | `PA_WEBHOOK_SECRET` mismatch | Match `.env` to the value in `infra/pa-mock/pa-expectations.json` |
 | `backend/mvnw` uses the wrong Java | `JAVA_HOME` points elsewhere | `export JAVA_HOME=$(/usr/libexec/java_home -v 25)` |
 | Testcontainers: `Could not find a valid Docker environment` | Docker not running | Start Docker Desktop; `docker info` must succeed |

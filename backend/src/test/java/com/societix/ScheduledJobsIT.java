@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -25,44 +26,54 @@ import org.springframework.scheduling.annotation.Scheduled;
 @Import({TestcontainersConfiguration.class, ScheduledJobsTestConfiguration.class})
 class ScheduledJobsIT {
 
-    private static final String CONCURRENCY_TEST_LOCK = "societixDailyDueWorkConcurrencyTest";
+    private static final String DAILY_LOCK = "societixDailyDueWork";
 
     private final DailyDueWorkScheduler scheduler;
     private final LockProvider lockProvider;
     private final JdbcTemplate ownerJdbc;
     private final List<DueWorkJob> dueWorkJobs;
+    private final Environment environment;
 
     @Autowired
     ScheduledJobsIT(
             DailyDueWorkScheduler scheduler,
             LockProvider lockProvider,
             org.flywaydb.core.Flyway flyway,
-            List<DueWorkJob> dueWorkJobs) {
+            List<DueWorkJob> dueWorkJobs,
+            Environment environment) {
         this.scheduler = scheduler;
         this.lockProvider = lockProvider;
         this.ownerJdbc = new JdbcTemplate(flyway.getConfiguration().getDataSource());
         this.dueWorkJobs = dueWorkJobs;
+        this.environment = environment;
     }
 
     @BeforeEach
-    void clearTestRows() {
+    void resetTestDataAndExpireDailyLock() {
         ownerJdbc.update("DELETE FROM societix_scheduled_job_it_work");
-        ownerJdbc.update("DELETE FROM shedlock WHERE name = ?", "societixDailyDueWork");
+        ownerJdbc.update(
+                "INSERT INTO shedlock (name, lock_until, locked_at, locked_by) "
+                        + "VALUES (?, now() - interval '1 second', now() - interval '2 seconds', 'test-reset') "
+                        + "ON CONFLICT (name) DO UPDATE SET lock_until = EXCLUDED.lock_until, "
+                        + "locked_at = EXCLUDED.locked_at, locked_by = EXCLUDED.locked_by",
+                DAILY_LOCK);
     }
 
     @AfterEach
-    void clearDailyLock() {
-        ownerJdbc.update("DELETE FROM shedlock WHERE name = ?", "societixDailyDueWork");
-        ownerJdbc.update("DELETE FROM shedlock WHERE name = ?", CONCURRENCY_TEST_LOCK);
+    void expireDailyLockWithoutDeletingItsCachedRow() {
+        expireLock(DAILY_LOCK);
     }
 
     @Test
-    void scheduledJobProcessesOnlyRowsWhoseDueTimeHasArrived() throws NoSuchMethodException {
+    void scheduledJobProcessesDueRowsAndSupportsTreasuryAndPrivacy() throws NoSuchMethodException {
         Scheduled schedule = DailyDueWorkScheduler.class
                 .getMethod("runDailyDueWork")
                 .getAnnotation(Scheduled.class);
         assertThat(schedule).isNotNull();
-        assertThat(schedule.cron()).isEqualTo("${societix.jobs.daily-cron:0 0 2 * * *}");
+        assertThat(schedule.cron()).isEqualTo("${societix.jobs.daily-cron}");
+        assertThat(environment.getProperty("societix.jobs.daily-cron")).isEqualTo("0 0 0 1 1 *");
+        assertThat(schedule.zone()).isEqualTo("${societix.jobs.zone}");
+        assertThat(environment.getProperty("societix.jobs.zone")).isEqualTo("UTC");
 
         insertWork("treasury", "1 day");
         insertWork("privacy", "1 day");
@@ -72,11 +83,10 @@ class ScheduledJobsIT {
                 .extracting(DueWorkJob::jobKey)
                 .containsExactlyInAnyOrder("treasury", "privacy");
         assertThat(duePendingCount()).isEqualTo(2);
-        assertThat(lockRowCount()).as("no stale daily lock before scheduler run").isZero();
 
         scheduler.runDailyDueWork();
 
-        assertThat(lockRowCount()).as("scheduler acquired the daily lock").isEqualTo(1);
+        assertThat(lockIsHeld(DAILY_LOCK)).isTrue();
         assertThat(processedCount("treasury")).isEqualTo(1);
         assertThat(processedCount("privacy")).isEqualTo(1);
         assertThat(pendingCount()).isEqualTo(2);
@@ -84,22 +94,27 @@ class ScheduledJobsIT {
     }
 
     @Test
-    void shedLockAllowsOnlyOneInstanceToAcquireDailySchedule() throws NoSuchMethodException {
+    void scheduledJobSkipsWorkWhileAnotherInstanceHoldsItsActualLock() throws NoSuchMethodException {
         SchedulerLock annotation = DailyDueWorkScheduler.class
                 .getMethod("runDailyDueWork")
                 .getAnnotation(SchedulerLock.class);
         assertThat(annotation).isNotNull();
-        assertThat(annotation.name()).isEqualTo("societixDailyDueWork");
-        assertThat(annotation.lockAtLeastFor()).isEqualTo("PT1M");
+        assertThat(annotation.name()).isEqualTo(DAILY_LOCK);
+        Duration lockAtMostFor = Duration.parse(annotation.lockAtMostFor());
+        Duration lockAtLeastFor = Duration.parse(annotation.lockAtLeastFor());
+        assertThat(lockAtMostFor).isEqualTo(Duration.ofHours(1));
+        assertThat(lockAtLeastFor).isEqualTo(Duration.ofMinutes(1));
 
+        insertWork("treasury", "-1 day");
         LockConfiguration configuration = new LockConfiguration(
-                Instant.now(), CONCURRENCY_TEST_LOCK, Duration.ofHours(1), Duration.ofMinutes(1));
-        SimpleLock firstInstance = lockProvider.lock(configuration).orElseThrow();
+                Instant.now(), annotation.name(), lockAtMostFor, lockAtLeastFor);
+        SimpleLock otherInstance = lockProvider.lock(configuration).orElseThrow();
         try {
-            assertThat(lockProvider.lock(configuration)).isEmpty();
+            scheduler.runDailyDueWork();
+            assertThat(processedCount("treasury")).isZero();
+            assertThat(duePendingCount()).isEqualTo(1);
         } finally {
-            firstInstance.unlock();
-            ownerJdbc.update("DELETE FROM shedlock WHERE name = ?", CONCURRENCY_TEST_LOCK);
+            otherInstance.unlock();
         }
     }
 
@@ -130,8 +145,15 @@ class ScheduledJobsIT {
                 Integer.class);
     }
 
-    private int lockRowCount() {
+    private boolean lockIsHeld(String name) {
         return ownerJdbc.queryForObject(
-                "SELECT count(*) FROM shedlock WHERE name = ?", Integer.class, "societixDailyDueWork");
+                "SELECT lock_until > localtimestamp FROM shedlock WHERE name = ?", Boolean.class, name);
+    }
+
+    private void expireLock(String name) {
+        ownerJdbc.update(
+                "UPDATE shedlock SET lock_until = now() - interval '1 second', "
+                        + "locked_at = now() - interval '2 seconds' WHERE name = ?",
+                name);
     }
 }
