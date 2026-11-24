@@ -172,10 +172,51 @@ class FlywayMigrationTest {
                         Boolean.class))
                 .isTrue();
         assertThat(jdbcTemplate.queryForObject(
+                        "select not rolsuper and not rolcanlogin and rolbypassrls "
+                                + "and not rolcreatedb and not rolcreaterole and not rolreplication "
+                                + "from pg_roles where rolname = 'societix_outbox_queue_reader'",
+                        Boolean.class))
+                .isTrue();
+        assertThat(jdbcTemplate.queryForObject(
+                        "select exists (select 1 from pg_auth_members "
+                                + "where roleid = 'societix_outbox_queue_reader'::regrole "
+                                + "and member = current_user::regrole)",
+                        Boolean.class))
+                .isTrue();
+        assertThat(jdbcTemplate.queryForObject(
+                        "select not rolsuper and not rolbypassrls "
+                                + "from pg_roles where rolname = 'societix_app'",
+                        Boolean.class))
+                .isTrue();
+        assertThat(jdbcTemplate.queryForObject(
                         "select count(*) from information_schema.columns where table_name = 'outbox' "
                                 + "and column_name = 'failed_at'",
                         Integer.class))
                 .isEqualTo(1);
+    }
+
+    @Test
+    void outboxMigrationFailsWhenQueueReaderHasRoleCreationPrivileges() {
+        String guardTestDatabase = "societix_outbox_attr_guard_test";
+        jdbcTemplate.execute("ALTER ROLE societix_outbox_queue_reader CREATEROLE");
+        try {
+            jdbcTemplate.execute("DROP DATABASE IF EXISTS " + guardTestDatabase);
+            jdbcTemplate.execute("CREATE DATABASE " + guardTestDatabase);
+            String testJdbcUrl = postgres.getJdbcUrl().replace(
+                    "/" + postgres.getDatabaseName(), "/" + guardTestDatabase);
+            Flyway guardTestFlyway = Flyway.configure()
+                    .dataSource(testJdbcUrl, postgres.getUsername(), postgres.getPassword())
+                    .locations("classpath:db/migration")
+                    .placeholders(flyway.getConfiguration().getPlaceholders())
+                    .load();
+
+            assertThatThrownBy(guardTestFlyway::migrate)
+                    .rootCause()
+                    .hasMessageContaining("NOCREATEROLE NOREPLICATION");
+        } finally {
+            jdbcTemplate.execute("ALTER ROLE societix_outbox_queue_reader NOCREATEROLE");
+            jdbcTemplate.execute("DROP DATABASE IF EXISTS " + guardTestDatabase);
+        }
     }
 
     @Test
@@ -195,7 +236,7 @@ class FlywayMigrationTest {
 
             assertThatThrownBy(guardTestFlyway::migrate)
                     .rootCause()
-                    .hasMessageContaining("NOLOGIN NOSUPERUSER BYPASSRLS");
+                    .hasMessageContaining("must be NOLOGIN NOSUPERUSER BYPASSRLS");
         } finally {
             jdbcTemplate.execute("ALTER ROLE societix_outbox_queue_reader NOSUPERUSER");
             jdbcTemplate.execute("DROP DATABASE IF EXISTS " + guardTestDatabase);

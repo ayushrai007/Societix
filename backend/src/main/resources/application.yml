@@ -44,3 +44,6 @@ societix:
   outbox:
     poll-delay-ms: ${SOCIETIX_OUTBOX_POLL_DELAY_MS:3000}
     batch-size: ${SOCIETIX_OUTBOX_BATCH_SIZE:100}
+  jobs:
+    daily-cron: ${SOCIETIX_JOBS_DAILY_CRON:0 0 2 * * *}
+    zone: ${SOCIETIX_JOBS_ZONE:UTC}

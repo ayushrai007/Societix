@@ -68,31 +68,34 @@ The backend uses three database roles on `jdbc:postgresql://localhost:5432/socie
 |---|---|---|
 | `societix` (owner) | Flyway, to run migrations; owns the schema and tables | `SPRING_FLYWAY_USER`, `SPRING_FLYWAY_PASSWORD` |
 | `societix_app` (runtime) | The application's own queries | `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` |
-| `societix_outbox_queue_reader` | Owns a narrowly scoped `SECURITY DEFINER` function that returns due outbox tenant UUIDs | Created by the PostgreSQL init script; `NOLOGIN`, `BYPASSRLS`, `SELECT` on `outbox` only |
+| `societix_outbox_queue_reader` | Owns a narrowly scoped `SECURITY DEFINER` function that returns due outbox tenant UUIDs | Provisioned by Flyway's `beforeMigrate.sql` callback; `NOLOGIN`, `NOSUPERUSER`, `BYPASSRLS`, `SELECT` on `outbox` only |
 
 The runtime role is not a superuser, cannot bypass row-level security and owns no tables, so the
 tenant RLS policies apply to every query the application makes; a query without a valid
 `app.tenant_id` sees no tenant rows. Superusers and table owners bypass RLS, which is why the
 application must never connect as the owner role.
 
-Locally, `docker compose up` creates these roles: the owner is the image's `POSTGRES_USER`, and
-`infra/postgres/initdb/10-create-app-runtime-role.sh` creates the runtime role and the outbox queue
-reader. The queue reader cannot log in and can read only pending outbox tenant IDs through one
-function; it does not make the application runtime role a `BYPASSRLS` role. Production provisioning
-must create the same no-login role and grant it as a member to the Flyway migration role, so that
-the migration role can transfer ownership of the function. For example, when `societix` is the
-migration role:
+Locally, `docker compose up` creates the owner as the image's `POSTGRES_USER`, and
+`infra/postgres/initdb/10-create-app-runtime-role.sh` creates the runtime role. Flyway's
+`beforeMigrate.sql` callback creates the queue reader when it is missing and grants membership to
+the Flyway migration role before V5 runs. Because Flyway callbacks run on every migration startup,
+this also covers existing data volumes where PostgreSQL init scripts do not rerun. If the queue
+reader exists with unsafe attributes, startup fails closed. V5 grants it `SELECT` only on `outbox`
+and uses it only for the function that returns pending tenant IDs. The application runtime role
+remains `NOBYPASSRLS`.
 
-```sql
-GRANT societix_outbox_queue_reader TO societix;
-```
-For an existing local database whose volume predates SOC-21, provision the role once as the database
-owner before starting the application:
+Creating a `BYPASSRLS` role requires a PostgreSQL superuser; `CREATEROLE` alone is not enough.
+The local Compose owner is the PostgreSQL bootstrap superuser. Production must run this callback
+with a controlled Flyway identity that has superuser privileges for this provisioning step, while
+the application runtime role remains unprivileged. The callback validates all queue-reader
+attributes, tolerates concurrent creation by application instances, and avoids repeating a role
+membership grant when the Flyway identity is already a member.
 
-```sql
-CREATE ROLE societix_outbox_queue_reader NOLOGIN
-    NOSUPERUSER BYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION;
-```
+Rollout: deploy with the controlled Flyway provisioning privilege available so the callback can
+create the role and V5 can transfer ownership of the queue function. Rollback: retain the role while
+V5's function is owned by it; if the change must be reversed, first transfer the function back to
+the migration owner and revoke the queue-reader's outbox/schema grants, then remove the role. Do not
+remove it while the function still depends on it.
 
 Init scripts run only on an empty data volume. Migrations grant the runtime role the table privileges it needs
 (for example `V3__grant_app_runtime_role.sql`); a migration that adds a tenant table must grant
