@@ -25,6 +25,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 @Import({TestcontainersConfiguration.class, ScheduledJobsTestConfiguration.class})
 class ScheduledJobsIT {
 
+    private static final String CONCURRENCY_TEST_LOCK = "societixDailyDueWorkConcurrencyTest";
+
     private final DailyDueWorkScheduler scheduler;
     private final LockProvider lockProvider;
     private final JdbcTemplate ownerJdbc;
@@ -51,6 +53,7 @@ class ScheduledJobsIT {
     @AfterEach
     void clearDailyLock() {
         ownerJdbc.update("DELETE FROM shedlock WHERE name = ?", "societixDailyDueWork");
+        ownerJdbc.update("DELETE FROM shedlock WHERE name = ?", CONCURRENCY_TEST_LOCK);
     }
 
     @Test
@@ -69,9 +72,11 @@ class ScheduledJobsIT {
                 .extracting(DueWorkJob::jobKey)
                 .containsExactlyInAnyOrder("treasury", "privacy");
         assertThat(duePendingCount()).isEqualTo(2);
+        assertThat(lockRowCount()).as("no stale daily lock before scheduler run").isZero();
 
         scheduler.runDailyDueWork();
 
+        assertThat(lockRowCount()).as("scheduler acquired the daily lock").isEqualTo(1);
         assertThat(processedCount("treasury")).isEqualTo(1);
         assertThat(processedCount("privacy")).isEqualTo(1);
         assertThat(pendingCount()).isEqualTo(2);
@@ -88,12 +93,13 @@ class ScheduledJobsIT {
         assertThat(annotation.lockAtLeastFor()).isEqualTo("PT1M");
 
         LockConfiguration configuration = new LockConfiguration(
-                Instant.now(), "societixDailyDueWork", Duration.ofHours(1), Duration.ofMinutes(1));
+                Instant.now(), CONCURRENCY_TEST_LOCK, Duration.ofHours(1), Duration.ofMinutes(1));
         SimpleLock firstInstance = lockProvider.lock(configuration).orElseThrow();
         try {
             assertThat(lockProvider.lock(configuration)).isEmpty();
         } finally {
             firstInstance.unlock();
+            ownerJdbc.update("DELETE FROM shedlock WHERE name = ?", CONCURRENCY_TEST_LOCK);
         }
     }
 
@@ -122,5 +128,10 @@ class ScheduledJobsIT {
                 "SELECT count(*) FROM societix_scheduled_job_it_work "
                         + "WHERE due_at <= now() AND processed_at IS NULL",
                 Integer.class);
+    }
+
+    private int lockRowCount() {
+        return ownerJdbc.queryForObject(
+                "SELECT count(*) FROM shedlock WHERE name = ?", Integer.class, "societixDailyDueWork");
     }
 }
