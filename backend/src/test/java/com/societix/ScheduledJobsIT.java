@@ -2,9 +2,11 @@ package com.societix;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.societix.platform.jobs.DueWorkJob;
 import com.societix.platform.jobs.internal.DailyDueWorkScheduler;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -26,18 +28,24 @@ class ScheduledJobsIT {
     private final DailyDueWorkScheduler scheduler;
     private final LockProvider lockProvider;
     private final JdbcTemplate ownerJdbc;
+    private final List<DueWorkJob> dueWorkJobs;
 
     @Autowired
     ScheduledJobsIT(
-            DailyDueWorkScheduler scheduler, LockProvider lockProvider, org.flywaydb.core.Flyway flyway) {
+            DailyDueWorkScheduler scheduler,
+            LockProvider lockProvider,
+            org.flywaydb.core.Flyway flyway,
+            List<DueWorkJob> dueWorkJobs) {
         this.scheduler = scheduler;
         this.lockProvider = lockProvider;
         this.ownerJdbc = new JdbcTemplate(flyway.getConfiguration().getDataSource());
+        this.dueWorkJobs = dueWorkJobs;
     }
 
     @BeforeEach
     void clearTestRows() {
         ownerJdbc.update("DELETE FROM societix_scheduled_job_it_work");
+        ownerJdbc.update("DELETE FROM shedlock WHERE name = ?", "societixDailyDueWork");
     }
 
     @AfterEach
@@ -57,12 +65,17 @@ class ScheduledJobsIT {
         insertWork("privacy", "1 day");
         insertWork("treasury", "-1 day");
         insertWork("privacy", "-1 day");
+        assertThat(dueWorkJobs)
+                .extracting(DueWorkJob::jobKey)
+                .containsExactlyInAnyOrder("treasury", "privacy");
+        assertThat(duePendingCount()).isEqualTo(2);
 
         scheduler.runDailyDueWork();
 
         assertThat(processedCount("treasury")).isEqualTo(1);
         assertThat(processedCount("privacy")).isEqualTo(1);
         assertThat(pendingCount()).isEqualTo(2);
+        assertThat(duePendingCount()).isZero();
     }
 
     @Test
@@ -101,6 +114,13 @@ class ScheduledJobsIT {
     private int pendingCount() {
         return ownerJdbc.queryForObject(
                 "SELECT count(*) FROM societix_scheduled_job_it_work WHERE processed_at IS NULL",
+                Integer.class);
+    }
+
+    private int duePendingCount() {
+        return ownerJdbc.queryForObject(
+                "SELECT count(*) FROM societix_scheduled_job_it_work "
+                        + "WHERE due_at <= now() AND processed_at IS NULL",
                 Integer.class);
     }
 }
