@@ -172,6 +172,21 @@ class FlywayMigrationTest {
                         Boolean.class))
                 .isTrue();
         assertThat(jdbcTemplate.queryForObject(
+                        "select not rolsuper and not rolcanlogin and rolbypassrls "
+                                + "and not rolcreatedb and not rolcreaterole and not rolreplication "
+                                + "from pg_roles where rolname = 'societix_outbox_queue_reader'",
+                        Boolean.class))
+                .isTrue();
+        assertThat(jdbcTemplate.queryForObject(
+                        "select pg_has_role(current_user, 'societix_outbox_queue_reader', 'MEMBER')",
+                        Boolean.class))
+                .isTrue();
+        assertThat(jdbcTemplate.queryForObject(
+                        "select not rolsuper and not rolbypassrls "
+                                + "from pg_roles where rolname = 'societix_app'",
+                        Boolean.class))
+                .isTrue();
+        assertThat(jdbcTemplate.queryForObject(
                         "select count(*) from information_schema.columns where table_name = 'outbox' "
                                 + "and column_name = 'failed_at'",
                         Integer.class))
@@ -195,7 +210,7 @@ class FlywayMigrationTest {
 
             assertThatThrownBy(guardTestFlyway::migrate)
                     .rootCause()
-                    .hasMessageContaining("NOLOGIN NOSUPERUSER BYPASSRLS");
+                    .hasMessageContaining("must be NOLOGIN NOSUPERUSER BYPASSRLS");
         } finally {
             jdbcTemplate.execute("ALTER ROLE societix_outbox_queue_reader NOSUPERUSER");
             jdbcTemplate.execute("DROP DATABASE IF EXISTS " + guardTestDatabase);
