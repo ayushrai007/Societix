@@ -7,6 +7,7 @@ import com.societix.platform.jobs.internal.DailyDueWorkScheduler;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import net.javacrumbs.shedlock.core.LockConfiguration;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.core.SimpleLock;
@@ -20,6 +21,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /** SOC-22 scheduled due-work integration tests against the PostgreSQL Testcontainer. */
 @SpringBootTest(properties = "societix.jobs.daily-cron=0 0 0 1 1 *")
@@ -31,6 +34,8 @@ class ScheduledJobsIT {
     private final DailyDueWorkScheduler scheduler;
     private final LockProvider lockProvider;
     private final JdbcTemplate ownerJdbc;
+    private final JdbcTemplate appJdbc;
+    private final TransactionTemplate appTransaction;
     private final List<DueWorkJob> dueWorkJobs;
     private final Environment environment;
 
@@ -39,11 +44,15 @@ class ScheduledJobsIT {
             DailyDueWorkScheduler scheduler,
             LockProvider lockProvider,
             org.flywaydb.core.Flyway flyway,
+            JdbcTemplate appJdbc,
+            PlatformTransactionManager transactionManager,
             List<DueWorkJob> dueWorkJobs,
             Environment environment) {
         this.scheduler = scheduler;
         this.lockProvider = lockProvider;
         this.ownerJdbc = new JdbcTemplate(flyway.getConfiguration().getDataSource());
+        this.appJdbc = appJdbc;
+        this.appTransaction = new TransactionTemplate(transactionManager);
         this.dueWorkJobs = dueWorkJobs;
         this.environment = environment;
     }
@@ -75,21 +84,29 @@ class ScheduledJobsIT {
         assertThat(schedule.zone()).isEqualTo("${societix.jobs.zone}");
         assertThat(environment.getProperty("societix.jobs.zone")).isEqualTo("UTC");
 
-        insertWork("treasury", "1 day");
-        insertWork("privacy", "1 day");
-        insertWork("treasury", "-1 day");
-        insertWork("privacy", "-1 day");
+        for (UUID tenantId : ScheduledJobsTestConfiguration.TENANTS) {
+            insertWork(tenantId, "treasury", "1 day");
+            insertWork(tenantId, "privacy", "1 day");
+            insertWork(tenantId, "treasury", "-1 day");
+            insertWork(tenantId, "privacy", "-1 day");
+        }
+        assertThat(visibleRowCount(ScheduledJobsTestConfiguration.TENANT_A)).isEqualTo(4);
+        assertThat(crossTenantUpdateCount(
+                        ScheduledJobsTestConfiguration.TENANT_A,
+                        ScheduledJobsTestConfiguration.TENANT_B))
+                .as("tenant A cannot update tenant B work")
+                .isZero();
         assertThat(dueWorkJobs)
                 .extracting(DueWorkJob::jobKey)
                 .containsExactlyInAnyOrder("treasury", "privacy");
-        assertThat(duePendingCount()).isEqualTo(2);
+        assertThat(duePendingCount()).isEqualTo(4);
 
         scheduler.runDailyDueWork();
 
         assertThat(lockIsHeld(DAILY_LOCK)).isTrue();
-        assertThat(processedCount("treasury")).isEqualTo(1);
-        assertThat(processedCount("privacy")).isEqualTo(1);
-        assertThat(pendingCount()).isEqualTo(2);
+        assertThat(processedCount("treasury")).isEqualTo(2);
+        assertThat(processedCount("privacy")).isEqualTo(2);
+        assertThat(pendingCount()).isEqualTo(4);
         assertThat(duePendingCount()).isZero();
     }
 
@@ -105,7 +122,7 @@ class ScheduledJobsIT {
         assertThat(lockAtMostFor).isEqualTo(Duration.ofHours(1));
         assertThat(lockAtLeastFor).isEqualTo(Duration.ofMinutes(1));
 
-        insertWork("treasury", "-1 day");
+        insertWork(ScheduledJobsTestConfiguration.TENANT_A, "treasury", "-1 day");
         LockConfiguration configuration = new LockConfiguration(
                 Instant.now(), annotation.name(), lockAtMostFor, lockAtLeastFor);
         SimpleLock otherInstance = lockProvider.lock(configuration).orElseThrow();
@@ -118,11 +135,32 @@ class ScheduledJobsIT {
         }
     }
 
-    private void insertWork(String jobKey, String offset) {
+    private void insertWork(UUID tenantId, String jobKey, String offset) {
         ownerJdbc.update(
-                "INSERT INTO societix_scheduled_job_it_work (job_key, due_at) VALUES (?, now() + ?::interval)",
+                "INSERT INTO societix_scheduled_job_it_work (tenant_id, job_key, due_at) "
+                        + "VALUES (?, ?, now() + ?::interval)",
+                tenantId,
                 jobKey,
                 offset);
+    }
+
+    private int visibleRowCount(UUID tenantId) {
+        return appTransaction.execute(status -> {
+            appJdbc.queryForObject(
+                    "SELECT set_config('app.tenant_id', ?, true)", String.class, tenantId.toString());
+            return appJdbc.queryForObject(
+                    "SELECT count(*) FROM societix_scheduled_job_it_work", Integer.class);
+        });
+    }
+
+    private int crossTenantUpdateCount(UUID tenantId, UUID otherTenantId) {
+        return appTransaction.execute(status -> {
+            appJdbc.queryForObject(
+                    "SELECT set_config('app.tenant_id', ?, true)", String.class, tenantId.toString());
+            return appJdbc.update(
+                    "UPDATE societix_scheduled_job_it_work SET processed_at = now() WHERE tenant_id = ?",
+                    otherTenantId);
+        });
     }
 
     private int processedCount(String jobKey) {

@@ -11,7 +11,7 @@ transaction, tenant context, and idempotency.
 
 | Acceptance criterion | Evidence |
 |---|---|
-| A scheduled job finds and processes rows that are due, leaving future rows pending. | `ScheduledJobsIT.scheduledJobProcessesDueRowsAndSupportsTreasuryAndPrivacy` inserts due and future rows for both sample contributors, invokes the Spring scheduler proxy, and checks processed and pending counts. |
+| A scheduled job finds and processes rows that are due, leaving future rows pending. | `ScheduledJobsIT.scheduledJobProcessesDueRowsAndSupportsTreasuryAndPrivacy` inserts due and future rows for both sample contributors and two tenants, invokes the Spring scheduler proxy, and checks processed and pending counts. |
 | The mechanism is reusable by Treasury and Privacy. | The same integration test checks that two independently keyed `DueWorkJob` beans are registered and both process their own due rows. |
 | The job runs once per schedule across multiple instances. | `ScheduledJobsIT.scheduledJobSkipsWorkWhileAnotherInstanceHoldsItsActualLock` holds the scheduler's actual ShedLock name through `LockProvider`, calls the proxied scheduler, and verifies work remains pending. It also checks the configured lock durations. |
 
@@ -49,6 +49,6 @@ Suggested verification from `backend/`:
 ## Decisions and follow-ups
 
 - ShedLock rows are retained and expired by moving `lock_until` and `locked_at` into the past. Tests do not delete rows that ShedLock may have cached.
-- Cross-tenant scheduled work cannot rely on a request's tenant context. A job touching tenant tables must use a transaction and set `app.tenant_id`; work that enumerates tenants should follow `OutboxTenantBatchReader` and the `outbox_pending_tenants` SECURITY DEFINER function pattern. The test fixture uses a non-tenant work table and does not substitute for a future tenant-isolation integration test.
+- Cross-tenant scheduled work cannot rely on a request's tenant context. A job touching tenant tables must use a transaction and set `app.tenant_id`; work that enumerates tenants should follow `OutboxTenantBatchReader` and the `outbox_pending_tenants` SECURITY DEFINER function pattern. The PostgreSQL integration fixture enables and forces RLS, processes each tenant in a separate transaction, and proves tenant A cannot read or update tenant B's work.
 - The SOC-21 role provisioning prerequisite remains in this PR per the requested scope. Its callback explicitly validates least-privilege attributes, handles concurrent role creation, and avoids repeated membership grants when the migration login is already a member.
-- Follow-up: add a production-level integration test for a concrete Treasury or Privacy contributor against an RLS-protected tenant table when either module owns such a due-work query.
+- Follow-up: when Treasury or Privacy adds a production due-work query, retain this tenant-scoped transaction pattern and extend the integration test to exercise that module's own RLS-protected table.
