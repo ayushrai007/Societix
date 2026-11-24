@@ -13,6 +13,9 @@ CREATE TABLE resident_notification (
     CONSTRAINT resident_notification_body_not_blank CHECK (length(btrim(body)) > 0)
 );
 
+CREATE INDEX resident_notification_inbox_idx
+    ON resident_notification (tenant_id, resident_id, created_at DESC);
+
 ALTER TABLE resident_notification ENABLE ROW LEVEL SECURITY;
 ALTER TABLE resident_notification FORCE ROW LEVEL SECURITY;
 
