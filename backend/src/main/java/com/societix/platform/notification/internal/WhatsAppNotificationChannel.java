@@ -16,7 +16,7 @@ public class WhatsAppNotificationChannel implements NotificationChannel {
 
     @Override
     public String channelKey() {
-        return "whatsapp";
+        return NotificationChannel.WHATSAPP;
     }
 
     @Override

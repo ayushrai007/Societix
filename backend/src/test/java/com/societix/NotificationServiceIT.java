@@ -121,6 +121,8 @@ class NotificationServiceIT {
         UUID eventId = notificationService.notifyResident(new NotificationRequest(
                 society.getId(), UUID.randomUUID(), "in-app", "Notice", "Fail closed"));
 
+        assertThat(processor.process(society.getId(), eventId)).isTrue();
+        assertThat(countNotifications(society.getId(), eventId)).isEqualTo(1);
         assertThat(countWithoutTenant()).isZero();
         assertThatThrownBy(() -> insertNotificationWithoutTenant(society.getId(), eventId))
                 .satisfies(error -> assertThat(error.getCause()).hasMessageContaining("row-level security"));

@@ -4,10 +4,10 @@ import com.societix.platform.notification.NotificationChannel;
 import com.societix.platform.notification.NotificationService;
 import com.societix.platform.outbox.OutboxEventHandler;
 import com.societix.platform.outbox.OutboxMessage;
+import java.util.UUID;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 

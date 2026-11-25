@@ -17,7 +17,7 @@ public class InAppNotificationChannel implements NotificationChannel {
 
     @Override
     public String channelKey() {
-        return "in-app";
+        return NotificationChannel.IN_APP;
     }
 
     @Override
