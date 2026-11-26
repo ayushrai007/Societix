@@ -13,6 +13,9 @@ class FirebaseJwtDecoderConfiguration {
     JwtDecoder firebaseJwtDecoder(
             @Value("${societix.security.firebase.project-id}") String projectId,
             @Value("${societix.security.firebase.jwk-set-uri}") String jwkSetUri) {
+        if (projectId.isBlank()) {
+            throw new IllegalStateException("Required property societix.security.firebase.project-id must not be blank");
+        }
         String issuer = "https://securetoken.google.com/" + projectId;
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
         decoder.setJwtValidator(FirebaseJwtValidators.forProject(projectId, issuer));

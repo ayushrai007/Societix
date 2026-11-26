@@ -10,7 +10,9 @@ class FirebaseJwtDecoderConfigurationTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
             .withUserConfiguration(FirebaseJwtDecoderConfiguration.class)
-            .withPropertyValues("societix.security.firebase.jwk-set-uri=https://example.test/jwks");
+            .withPropertyValues(
+                    "societix.security.firebase.jwk-set-uri=https://example.test/jwks",
+                    "societix.security.firebase.project-id=");
 
     @Test
     void missingFirebaseProjectIdFailsApplicationStartup() {
