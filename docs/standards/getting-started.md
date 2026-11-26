@@ -73,6 +73,22 @@ Copy the tracked local defaults from `.env.example`; `.env` and `.env.*` remain 
 cp .env.example .env
 ```
 
+SOC-11 stores verified Indian phone contacts encrypted with AES-256-GCM. Generate a local key and
+put it in the ignored `.env` file as `SOCIETIX_PHONE_ENCRYPTION_KEY`:
+
+```bash
+openssl rand -base64 32
+```
+
+Do not commit or share this key. Preserve it for the lifetime of local data; replacing it requires
+re-encrypting stored phone contacts. Production should supply the key through a managed secret or
+key-management service. `FIREBASE_ADMIN_ENABLED` defaults to `false`, so the backend can start
+without Firebase Admin credentials. Applications can be submitted, but approvals, role changes, and
+suspension return `503` until Firebase Admin is configured, preventing a database change that cannot
+be propagated to ID-token claims. To enable claims sync, set it to `true` and provide Application
+Default Credentials or workload identity. See the [platform-admin bootstrap
+runbook](../security/platform-admin-bootstrap.md) for the one-time operator setup.
+
 The backend imports the repository-root `.env` when it starts from `backend/`. See
 [`../database-migrations.md`](../database-migrations.md) for the owner/runtime database roles.
 
@@ -131,11 +147,69 @@ npm run dev
 
 Vite will serve the console at `http://localhost:5173` and proxy API calls to the backend.
 
-## 8. Log in as a seeded user (Planned — SOC-11 / Demo Seed)
+## 8. Test Firebase authentication and onboarding
 
-Once Auth (SOC-11) and demo seed profiles are implemented in upcoming tasks, test accounts will be available:
-- **Secretary (admin view):** `secretary@maple.demo` / `Password123!`
-- **Resident (member view):** `resident.a101@maple.demo` / `Password123!`
+SOC-11 adds Firebase ID-token authentication and membership onboarding endpoints. For local testing,
+use the Firebase Authentication Emulator so no live Firebase project or SMS is needed:
+
+1. Install Node.js and the Firebase CLI (`npm install -g firebase-tools`). From the repository root,
+   start Auth Emulator with the demo project ID:
+
+   ```bash
+   firebase emulators:start --only auth --project demo-societix-local
+   ```
+
+   The Auth Emulator UI is at `http://127.0.0.1:4000`.
+2. In a separate terminal, enable emulator mode and Firebase Admin integration in the ignored
+   `.env` file:
+
+   ```dotenv
+   FIREBASE_PROJECT_ID=demo-societix-local
+   FIREBASE_ADMIN_ENABLED=false
+   FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099
+   SOCIETIX_SOCIETY_CREATION_ENABLED=true
+   SOCIETIX_PLATFORM_ADMIN_BOOTSTRAP_FIREBASE_UID=
+   ```
+
+   Keep `FIREBASE_ADMIN_ENABLED=false`; setting `FIREBASE_AUTH_EMULATOR_HOST` enables the Admin SDK
+   against the emulator without production credentials. The `demo-` project ID is required so
+   unsigned emulator tokens cannot be enabled against a real Firebase project. Society creation
+   remains disabled by default and the setting above enables it only for local testing. The emulator setting must be an actual
+   process environment variable because the Firebase Admin SDK reads it directly. From `backend/`,
+   start the server with:
+
+   ```bash
+   set -a; source ../.env; set +a
+   ./mvnw spring-boot:run
+   ```
+3. Use the Auth Emulator UI to create a phone-auth user. Sign in and print that user's ID token with
+   the repository helper (it reads the SMS code from the emulator REST interface, so no client SDK
+   is needed):
+
+   ```bash
+   cd ..
+   ./scripts/firebase-emulator-signin.py
+   ```
+
+   Enter the user's phone number in E.164 format. The script prints only the ID token to stdout and
+   sends progress/errors to stderr. Capture it with `ADMIN_ID_TOKEN="$(../scripts/firebase-emulator-signin.py)"`
+   when running from `backend/`. Create one user for the platform admin and a separate phone-auth
+   user to exercise membership requests. Emulator phone sign-in generates local verification codes;
+   it does not send a real SMS.
+4. To test the approval flow, set `SOCIETIX_PLATFORM_ADMIN_BOOTSTRAP_FIREBASE_UID` to the emulator
+   user's UID for one backend startup. The backend creates the local platform-admin record and sets
+   its custom claims in the emulator. Clear the UID setting afterwards. This bootstrap modifies only
+   the local Societix database and emulator.
+5. Submit a membership request with the second user's ID token and a verified Indian test number.
+   Approvals sync claims through the Auth Emulator. Local phone contact encryption still requires a
+   local key; generate one with `openssl rand -base64 32` and set
+   `SOCIETIX_PHONE_ENCRYPTION_KEY` in `.env`.
+
+Emulator tokens are unsigned and must never be accepted by a deployed environment. Keep
+`FIREBASE_AUTH_EMULATOR_HOST` empty outside local development. Startup fails if emulator mode is
+configured with a project ID that does not start with `demo-`, and startup logs a warning when the
+emulator verifier is enabled. Without the setting, the backend verifies Firebase's production token
+signature.
 
 Zero-touch reconciliation sandbox trigger (arrives with SOC-103):
 
