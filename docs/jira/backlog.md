@@ -177,11 +177,11 @@ _Sending in-app / WhatsApp / SMS messages, with fallback._
 
 - **Points:** 3  |  **Priority:** High  |  **Sprint:** W2  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-1,notify`
 
-**Description:** A service that sends a message to a resident via a channel (in-app, WhatsApp, SMS). Start with in-app + one real channel behind an interface so others slot in. Driven by outbox events. Where to start: an interface + in-app impl + a WhatsApp stub.
+**Description:** A service that sends a message to a resident via a channel (in-app, WhatsApp, SMS). Start with in-app plus a WhatsApp adapter behind an interface. Until a real provider is configured, selecting WhatsApp must fail visibly and remain eligible for outbox retry/parking. Driven by outbox events. WhatsApp Cloud API delivery needs the resident contact/template contract and is deferred from this ticket.
 
 **Acceptance criteria:**
 - a module can request 'notify resident X'
-- at least in-app + one external channel work
+- in-app delivery works; the WhatsApp adapter fails visibly while unconfigured, so its outbox event retries and is eventually parked rather than being marked delivered (live provider delivery is deferred)
 - sending is triggered by an outbox event (decoupled)
 
 ### SOC-31 — Channel fallback and delivery logging
@@ -194,6 +194,17 @@ _Sending in-app / WhatsApp / SMS messages, with fallback._
 - a failed channel escalates to the next
 - delivery attempts are logged
 - the same event never sends two duplicate messages
+
+### SOC-32 — WhatsApp Cloud API delivery
+
+- **Points:** 3  |  **Priority:** High  |  **Sprint:** TBD  |  **Assignee:** Ayush  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-1,notify,whatsapp`
+
+**Description:** Implement live WhatsApp Cloud API delivery using the resident model's phone number and approved template. Keep credentials in environment/secret configuration, use the event ID for delivery correlation, and never log recipient or message content.
+
+**Acceptance criteria:**
+- WhatsApp notifications resolve the resident's phone number and approved template through the resident model within the tenant boundary
+- Cloud API requests use configured credentials and the approved template format; provider failures surface to the outbox retry path
+- tests verify request construction, error handling, and that credentials/recipient/message content are not logged
 
 ## Epic: Foundations: Audit & Monitoring
 
