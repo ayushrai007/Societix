@@ -179,6 +179,37 @@ class FlywayMigrationTest {
     }
 
     @Test
+    void residentNotificationMigrationCreatesForcedRlsAndInboxIndex() {
+        List<Map<String, Object>> history = jdbcTemplate.queryForList(
+                "select version, script, success from flyway_schema_history where version = '8'");
+        assertThat(history).singleElement().satisfies(row -> {
+            assertThat(row).containsEntry("version", "8");
+            assertThat(row).containsEntry("script", "V8__create_resident_notifications.sql");
+            assertThat(row).containsEntry("success", true);
+        });
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from information_schema.columns where table_name = 'resident_notification' "
+                                + "and column_name in ('id', 'tenant_id', 'event_id', 'resident_id', 'title', 'body', 'created_at')",
+                        Integer.class))
+                .isEqualTo(7);
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from pg_policies where tablename = 'resident_notification' "
+                                + "and policyname = 'resident_notification_tenant_isolation'",
+                        Integer.class))
+                .isEqualTo(1);
+        assertThat(jdbcTemplate.queryForObject(
+                        "select relrowsecurity and relforcerowsecurity from pg_class "
+                                + "where oid = 'resident_notification'::regclass",
+                        Boolean.class))
+                .isTrue();
+        assertThat(jdbcTemplate.queryForObject(
+                        "select count(*) from pg_indexes where tablename = 'resident_notification' "
+                                + "and indexname = 'resident_notification_inbox_idx'",
+                        Integer.class))
+                .isEqualTo(1);
+    }
+
+    @Test
     void outboxMigrationFailsWhenQueueReaderIsSuperuser() {
         String guardTestDatabase = "societix_outbox_guard_test";
         jdbcTemplate.execute("ALTER ROLE societix_outbox_queue_reader SUPERUSER");
