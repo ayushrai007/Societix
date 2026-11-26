@@ -4,6 +4,10 @@
 token whose Societix `roles` custom claim contains `PLATFORM_ADMIN`. The caller-controlled
 `X-Admin-Role` header is ignored and must never be used as authentication or authorization.
 
+Society creation and metrics stay disabled until SOC-11 checks the administrator's current account
+status and authorization version against Societix data on every request. Do not enable
+`SOCIETIX_SOCIETY_CREATION_ENABLED` before that check is deployed.
+
 Request:
 
 ```http

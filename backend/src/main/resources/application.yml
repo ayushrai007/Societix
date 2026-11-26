@@ -42,10 +42,12 @@ management:
 
 societix:
   security:
+    # Keep disabled until SOC-11 checks current administrator status and token version per request.
+    society-creation-enabled: ${SOCIETIX_SOCIETY_CREATION_ENABLED:false}
     firebase:
-      # Configure per environment; local defaults intentionally cannot validate production tokens.
-      project-id: ${FIREBASE_PROJECT_ID:societix-local}
-      issuer-uri: ${FIREBASE_ISSUER_URI:https://securetoken.google.com/societix-local}
+      # Required per environment: a missing project must fail startup instead of changing trust roots.
+      project-id: ${FIREBASE_PROJECT_ID}
+      issuer-uri: ${FIREBASE_ISSUER_URI}
       jwk-set-uri: ${FIREBASE_JWK_SET_URI:https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com}
   outbox:
     poll-delay-ms: ${SOCIETIX_OUTBOX_POLL_DELAY_MS:3000}
