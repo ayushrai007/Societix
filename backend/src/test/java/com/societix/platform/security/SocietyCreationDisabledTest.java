@@ -21,7 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
             "societix.security.firebase.issuer-uri=https://securetoken.google.com/societix-test",
             "societix.security.firebase.jwk-set-uri=https://example.test/jwks"
         })
-@Import(FirebaseSecurityConfiguration.class)
+@Import({FirebaseSecurityConfiguration.class, FirebaseJwtDecoderConfiguration.class})
 class SocietyCreationDisabledTest {
 
     private final MockMvc mockMvc;
