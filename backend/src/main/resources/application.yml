@@ -47,7 +47,6 @@ societix:
     firebase:
       # Required per environment: a missing project must fail startup instead of changing trust roots.
       project-id: ${FIREBASE_PROJECT_ID}
-      issuer-uri: ${FIREBASE_ISSUER_URI}
       jwk-set-uri: ${FIREBASE_JWK_SET_URI:https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com}
   outbox:
     poll-delay-ms: ${SOCIETIX_OUTBOX_POLL_DELAY_MS:3000}

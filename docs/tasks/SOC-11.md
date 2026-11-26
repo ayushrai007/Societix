@@ -6,8 +6,9 @@
   that ID token directly as the API bearer token; there is no second Societix-issued token.
 - Firebase's `sub` is the Firebase UID. Societix maps it to its internal user record and adds only
   the custom claims `userId`, `tenantId`, `roles`, and `authorizationVersion`.
-- The backend validates token signature, issuer, audience, expiry, non-empty `sub`, and numeric
-  `auth_time`. It never accepts identity,
+- The backend requires a Firebase project ID and derives its expected issuer from that ID. It
+  validates token signature, issuer, audience, expiry, non-empty `sub`, and numeric `auth_time`. It
+  never accepts identity,
   society, or role claims from request headers or bodies.
 - A phone-verified user may request membership in exactly one society. The request remains pending
   until that society's admin approves it and assigns roles. Pending accounts cannot call protected
