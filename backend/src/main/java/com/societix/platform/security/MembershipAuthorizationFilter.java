@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -39,12 +41,14 @@ public class MembershipAuthorizationFilter extends OncePerRequestFilter {
         }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
+        if (authentication == null
+                || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken) {
             filterChain.doFilter(request, response);
             return;
         }
         if (!(authentication.getPrincipal() instanceof Jwt jwt)) {
-            filterChain.doFilter(request, response);
+            deny();
             return;
         }
 
@@ -58,7 +62,7 @@ public class MembershipAuthorizationFilter extends OncePerRequestFilter {
             String userIdClaim = jwt.getClaimAsString("userId");
             Object versionClaim = jwt.getClaim("authorizationVersion");
             if (userIdClaim == null || !(versionClaim instanceof Number version)) {
-                deny(response);
+                deny();
                 return;
             }
             UUID userId = UUID.fromString(userIdClaim);
@@ -71,12 +75,12 @@ public class MembershipAuthorizationFilter extends OncePerRequestFilter {
             boolean societyContext = tenantIdClaim != null || societyRole;
             if (societyContext) {
                 if (tenantIdClaim == null) {
-                    deny(response);
+                    deny();
                     return;
                 }
                 Object membershipVersionClaim = jwt.getClaim("membershipAuthorizationVersion");
                 if (platformAdmin && !(membershipVersionClaim instanceof Number)) {
-                    deny(response);
+                    deny();
                     return;
                 }
                 long membershipVersion = membershipVersionClaim instanceof Number membershipVersionNumber
@@ -85,21 +89,21 @@ public class MembershipAuthorizationFilter extends OncePerRequestFilter {
                 current = current && memberships.hasCurrentApprovedMembership(
                         jwt.getSubject(), userId, UUID.fromString(tenantIdClaim), membershipVersion);
             } else if (!platformAdmin) {
-                deny(response);
+                deny();
                 return;
             }
             if (!current) {
-                deny(response);
+                deny();
                 return;
             }
         } catch (IllegalArgumentException exception) {
-            deny(response);
+            deny();
             return;
         }
         filterChain.doFilter(request, response);
     }
 
-    private void deny(HttpServletResponse response) throws IOException {
-        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Account approval or token refresh is required");
+    private void deny() {
+        throw new AccessDeniedException("Current account status or authorization version is invalid");
     }
 }

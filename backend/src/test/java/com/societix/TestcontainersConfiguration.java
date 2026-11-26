@@ -49,6 +49,8 @@ public class TestcontainersConfiguration {
         return registry -> {
             registry.add("societix.security.society-creation-enabled", () -> true);
             registry.add("societix.security.firebase.project-id", () -> "societix-test");
+            registry.add("societix.security.firebase.auth-emulator-host", () -> "");
+            registry.add("societix.security.firebase.admin.enabled", () -> false);
             registry.add("spring.datasource.url", postgres::getJdbcUrl);
             registry.add("spring.datasource.username", () -> APP_RUNTIME_ROLE);
             registry.add("spring.datasource.password", () -> APP_RUNTIME_PASSWORD);

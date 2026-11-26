@@ -50,6 +50,8 @@ class LocalDevEnvironmentTest {
     @DynamicPropertySource
     static void useComposeDatabase(DynamicPropertyRegistry registry) {
         registry.add("societix.security.firebase.project-id", () -> "societix-test");
+        registry.add("societix.security.firebase.auth-emulator-host", () -> "");
+        registry.add("societix.security.firebase.admin.enabled", () -> false);
         ContainerState postgres = service("postgres");
         registry.add("spring.datasource.url", () -> "jdbc:postgresql://%s:%d/societix"
                 .formatted(postgres.getHost(), publishedPort(postgres, 5432)));

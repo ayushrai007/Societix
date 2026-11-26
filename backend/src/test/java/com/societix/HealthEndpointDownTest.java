@@ -15,7 +15,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.MockMvc;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+    "societix.security.firebase.auth-emulator-host=",
+    "societix.security.firebase.admin.enabled=false"
+})
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 class HealthEndpointDownTest {
