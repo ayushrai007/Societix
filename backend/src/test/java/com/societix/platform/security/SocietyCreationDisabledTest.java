@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.societix.platform.society.internal.SocietyOnboardingService;
 import com.societix.platform.society.api.SocietyController;
+import com.societix.platform.identity.internal.MembershipAuthorizationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -15,6 +16,7 @@ import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSec
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 @WebMvcTest(
         controllers = SocietyController.class,
@@ -27,13 +29,23 @@ import org.springframework.test.web.servlet.MockMvc;
     SecurityAutoConfiguration.class,
     ServletWebSecurityAutoConfiguration.class
 })
-@Import({FirebaseSecurityConfiguration.class, FirebaseJwtDecoderConfiguration.class})
+@Import({
+    FirebaseSecurityConfiguration.class,
+    FirebaseJwtDecoderConfiguration.class,
+    SecurityProblemResponseHandler.class
+})
 class SocietyCreationDisabledTest {
 
     private final MockMvc mockMvc;
 
     @MockitoBean
     private SocietyOnboardingService onboarding;
+
+    @MockitoBean
+    private MembershipAuthorizationService authorizationService;
+
+    @MockitoBean
+    private StringRedisTemplate redis;
 
     @Autowired
     SocietyCreationDisabledTest(MockMvc mockMvc) {
