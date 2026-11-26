@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.http.HttpMethod;
@@ -48,16 +47,6 @@ public class FirebaseSecurityConfiguration {
                 .formLogin(org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer::disable)
                 .csrf(org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer::disable)
                 .build();
-    }
-
-    @Bean
-    JwtDecoder firebaseJwtDecoder(
-            @Value("${societix.security.firebase.project-id}") String projectId,
-            @Value("${societix.security.firebase.issuer-uri}") String issuer,
-            @Value("${societix.security.firebase.jwk-set-uri}") String jwkSetUri) {
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
-        decoder.setJwtValidator(FirebaseJwtValidators.forProject(projectId, issuer));
-        return decoder;
     }
 
     @Bean
