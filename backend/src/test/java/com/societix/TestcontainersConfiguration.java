@@ -1,8 +1,10 @@
 package com.societix;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.context.DynamicPropertyRegistrar;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
@@ -45,7 +47,13 @@ public class TestcontainersConfiguration {
     }
 
     @Bean
-    DynamicPropertyRegistrar postgresProperties(PostgreSQLContainer postgres) {
+    GenericContainer<?> redisContainer() {
+        return new GenericContainer<>(DockerImageName.parse("redis:8.2-alpine")).withExposedPorts(6379);
+    }
+
+    @Bean
+    DynamicPropertyRegistrar testProperties(
+            PostgreSQLContainer postgres, @Qualifier("redisContainer") GenericContainer<?> redis) {
         return registry -> {
             registry.add("societix.security.society-creation-enabled", () -> true);
             registry.add("societix.security.firebase.project-id", () -> "societix-test");
@@ -56,6 +64,8 @@ public class TestcontainersConfiguration {
             registry.add("spring.datasource.password", () -> APP_RUNTIME_PASSWORD);
             registry.add("spring.flyway.user", postgres::getUsername);
             registry.add("spring.flyway.password", postgres::getPassword);
+            registry.add("spring.data.redis.host", redis::getHost);
+            registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379));
         };
     }
 }
