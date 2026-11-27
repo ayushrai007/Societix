@@ -18,7 +18,7 @@ each engineer owns an explicit primary area for delivery and review depth.
 | Engineer | Primary Ownership | Also Reviews / Helps With |
 |---|---|---|
 | **Aditya** (`Adityarajkishan`, Dev A) | Project setup, Flyway migrations, Docker Compose dev environment, CI pipeline, Tenancy RLS (SOC-13), Chart of accounts & Ledger (SOC-100), Financial Statements (SOC-105), Maker-Checker payouts (SOC-106), Smart-Switch Migration (SOC-200, SOC-202, SOC-203), and Pair tasks. | Security, database migrations & privacy checks |
-| **Shree** (`ssharan100`, Dev B) | Modular monolith backend scaffold (SOC-2), Walking skeleton (SOC-6), Auth & Login (SOC-11, SOC-12), Health/metrics (SOC-41), Tracker CI gate (SOC-140), Billing engine & VANs (SOC-101, SOC-102), Defaulter cadence (SOC-104), AGM notices & Quorum engine (SOC-160, SOC-161), Handover pack (SOC-164), and Pair tasks. | API consistency & financial logic |
+| **Shree** (`ssharan100`, Dev B) | Modular monolith backend scaffold (SOC-2), Walking skeleton (SOC-6), Auth & Login (SOC-11, SOC-12), Flat & Member master records (SOC-14), Health/metrics (SOC-41), Tracker CI gate (SOC-140), Billing engine & VANs (SOC-101, SOC-102), Defaulter cadence (SOC-104), AGM notices & Quorum engine (SOC-160, SOC-161), Handover pack (SOC-164), and Pair tasks. | API consistency & financial logic |
 | **Ayush** (`ayushrai007`, Dev C, Repo Owner) | Tenant onboarding entity (SOC-10), Outbox table & background poller (SOC-20, SOC-21, SOC-22), Notifications (SOC-30, SOC-31), Audit log (SOC-40), Gate visitor backend (SOC-122 backend half), Privacy auto-delete & consent (SOC-141, SOC-142), pgvector & AI copilot (SOC-180, SOC-181, SOC-182, SOC-183), Capex voting (SOC-163), and MyGate import (SOC-201). | Edge sync & front-end architecture |
 
 ### Starting assignments
@@ -37,11 +37,11 @@ Both pair tasks carry an explicit **5-day dedicated buffer** immediately followi
 
 ## Effort Re-Check & Scope Reality
 
-The active backlog defines **45 tasks across 11 epics, totaling 125 story points** (1 point ≈ 1 developer-day).
+The active backlog defines **46 tasks across 11 epics, totaling 127 story points** (1 point ≈ 1 developer-day).
 By contrast, the historical archived plan ([`archive/delivery/execution-plan-3-devs.md`](archive/delivery/execution-plan-3-devs.md) §2)
 estimated **55–65 story-weeks (~275–325 dev-days)** across 12–14 two-week sprints (~6–7 months) to deliver full scope.
 
-The 125-point backlog is an aggressive, tightly scoped estimate based on strict vertical slices and
+The 127-point backlog is an aggressive, tightly scoped estimate based on strict vertical slices and
 modular monolith boundaries. When re-checking effort against production reality, the following tasks
 are most likely to be underestimated:
 
@@ -116,14 +116,14 @@ flowchart TD
 | **Thu 19 Nov** | **SOC-13** Tenancy RLS (cont.) | **SOC-41** Health & metrics (cont.) | **SOC-30** Notifications (3 pts) | SOC-41 merges |
 | **Fri 20 Nov** | **SOC-13** Tenancy RLS (cont.) | **SOC-140** Tracker check (2 pts) | **SOC-30** Notifications (cont.) | SOC-13 RLS merges |
 | **Sat 21 Nov** | **SOC-100** Ledger CoA (3 pts) | **SOC-140** Tracker check (cont.) | **SOC-30** Notifications (cont.) | SOC-140 & SOC-30 merge |
-| **Sun 22 Nov** | **SOC-100** Ledger CoA (cont.) | *Buffer / Code review* | **SOC-31** Channel fallback (2 pts) | Notification fallback started |
+| **Sun 22 Nov** | **SOC-100** Ledger CoA (cont.) | **SOC-14** Flat & Member master (2 pts) | **SOC-31** Channel fallback (2 pts) | Notification fallback started; SOC-14 begins |
 
 ### Week 3: 23 Nov – 29 Nov 2026 (Foundations Complete & Core Billing)
 *Goal: Complete foundations milestone, double-entry ledger, billing engine, audit log.*
 
 | Day | Aditya (Dev A) | Shree (Dev B) | Ayush (Dev C) | Notes |
 |---|---|---|---|---|
-| **Mon 23 Nov** | **SOC-100** Ledger CoA (cont.) | *Buffer / Code review* | **SOC-31** Channel fallback (cont.) | SOC-100 & SOC-31 merge |
+| **Mon 23 Nov** | **SOC-100** Ledger CoA (cont.) | **SOC-14** Flat & Member master (cont.) | **SOC-31** Channel fallback (cont.) | SOC-100, SOC-31 & SOC-14 merge (before SOC-101) |
 | **Tue 24 Nov** | **SOC-105** Financial stmts (3 pts) | **SOC-101** Billing engine (3 pts) | **SOC-40** Audit log (3 pts) | Parallel financial & audit track |
 | **Wed 25 Nov** | **SOC-105** Financial stmts (cont.) | **SOC-101** Billing engine (cont.) | **SOC-40** Audit log (cont.) | |
 | **Thu 26 Nov** | **SOC-105** Financial stmts (cont.) | **SOC-101** Billing engine (cont.) | **SOC-40** Audit log (cont.) | **Milestone 2 Complete** |
@@ -203,7 +203,7 @@ flowchart TD
    local stack, CI pipeline, tenant onboarding entity, and the **SOC-6 walking skeleton** end-to-end
    slice proven against local infrastructure.
 2. **Milestone 2 — Foundations Complete (Thu 26 Nov, W3):**  
-   Row-Level Security (SOC-13) verified fail-closed, RBAC roles (SOC-12), transactional outbox table &
+   Row-Level Security (SOC-13) verified fail-closed, RBAC roles (SOC-12), flat & member master records (SOC-14), transactional outbox table &
    poller (SOC-20/21), scheduled automation (SOC-22), structured audit log (SOC-40), health checks (SOC-41),
    notification engine with fallback (SOC-30/31), and no-tracker CI gate (SOC-140).
 3. **Milestone 3 — Full Chain Proven End-to-End (Wed 9 Dec, W5):**  
@@ -249,11 +249,12 @@ A task is not complete when code is written on a local machine — it is done on
 
 ## Known Backlog Gaps
 
-- **Flat and Member Master CRUD:** The current backlog specifies billing (SOC-101), VAN assignment (SOC-102),
-  and accounting imports (SOC-200), but has no standalone task for creating or updating flats/units
-  and resident member master records. In v1, initial unit master data is seeded via SOC-10 / Flyway or
-  populated during the Tally/Excel import (SOC-200). A dedicated flat/member management CRUD task should
-  be scheduled for the management phase.
+- **Flat and Member Master CRUD — resolved:** This gap is now covered by
+  **SOC-14 Flat/Unit and Member master records** (2 pts, Shree, Foundations: Auth & Tenancy). It is
+  scheduled on Shree's former buffer days, Sun 22 Nov (W2) and Mon 23 Nov (W3), so it merges before
+  SOC-101 starts on Tue 24 Nov. SOC-14 is now a precondition of billing (SOC-101), VAN assignment
+  (SOC-102), and the Tally/Excel import (SOC-200). No other task moves and the 1 Jan 2027 end date is
+  unchanged.
 
 ---
 
