@@ -27,3 +27,28 @@ user.
 - A caller-supplied role header/body cannot grant privileges.
 - A valid `PLATFORM_ADMIN` token can create a society; missing, invalid, or non-admin credentials
   cannot.
+
+## Implementation record
+
+- Added `Role` as the role-name source for token claim conversion, Spring authorities, method
+  authorization expressions, membership role assignment, and Firebase claim synchronization.
+- Membership role request and response DTOs now use `Role` values. `PLATFORM_ADMIN` remains
+  non-assignable to society memberships; security guard membership is restricted to `GUARD`.
+- Added tests for every declared role mapping, ignoring unknown role names, a treasurer-only test
+  fixture denying an owner even when the request header and body name `TREASURER`, and allowing a
+  treasurer claim. The fixture is test-only because no production treasurer-only operation exists yet.
+- Society creation and current account/version enforcement remain covered by the SOC-11 onboarding
+  security tests in this feature branch.
+
+### Acceptance criteria to verification
+
+| Acceptance criterion | Verification |
+|---|---|
+| All backlog roles are represented and mapped | `FirebaseRoleAuthoritiesConverterTest` |
+| Owner cannot use treasurer-only operation; role header cannot grant access | `RoleAuthorizationTest` |
+| Only `PLATFORM_ADMIN` can create a society, with current account checks | `SocietyOnboardingIT` and SOC-11 security tests |
+
+### Verification status
+
+- Focused SOC-12 security tests: `./mvnw -B -Dtest=FirebaseRoleAuthoritiesConverterTest,RoleAuthorizationTest test` — passed.
+- Full `./mvnw -B verify` — passed (36 unit/context tests and 23 integration tests).

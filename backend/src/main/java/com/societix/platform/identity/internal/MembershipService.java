@@ -7,7 +7,7 @@ import com.societix.platform.identity.api.PendingMembershipResponse;
 import com.societix.platform.identity.domain.MembershipStatus;
 import com.societix.platform.identity.domain.MembershipType;
 import com.societix.platform.identity.domain.PhoneNumberProtector;
-import com.societix.platform.identity.domain.SocietixRoleClaims;
+import com.societix.platform.identity.domain.Role;
 import com.societix.platform.identity.domain.TenantSql;
 import com.societix.platform.outbox.OutboxEvent;
 import com.societix.platform.outbox.OutboxWriter;
@@ -223,17 +223,17 @@ public class MembershipService {
         if (assigned != 1) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "The initial society secretary is already appointed");
         }
-        approve(societyId, membershipId, Set.of(SocietixRoleClaims.SECRETARY), platformAdminUid);
+        approve(societyId, membershipId, Set.of(Role.SECRETARY), platformAdminUid);
         return getMembership(societyId, membershipId);
     }
 
     @Transactional
     public MembershipResponse approve(
-            UUID societyId, UUID membershipId, Set<String> roles, String approverFirebaseUid) {
+            UUID societyId, UUID membershipId, Set<Role> roles, String approverFirebaseUid) {
         requireFirebaseClaimsSyncConfigured();
         tenantSql.setTenant(societyId);
         MembershipType membershipType = requirePendingMembership(societyId, membershipId);
-        Set<String> assignedRoles = validateRoles(membershipType, roles);
+        Set<Role> assignedRoles = validateRoles(membershipType, roles);
         String roleJson = writeJson(assignedRoles);
         List<ChangedMembership> changed = jdbcTemplate.query(
                 """
@@ -274,7 +274,7 @@ public class MembershipService {
     }
 
     @Transactional
-    public MembershipResponse assignRoles(UUID societyId, UUID membershipId, Set<String> roles) {
+    public MembershipResponse assignRoles(UUID societyId, UUID membershipId, Set<Role> roles) {
         requireFirebaseClaimsSyncConfigured();
         tenantSql.setTenant(societyId);
         lockSociety(societyId);
@@ -286,8 +286,8 @@ public class MembershipService {
                 .stream()
                 .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Approved member was not found"));
-        Set<String> assignedRoles = validateRoles(membershipType, roles);
-        preserveSecretary(societyId, membershipId, assignedRoles.contains(SocietixRoleClaims.SECRETARY));
+        Set<Role> assignedRoles = validateRoles(membershipType, roles);
+        preserveSecretary(societyId, membershipId, assignedRoles.contains(Role.SECRETARY));
         int updated = jdbcTemplate.update(
                 """
                 UPDATE society_membership
@@ -355,15 +355,15 @@ public class MembershipService {
         return memberships.getFirst();
     }
 
-    private Set<String> validateRoles(MembershipType membershipType, Set<String> roles) {
-        if (roles == null || roles.isEmpty() || roles.stream().anyMatch(role -> !SocietixRoleClaims.canBeAssigned(role))) {
+    private Set<Role> validateRoles(MembershipType membershipType, Set<Role> roles) {
+        if (roles == null || roles.isEmpty() || roles.stream().anyMatch(role -> !role.isAssignableToSocietyMembership())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "One or more requested roles cannot be assigned");
         }
-        if (membershipType == MembershipType.RESIDENT && roles.contains(SocietixRoleClaims.GUARD)) {
+        if (membershipType == MembershipType.RESIDENT && roles.contains(Role.GUARD)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Resident membership cannot receive the GUARD role");
         }
         if (membershipType == MembershipType.SECURITY_GUARD
-                && !roles.equals(Set.of(SocietixRoleClaims.GUARD))) {
+                && !roles.equals(Set.of(Role.GUARD))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Security guard membership must have only the GUARD role");
         }
         return Set.copyOf(new LinkedHashSet<>(roles));
@@ -392,22 +392,25 @@ public class MembershipService {
         if (remainsSecretary) {
             return;
         }
+        String secretaryRoleJson = writeJson(Set.of(Role.SECRETARY));
         Integer otherSecretaries = jdbcTemplate.queryForObject(
                 """
                 SELECT count(*) FROM society_membership
-                WHERE tenant_id = ? AND id <> ? AND status = 'APPROVED' AND roles @> '["SECRETARY"]'::jsonb
+                WHERE tenant_id = ? AND id <> ? AND status = 'APPROVED' AND roles @> ?::jsonb
                 """,
                 Integer.class,
                 societyId,
-                membershipId);
+                membershipId,
+                secretaryRoleJson);
         Integer targetIsSecretary = jdbcTemplate.queryForObject(
                 """
                 SELECT count(*) FROM society_membership
-                WHERE tenant_id = ? AND id = ? AND status = 'APPROVED' AND roles @> '["SECRETARY"]'::jsonb
+                WHERE tenant_id = ? AND id = ? AND status = 'APPROVED' AND roles @> ?::jsonb
                 """,
                 Integer.class,
                 societyId,
-                membershipId);
+                membershipId,
+                secretaryRoleJson);
         if (targetIsSecretary != null && targetIsSecretary == 1 && (otherSecretaries == null || otherSecretaries == 0)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "A society must retain at least one secretary");
         }
@@ -429,20 +432,20 @@ public class MembershipService {
                 rs.getLong("claims_sync_version") >= rs.getLong("authorization_version"));
     }
 
-    private Set<String> readRoles(String json) {
+    private Set<Role> readRoles(String json) {
         try {
             JsonNode roles = jsonMapper.readTree(json);
-            Set<String> values = new LinkedHashSet<>();
-            roles.forEach(value -> values.add(value.asString()));
+            Set<Role> values = new LinkedHashSet<>();
+            roles.forEach(value -> values.add(Role.valueOf(value.asString())));
             return Set.copyOf(values);
         } catch (JacksonException exception) {
             throw new IllegalStateException("Stored membership roles are invalid", exception);
         }
     }
 
-    private String writeJson(Set<String> roles) {
+    private String writeJson(Set<Role> roles) {
         try {
-            return jsonMapper.writeValueAsString(roles.stream().sorted().toList());
+            return jsonMapper.writeValueAsString(roles.stream().map(Role::name).sorted().toList());
         } catch (JacksonException exception) {
             throw new IllegalStateException("Could not serialize membership roles", exception);
         }
