@@ -5,6 +5,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.societix.platform.error.ProblemResponseWriter;
 import com.societix.platform.identity.domain.Role;
 import com.societix.platform.identity.internal.MembershipAuthorizationService;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import({
     FirebaseSecurityConfiguration.class,
     FirebaseJwtDecoderConfiguration.class,
+    ProblemResponseWriter.class,
     SecurityProblemResponseHandler.class
 })
 class RoleAuthorizationTest {

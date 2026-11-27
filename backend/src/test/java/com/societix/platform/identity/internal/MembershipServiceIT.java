@@ -12,7 +12,7 @@ import com.societix.TestcontainersConfiguration;
 import com.societix.platform.identity.api.MembershipResponse;
 import com.societix.platform.identity.domain.MembershipStatus;
 import com.societix.platform.identity.domain.MembershipType;
-import com.societix.platform.identity.domain.SocietixRoleClaims;
+import com.societix.platform.identity.domain.Role;
 import com.societix.platform.society.api.CreateSocietyRequest;
 import com.societix.platform.society.internal.SocietyOnboardingService;
 import com.societix.platform.outbox.OutboxMessage;
@@ -90,7 +90,7 @@ class MembershipServiceIT {
                 .isFalse();
 
         MembershipResponse approved = memberships.approve(
-                societyId, pending.membershipId(), Set.of(SocietixRoleClaims.OWNER), "secretary-uid");
+                societyId, pending.membershipId(), Set.of(Role.OWNER), "secretary-uid");
         UUID userId = identityId(firebaseUid);
         assertThat(approved.status()).isEqualTo(MembershipStatus.APPROVED);
         assertThat(approved.authorizationVersion()).isEqualTo(1);
@@ -117,12 +117,12 @@ class MembershipServiceIT {
         MembershipResponse requested = memberships.requestMembership(
                 secretaryUid, "+919876543210", societyId, MembershipType.RESIDENT);
         MembershipResponse approved = memberships.approve(
-                societyId, requested.membershipId(), Set.of(SocietixRoleClaims.SECRETARY), "platform-admin");
+                societyId, requested.membershipId(), Set.of(Role.SECRETARY), "platform-admin");
         String backupUid = "backup-secretary-" + UUID.randomUUID();
         MembershipResponse backupPending = memberships.requestMembership(
                 backupUid, "+919876543211", societyId, MembershipType.RESIDENT);
         memberships.approve(
-                societyId, backupPending.membershipId(), Set.of(SocietixRoleClaims.SECRETARY), secretaryUid);
+                societyId, backupPending.membershipId(), Set.of(Role.SECRETARY), secretaryUid);
         UUID userId = identityId(secretaryUid);
         var secretaryToken = jwt().jwt(token -> token
                         .subject(secretaryUid)
@@ -130,7 +130,7 @@ class MembershipServiceIT {
                         .claim("tenantId", societyId.toString())
                         .claim("authorizationVersion", approved.authorizationVersion())
                         .claim("membershipAuthorizationVersion", approved.authorizationVersion())
-                        .claim("roles", List.of(SocietixRoleClaims.SECRETARY)))
+                        .claim("roles", List.of(Role.SECRETARY.name())))
                 .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_SECRETARY"));
 
         mockMvc.perform(get("/api/v1/membership-requests/pending").with(secretaryToken))
@@ -153,10 +153,10 @@ class MembershipServiceIT {
 
         MembershipResponse firstSecretary = memberships.appointFirstSecretary(societyId, firstPending.membershipId(), "platform-admin");
         assertThat(firstSecretary.status()).isEqualTo(MembershipStatus.APPROVED);
-        assertThat(firstSecretary.roles()).containsExactlyInAnyOrder(SocietixRoleClaims.SECRETARY);
+        assertThat(firstSecretary.roles()).containsExactlyInAnyOrder(Role.SECRETARY);
 
         assertThatThrownBy(() -> memberships.assignRoles(
-                        societyId, firstPending.membershipId(), Set.of(SocietixRoleClaims.OWNER)))
+                        societyId, firstPending.membershipId(), Set.of(Role.OWNER)))
                 .isInstanceOfSatisfying(ResponseStatusException.class, exception ->
                         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.CONFLICT));
         assertThatThrownBy(() -> memberships.setSuspended(societyId, firstPending.membershipId(), true))
@@ -167,12 +167,13 @@ class MembershipServiceIT {
         MembershipResponse secondPending = memberships.requestMembership(
                 secondUid, "+919876543211", societyId, MembershipType.RESIDENT);
         MembershipResponse secondApproved = memberships.approve(
-                societyId, secondPending.membershipId(), Set.of(SocietixRoleClaims.OWNER), "secretary-uid");
-        assertThat(memberships.assignRoles(societyId, secondPending.membershipId(), Set.of(SocietixRoleClaims.SECRETARY))
+                societyId, secondPending.membershipId(), Set.of(Role.OWNER), "secretary-uid");
+        assertThat(memberships
+                        .assignRoles(societyId, secondPending.membershipId(), Set.of(Role.SECRETARY))
                         .authorizationVersion())
                 .isEqualTo(secondApproved.authorizationVersion() + 1);
-        assertThat(memberships.assignRoles(societyId, firstPending.membershipId(), Set.of(SocietixRoleClaims.OWNER)).roles())
-                .containsExactlyInAnyOrder(SocietixRoleClaims.OWNER);
+        assertThat(memberships.assignRoles(societyId, firstPending.membershipId(), Set.of(Role.OWNER)).roles())
+                .containsExactlyInAnyOrder(Role.OWNER);
     }
 
     @Test
@@ -188,7 +189,7 @@ class MembershipServiceIT {
         MembershipResponse pending = memberships.requestMembership(
                 approvedUid, "+919876543211", societyId, MembershipType.RESIDENT);
         MembershipResponse approved = memberships.approve(
-                societyId, pending.membershipId(), Set.of(SocietixRoleClaims.OWNER), "secretary-uid");
+                societyId, pending.membershipId(), Set.of(Role.OWNER), "secretary-uid");
         var payload = jsonMapper.createObjectNode().put("membershipId", pending.membershipId().toString());
         transactions.executeWithoutResult(transaction -> {
             jdbcTemplate.queryForObject(
@@ -202,7 +203,7 @@ class MembershipServiceIT {
                 argThat(claims -> claims.get("userId").equals(identityId(approvedUid).toString())
                         && claims.get("tenantId").equals(societyId.toString())
                         && claims.get("membershipAuthorizationVersion").equals(approved.authorizationVersion())
-                        && claims.get("roles").equals(List.of(SocietixRoleClaims.OWNER))));
+                        && claims.get("roles").equals(List.of(Role.OWNER.name()))));
         assertThat(memberships.getMembership(societyId, pending.membershipId()).claimsSynchronized()).isTrue();
     }
 
