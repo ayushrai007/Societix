@@ -25,6 +25,7 @@ class MembershipAuthorizationFilterTest {
 
     private static final String FIREBASE_UID = "firebase-admin-uid";
     private static final UUID SOCIETIX_USER_ID = UUID.fromString("9f6596ca-74d2-48cc-9090-43f17d28ed54");
+    private static final UUID SOCIETY_ID = UUID.fromString("825bf83f-2189-43f2-b089-6fb275112d45");
     private static final long AUTHORIZATION_VERSION = 7;
 
     private final MembershipAuthorizationService memberships = org.mockito.Mockito.mock(MembershipAuthorizationService.class);
@@ -82,6 +83,55 @@ class MembershipAuthorizationFilterTest {
 
         assertThat(chain.getRequest()).isNull();
         verify(memberships).hasActivePlatformAdmin(FIREBASE_UID, SOCIETIX_USER_ID, AUTHORIZATION_VERSION);
+    }
+
+    @Test
+    void mixedPlatformAdminAndSocietyRoleRequiresBothCurrentVersions() throws Exception {
+        when(memberships.hasActivePlatformAdmin(FIREBASE_UID, SOCIETIX_USER_ID, AUTHORIZATION_VERSION))
+                .thenReturn(true);
+        when(memberships.hasCurrentApprovedMembership(FIREBASE_UID, SOCIETIX_USER_ID, SOCIETY_ID, 3))
+                .thenReturn(false);
+        MockHttpServletRequest request = requestWithMixedRoleToken();
+
+        assertThatThrownBy(() -> filter.doFilter(request, new MockHttpServletResponse(), new MockFilterChain()))
+                .isInstanceOf(AccessDeniedException.class);
+
+        verify(memberships).hasActivePlatformAdmin(FIREBASE_UID, SOCIETIX_USER_ID, AUTHORIZATION_VERSION);
+        verify(memberships).hasCurrentApprovedMembership(FIREBASE_UID, SOCIETIX_USER_ID, SOCIETY_ID, 3);
+    }
+
+    @Test
+    void authenticatedHealthRequestsDoNotDependOnSocietyMembership() throws Exception {
+        var jwt = org.springframework.security.oauth2.jwt.Jwt.withTokenValue("test-token")
+                .header("alg", "RS256")
+                .subject(FIREBASE_UID)
+                .build();
+        SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(
+                jwt, List.of(new SimpleGrantedAuthority("ROLE_OWNER"))));
+
+        MockFilterChain chain = new MockFilterChain();
+        filter.doFilter(new MockHttpServletRequest("GET", "/health"), new MockHttpServletResponse(), chain);
+
+        assertThat(chain.getRequest()).isNotNull();
+        verifyNoInteractions(memberships);
+    }
+
+    private MockHttpServletRequest requestWithMixedRoleToken() {
+        var jwt = org.springframework.security.oauth2.jwt.Jwt.withTokenValue("test-token")
+                .header("alg", "RS256")
+                .subject(FIREBASE_UID)
+                .claim("userId", SOCIETIX_USER_ID.toString())
+                .claim("tenantId", SOCIETY_ID.toString())
+                .claim("authorizationVersion", AUTHORIZATION_VERSION)
+                .claim("membershipAuthorizationVersion", 3)
+                .claim("roles", List.of("PLATFORM_ADMIN", "SECRETARY"))
+                .build();
+        SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(
+                jwt,
+                List.of(
+                        new SimpleGrantedAuthority("ROLE_PLATFORM_ADMIN"),
+                        new SimpleGrantedAuthority("ROLE_SECRETARY"))));
+        return new MockHttpServletRequest("GET", "/api/v1/membership-requests/pending");
     }
 
     private MockHttpServletRequest requestWithPlatformAdminToken() {

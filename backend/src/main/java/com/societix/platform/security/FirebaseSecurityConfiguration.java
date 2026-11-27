@@ -1,6 +1,7 @@
 package com.societix.platform.security;
 
 import com.societix.platform.identity.internal.MembershipAuthorizationService;
+import com.societix.platform.error.ProblemResponseWriter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,7 @@ public class FirebaseSecurityConfiguration {
             JwtDecoder firebaseJwtDecoder,
             Converter<Jwt, AbstractAuthenticationToken> converter,
             SecurityProblemResponseHandler securityProblemResponseHandler,
+            ProblemResponseWriter problemResponseWriter,
             MembershipAuthorizationService authorizationService,
             StringRedisTemplate redis,
             @Value("${societix.security.rate-limit.onboarding-requests-per-ip-per-minute:60}") int onboardingIpLimit,
@@ -61,7 +63,8 @@ public class FirebaseSecurityConfiguration {
                 .csrf(org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer::disable)
                 .addFilterAfter(new MembershipAuthorizationFilter(authorizationService), ExceptionTranslationFilter.class)
                 .addFilterAfter(
-                        new OnboardingRateLimitFilter(redis, onboardingIpLimit, membershipRequestUserLimit),
+                        new OnboardingRateLimitFilter(
+                                redis, problemResponseWriter, onboardingIpLimit, membershipRequestUserLimit),
                         MembershipAuthorizationFilter.class)
                 .build();
     }

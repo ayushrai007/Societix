@@ -1,5 +1,6 @@
 package com.societix.platform.security;
 
+import com.societix.platform.error.ProblemResponseWriter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,15 +35,20 @@ public class OnboardingRateLimitFilter extends OncePerRequestFilter {
             Long.class);
 
     private final StringRedisTemplate redis;
+    private final ProblemResponseWriter problemResponses;
     private final int onboardingIpLimit;
     private final int membershipRequestUserLimit;
 
     public OnboardingRateLimitFilter(
-            StringRedisTemplate redis, int onboardingIpLimit, int membershipRequestUserLimit) {
+            StringRedisTemplate redis,
+            ProblemResponseWriter problemResponses,
+            int onboardingIpLimit,
+            int membershipRequestUserLimit) {
         if (onboardingIpLimit < 1 || membershipRequestUserLimit < 1) {
             throw new IllegalArgumentException("Onboarding rate limits must be positive");
         }
         this.redis = redis;
+        this.problemResponses = problemResponses;
         this.onboardingIpLimit = onboardingIpLimit;
         this.membershipRequestUserLimit = membershipRequestUserLimit;
     }
@@ -65,18 +71,39 @@ public class OnboardingRateLimitFilter extends OncePerRequestFilter {
         try {
             if (!withinLimit("ip", request.getRemoteAddr(), onboardingIpLimit, IP_WINDOW)) {
                 response.setHeader("Retry-After", Long.toString(IP_WINDOW.toSeconds()));
-                response.sendError(HttpStatus.TOO_MANY_REQUESTS.value(), "Too many onboarding requests");
+                problemResponses.write(
+                        request,
+                        response,
+                        HttpStatus.TOO_MANY_REQUESTS,
+                        "https://errors.societix.dev/rate-limited",
+                        "Too Many Requests",
+                        "Too many onboarding requests",
+                        "SOC-429-RATE-LIMITED");
                 return;
             }
             if (request.getRequestURI().equals(MEMBERSHIP_REQUEST_PATH)
                     && "POST".equals(request.getMethod())
                     && !withinLimit("uid", jwt.getSubject(), membershipRequestUserLimit, USER_WINDOW)) {
                 response.setHeader("Retry-After", Long.toString(USER_WINDOW.toSeconds()));
-                response.sendError(HttpStatus.TOO_MANY_REQUESTS.value(), "Too many membership requests");
+                problemResponses.write(
+                        request,
+                        response,
+                        HttpStatus.TOO_MANY_REQUESTS,
+                        "https://errors.societix.dev/rate-limited",
+                        "Too Many Requests",
+                        "Too many membership requests",
+                        "SOC-429-RATE-LIMITED");
                 return;
             }
         } catch (DataAccessException exception) {
-            response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "Onboarding is temporarily unavailable");
+            problemResponses.write(
+                    request,
+                    response,
+                    HttpStatus.SERVICE_UNAVAILABLE,
+                    "https://errors.societix.dev/service-unavailable",
+                    "Service Unavailable",
+                    "Onboarding is temporarily unavailable",
+                    "SOC-503-SERVICE-UNAVAILABLE");
             return;
         }
         filterChain.doFilter(request, response);

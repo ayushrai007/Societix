@@ -3,7 +3,7 @@ package com.societix;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -16,6 +16,7 @@ import java.sql.Statement;
 import java.util.Map;
 import java.util.UUID;
 import javax.sql.DataSource;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,6 +47,9 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(TestcontainersConfiguration.class)
 class SocietyOnboardingIT {
 
+    private static final UUID PLATFORM_ADMIN_ID = UUID.fromString("8db74fbb-b015-40d4-818c-0f4ab3524e1b");
+    private static final String PLATFORM_ADMIN_UID = "societix-it-platform-admin";
+
     private final MockMvc mockMvc;
     private final JdbcTemplate jdbcTemplate;
     private final DataSource dataSource;
@@ -60,10 +64,23 @@ class SocietyOnboardingIT {
         this.societies = societies;
     }
 
+    @BeforeEach
+    void ensureCurrentPlatformAdminExists() {
+        jdbcTemplate.update(
+                "INSERT INTO identity_account (id, firebase_uid, phone_number_cipher) VALUES (?, ?, decode('00', 'hex')) "
+                        + "ON CONFLICT (id) DO NOTHING",
+                PLATFORM_ADMIN_ID,
+                PLATFORM_ADMIN_UID);
+        jdbcTemplate.update(
+                "INSERT INTO platform_admin_account (identity_id, status, authorization_version) VALUES (?, 'ACTIVE', 1) "
+                        + "ON CONFLICT (identity_id) DO UPDATE SET status = 'ACTIVE', authorization_version = 1",
+                PLATFORM_ADMIN_ID);
+    }
+
     @Test
     void adminCanCreateSocietyViaEndpoint() throws Exception {
         mockMvc.perform(post("/api/v1/societies")
-                        .with(user("platform-admin").roles("PLATFORM_ADMIN"))
+                        .with(platformAdminToken())
                         .contentType("application/json")
                         .content("""
                                 {"name":"Maple Residency","address":"12 MG Road, Pune","state":"MH"}
@@ -75,7 +92,7 @@ class SocietyOnboardingIT {
     @Test
     void createdSocietyContainsIdNameAddressAndState() throws Exception {
         String response = mockMvc.perform(post("/api/v1/societies")
-                        .with(user("platform-admin").roles("PLATFORM_ADMIN"))
+                        .with(platformAdminToken())
                         .contentType("application/json")
                         .content("""
                                 {"name":"Lakeview Heights","address":"88 Residency Road, Bengaluru","state":"KA"}
@@ -101,7 +118,7 @@ class SocietyOnboardingIT {
     @Test
     void invalidSocietyRequestReturnsProblemJson() throws Exception {
         mockMvc.perform(post("/api/v1/societies")
-                        .with(user("platform-admin").roles("PLATFORM_ADMIN"))
+                        .with(platformAdminToken())
                         .contentType("application/json")
                         .content("""
                                 {"name":"","address":"","state":"Maharashtra"}
@@ -138,7 +155,13 @@ class SocietyOnboardingIT {
     @Test
     void authenticatedNonPlatformAdminCannotCreateSociety() throws Exception {
         mockMvc.perform(post("/api/v1/societies")
-                        .with(user("resident").roles("OWNER"))
+                        .with(jwt().jwt(token -> token
+                                .subject("societix-it-resident")
+                                .claim("userId", UUID.randomUUID().toString())
+                                .claim("authorizationVersion", 1)
+                                .claim("roles", java.util.List.of("OWNER")))
+                                .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                                        "ROLE_OWNER")))
                         .header("X-Admin-Role", "PLATFORM_ADMIN")
                         .contentType("application/json")
                         .content("""
@@ -215,7 +238,7 @@ class SocietyOnboardingIT {
 
     private UUID createSociety(String name, String address, String state) throws Exception {
         String response = mockMvc.perform(post("/api/v1/societies")
-                        .with(user("platform-admin").roles("PLATFORM_ADMIN"))
+                        .with(platformAdminToken())
                         .contentType("application/json")
                         .content("{\"name\":\"" + name + "\",\"address\":\"" + address + "\",\"state\":\"" + state + "\"}"))
                 .andExpect(status().isCreated())
@@ -227,6 +250,16 @@ class SocietyOnboardingIT {
 
     private UUID responseId(String response) {
         return UUID.fromString(response.replaceFirst(".*\\\"id\\\":\\\"([^\\\"]+)\\\".*", "$1"));
+    }
+
+    private org.springframework.test.web.servlet.request.RequestPostProcessor platformAdminToken() {
+        return jwt().jwt(token -> token
+                        .subject(PLATFORM_ADMIN_UID)
+                        .claim("userId", PLATFORM_ADMIN_ID.toString())
+                        .claim("authorizationVersion", 1)
+                        .claim("roles", java.util.List.of("PLATFORM_ADMIN")))
+                .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                        "ROLE_PLATFORM_ADMIN"));
     }
 
     /** Runs a count query on an application connection, inside a transaction scoped to {@code tenantId}. */

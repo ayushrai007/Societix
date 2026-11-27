@@ -5,3 +5,4 @@ societix:
       auth-emulator-host: ""
       admin:
         enabled: false
+    phone-encryption-key: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
