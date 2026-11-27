@@ -17,7 +17,8 @@ backend/src/main/resources/db/migration/
 ├── V4__create_outbox.sql               # transactional outbox table
 ├── V5__configure_outbox_dispatch.sql   # outbox dispatch and queue-reader function
 ├── V6__park_exhausted_outbox_events.sql # park outbox events that exhaust retries
-└── V7__create_ledger.sql               # SOC-100 chart of accounts, balanced ledger, fund seeds
+├── V9__create_identity_and_membership.sql # SOC-11 identity and membership
+└── V10__create_ledger.sql              # SOC-100 chart of accounts, balanced ledger, fund seeds
 ```
 
 When the backend starts, Flyway compares the files in that folder with the

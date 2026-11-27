@@ -12,7 +12,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
- * SOC-100: V7 must deploy under a non-superuser, non-BYPASSRLS, database-owner migration role and
+ * SOC-100: V10 must deploy under a non-superuser, non-BYPASSRLS, database-owner migration role and
  * back-fill the statutory funds of an already existing society through its SECURITY DEFINER helper.
  */
 @Testcontainers
@@ -23,7 +23,7 @@ class LedgerMigrationRoleIT {
 
     @Test
     void nonSuperuserMigrationRoleBackfillsExistingSocietyAndDropsHelper() throws Exception {
-        flyway(POSTGRES.getUsername(), POSTGRES.getPassword(), "6").migrate();
+        flyway(POSTGRES.getUsername(), POSTGRES.getPassword(), "9").migrate();
         String society = "11111111-1111-1111-1111-111111111111";
         try (Connection c = DriverManager.getConnection(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword());
                 var s = c.createStatement()) {
