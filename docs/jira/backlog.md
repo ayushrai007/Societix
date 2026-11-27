@@ -95,11 +95,11 @@ _Login, roles, and keeping each society's data private (RLS)._
 - society has id, name, address, state (for later law rules)
 - stored via a Flyway migration
 
-### SOC-11 — User login with OTP + OIDC
+### SOC-11 — User login with Firebase Phone Auth
 
 - **Points:** 3  |  **Priority:** Highest  |  **Sprint:** W1  |  **Assignee:** Shree  |  **Status:** To Do  |  **Component:** Platform  |  **Labels:** `phase-0,auth`
 
-**Description:** Let a user log in. Phone OTP for first contact, bound to a standard OIDC identity, issuing a signed JWT that carries the user id, their society, and their roles. Why OIDC/JWT: standard, secure, we don't invent our own. See glossary for JWT/OIDC.
+**Description:** Let a user sign in with Firebase Phone Authentication. Societix accepts the Firebase ID token directly, verifies it, maps Firebase UID to a Societix user, and adds Societix-managed `userId`, `tenantId`, `roles`, and `authorizationVersion` custom claims after society approval.
 
 **Acceptance criteria:**
 - a user can log in and receive a JWT

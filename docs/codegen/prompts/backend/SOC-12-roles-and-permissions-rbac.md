@@ -23,6 +23,9 @@ every acceptance criterion below. Keep strictly to this task's scope.
 - each role is defined
 - a treasurer-only endpoint rejects an owner's token (403)
 - roles come only from the signed JWT, never request input
+- Society creation is restricted to a verified `PLATFORM_ADMIN` claim, never `X-Admin-Role`.
+- Roles map only from the validated Firebase `roles` custom claim; pending/unapproved accounts
+  have no Societix role authority.
 
 ## Tests to write
 - Tests that map 1:1 to the acceptance criteria above (name which test proves which criterion).

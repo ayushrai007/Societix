@@ -60,12 +60,12 @@ Make every society-owned table enforce tenant isolation via PostgreSQL Row-Level
 the tenant id from the request's JWT — so even a buggy query cannot leak another society's rows.
 
 ## Preconditions (already built)
-- SOC-2 (backend scaffold), SOC-5 (Flyway), SOC-10 (Society entity), SOC-11 (JWT with societyId).
+- SOC-2 (backend scaffold), SOC-5 (Flyway), SOC-10 (Society entity), SOC-11 (Firebase JWT with tenantId).
   If any is missing, stop and say so.
 
 ## Deliverables (exact)
-- A `TenantContext` (request-scoped) populated from the JWT's societyId by a security filter.
-- A transaction step that runs `SET LOCAL app.tenant_id = :societyId` at the start of each request
+- A `TenantContext` (request-scoped) populated from the validated JWT's `tenantId` by a security filter.
+- A transaction step that runs `SET LOCAL app.tenant_id = :tenantId` at the start of each request
   transaction (per 02-tech-blueprint §6).
 - A Flyway migration that, for each existing tenant table, adds `tenant_id uuid not null`, enables
   RLS, and creates a policy `USING (tenant_id = current_setting('app.tenant_id')::uuid)`.

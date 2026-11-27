@@ -88,7 +88,7 @@ payments, ledger) end-to-end before any feature breadth.
 |---|---|
 | Repo & build | Maven project configured by a root `pom.xml`; Spring Modulith package boundaries for `treasury`, `governance`, `copilot`, `gate`, `privacy`, `migration`, and `platform`; `ArchUnit`/Modulith verification in CI |
 | CI/CD skeleton | GitHub Actions: build + unit test on PR, Testcontainers integration lane, SAST/secret/dependency scan, image build to registry, deploy-to-dev — see [`../archive/delivery/cicd-devops.md`](../archive/delivery/cicd-devops.md) |
-| Auth | OIDC login (Auth Code + PKCE), JWT validation at gateway, role claims (`SECRETARY`, `TREASURER`, `OWNER`, `GUARD`, …) per [`../archive/02-system-design.md`](../archive/02-system-design.md) §1 |
+| Auth | Firebase Phone Auth, Firebase ID-token validation in the Spring resource server, and Societix claims (`userId`, `tenantId`, `roles`, `authorizationVersion`) |
 | Tenancy / RLS | `tenant_id` on every table; `OncePerRequestFilter` sets `SET LOCAL app.tenant_id`; Flyway baseline with RLS policies; a tenancy isolation test that fails a cross-tenant read |
 | Eventing | Transactional **outbox** table in PostgreSQL + `@TransactionalEventListener` + a ShedLock-guarded `@Scheduled` poller; one event (`billing.invoice.raised`) wired producer→consumer. No broker in v1 — see [ADR-0008](../adr/0008-postgres-outbox-no-broker.md) |
 | M5 guardrails | No-third-party-SDK lint gate; consent model stub; purge scheduler skeleton (`privacy.purge.due`) |
