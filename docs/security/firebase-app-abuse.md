@@ -24,14 +24,14 @@ that abuse is impossible.
 
 ## Societix API abuse
 
-- Apply Redis-backed limits at the gateway/backend by IP before authentication and by verified
-  Firebase UID after authentication. Use stricter limits for onboarding, membership requests, and
-  other expensive actions. For pre-authentication keys derived from phone numbers, store an HMAC
-  rather than the raw number.
-- The current API has no public login/OTP endpoint because the Firebase client SDK talks directly to
-  Firebase. Any future public Societix endpoint (for example, a membership-request bootstrap route)
-  must receive an explicit IP-based limit before it is released. Firebase SMS controls remain the
-  actual OTP-send limits; a Societix API limiter cannot see client-to-Firebase SMS requests.
+- The membership onboarding API uses Redis fixed-window limits: 60 requests per source IP per
+  minute across onboarding routes, plus 5 membership submissions per Firebase UID per hour. The
+  limits are configurable through `SOCIETIX_ONBOARDING_REQUESTS_PER_IP_PER_MINUTE` and
+  `SOCIETIX_MEMBERSHIP_REQUESTS_PER_USER_PER_HOUR`.
+- Redis failures fail closed with `503`; a reached limit returns `429` and `Retry-After`. Redis keys
+  contain SHA-256 digests of the IP or Firebase UID, not phone numbers, tokens, or raw identifiers.
+- These API limits do not cap OTP SMS sends: the Firebase client SDK sends those requests directly to
+  Firebase. Firebase project SMS policy and sending quotas remain the OTP-send controls.
 - Keep authorization separate: every protected request still requires a valid Firebase ID token,
   approved Societix account, current account status, current `authorizationVersion`, and the
   appropriate role. App Check is not authentication or authorization.
@@ -44,10 +44,9 @@ that abuse is impossible.
 - **Before enabling Firebase Phone Auth in a deployed project (SOC-11):** link Cloud Billing, restrict
   allowed SMS regions to India, confirm app verification is enabled, review Firebase quotas, and
   create billing and SMS-volume alerts. These are Firebase project settings, not Spring configuration.
-- **When public unauthenticated API routes are introduced (SOC-11/12 or the route's owning task):**
-  add Redis-backed IP limits and tests for the configured limit and `429` response before exposing
-  the route. Configure trusted proxy handling at the ingress; do not trust arbitrary forwarded-IP
-  headers.
+- **Before production:** configure Redis and the ingress so client IPs cannot be spoofed. The
+  application currently uses the socket peer address; a deployed ingress must prevent direct public
+  access to the backend and forward traffic through the trusted edge.
 - **Before production launch:** export Actuator/Micrometer metrics to the chosen monitoring service,
   create dashboards and alerts for SMS spend/volume, HTTP 401/403/429 rates, API error/latency rates,
   Firebase token verification failures, and Redis availability. Route alerts to an on-call owner and

@@ -1,0 +1,8 @@
+societix:
+  security:
+    firebase:
+      project-id: societix-test
+      auth-emulator-host: ""
+      admin:
+        enabled: false
+    phone-encryption-key: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=

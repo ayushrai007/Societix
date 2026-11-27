@@ -48,6 +48,16 @@ societix:
       # Required per environment: a missing project must fail startup instead of changing trust roots.
       project-id: ${FIREBASE_PROJECT_ID}
       jwk-set-uri: ${FIREBASE_JWK_SET_URI:https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com}
+      auth-emulator-host: ${FIREBASE_AUTH_EMULATOR_HOST:}
+      admin:
+        enabled: ${FIREBASE_ADMIN_ENABLED:false}
+    phone-encryption-key: ${SOCIETIX_PHONE_ENCRYPTION_KEY:}
+    platform-admin:
+      bootstrap:
+        firebase-uid: ${SOCIETIX_PLATFORM_ADMIN_BOOTSTRAP_FIREBASE_UID:}
+    rate-limit:
+      onboarding-requests-per-ip-per-minute: ${SOCIETIX_ONBOARDING_REQUESTS_PER_IP_PER_MINUTE:60}
+      membership-requests-per-user-per-hour: ${SOCIETIX_MEMBERSHIP_REQUESTS_PER_USER_PER_HOUR:5}
   outbox:
     poll-delay-ms: ${SOCIETIX_OUTBOX_POLL_DELAY_MS:3000}
     batch-size: ${SOCIETIX_OUTBOX_BATCH_SIZE:100}
