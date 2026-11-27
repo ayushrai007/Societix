@@ -47,6 +47,8 @@ public class TestcontainersConfiguration {
     @Bean
     DynamicPropertyRegistrar postgresProperties(PostgreSQLContainer postgres) {
         return registry -> {
+            registry.add("societix.security.society-creation-enabled", () -> true);
+            registry.add("societix.security.firebase.project-id", () -> "societix-test");
             registry.add("spring.datasource.url", postgres::getJdbcUrl);
             registry.add("spring.datasource.username", () -> APP_RUNTIME_ROLE);
             registry.add("spring.datasource.password", () -> APP_RUNTIME_PASSWORD);

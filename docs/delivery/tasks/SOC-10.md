@@ -108,17 +108,16 @@ tests can fail, pointing the application datasource back at the superuser makes
   policies apply to the application. The earlier test switched to a `NOBYPASSRLS` role inside
   the test, which proved the policy but not the application's isolation; the tests now use the
   application's own connection.
-- Until SOC-11/SOC-12 signed JWT and RBAC work lands, the endpoint requires
-  `X-Admin-Role: PLATFORM_ADMIN`. This is a caller-controlled temporary gate, not a production
-  authentication mechanism; it is explicitly an open security item.
+- The endpoint now requires a Firebase ID token validated by the Spring resource server and the
+  signed Societix `PLATFORM_ADMIN` role claim. The earlier `X-Admin-Role` header was caller-
+  controlled and has been removed as an authorization mechanism.
 - SOC-13 request-level JWT-derived isolation is intentionally excluded: it is a separate backlog
   task with SOC-11 as a precondition.
 
 ## Limits and follow-ups
 
-- Replace the temporary role header with server-side authentication/authorization. The proposed
-  interim fix is a server-side admin key supplied through configuration until SOC-12 roles land;
-  this requires Ayush's agreement.
+- The initial `PLATFORM_ADMIN` identity must be provisioned through a restricted operator process;
+  there is no public self-service privilege escalation path.
 - SOC-13 will add the request boundary that derives tenant context from a verified JWT and expands
   request-level isolation coverage.
 - Production and CI-deployed environments must provision the runtime login role (and its

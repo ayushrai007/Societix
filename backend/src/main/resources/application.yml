@@ -41,6 +41,13 @@ management:
       show-details: never
 
 societix:
+  security:
+    # Keep disabled until SOC-11 checks current administrator status and token version per request.
+    society-creation-enabled: ${SOCIETIX_SOCIETY_CREATION_ENABLED:false}
+    firebase:
+      # Required per environment: a missing project must fail startup instead of changing trust roots.
+      project-id: ${FIREBASE_PROJECT_ID}
+      jwk-set-uri: ${FIREBASE_JWK_SET_URI:https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com}
   outbox:
     poll-delay-ms: ${SOCIETIX_OUTBOX_POLL_DELAY_MS:3000}
     batch-size: ${SOCIETIX_OUTBOX_BATCH_SIZE:100}
