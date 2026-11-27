@@ -13,8 +13,12 @@ application starts. That way every laptop, CI run, and server ends up with the i
 backend/src/main/resources/db/migration/
 ├── V1__baseline.sql                    # empty baseline: the start of the schema history
 ├── V2__create_society.sql              # society tenant table and RLS policy
-└── V3__grant_app_runtime_role.sql      # runtime-role privileges for society
-
+├── V3__grant_app_runtime_role.sql      # runtime-role privileges for society
+├── V4__create_outbox.sql               # transactional outbox table
+├── V5__configure_outbox_dispatch.sql   # outbox dispatch and queue-reader function
+├── V6__park_exhausted_outbox_events.sql # park outbox events that exhaust retries
+├── V9__create_identity_and_membership.sql # SOC-11 identity and membership
+└── V10__create_ledger.sql              # SOC-100 chart of accounts, balanced ledger, fund seeds
 ```
 
 When the backend starts, Flyway compares the files in that folder with the
@@ -68,7 +72,7 @@ The backend uses three database roles on `jdbc:postgresql://localhost:5432/socie
 |---|---|---|
 | `societix` (owner) | Flyway, to run migrations; owns the schema and tables | `SPRING_FLYWAY_USER`, `SPRING_FLYWAY_PASSWORD` |
 | `societix_app` (runtime) | The application's own queries | `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` |
-| `societix_outbox_queue_reader` | Owns a narrowly scoped `SECURITY DEFINER` function that returns due outbox tenant UUIDs | Created by the PostgreSQL init script; `NOLOGIN`, `BYPASSRLS`, `SELECT` on `outbox` only |
+| `societix_outbox_queue_reader` | Owns narrowly scoped `SECURITY DEFINER` functions for RLS-bypassing maintenance | Created by the PostgreSQL init script; `NOLOGIN`, `BYPASSRLS`; normally `SELECT` on `outbox` only |
 
 The runtime role is not a superuser, cannot bypass row-level security and owns no tables, so the
 tenant RLS policies apply to every query the application makes; a query without a valid
@@ -77,8 +81,11 @@ application must never connect as the owner role.
 
 Locally, `docker compose up` creates these roles: the owner is the image's `POSTGRES_USER`, and
 `infra/postgres/initdb/10-create-app-runtime-role.sh` creates the runtime role and the outbox queue
-reader. The queue reader cannot log in and can read only pending outbox tenant IDs through one
-function; it does not make the application runtime role a `BYPASSRLS` role. Production provisioning
+reader. The queue reader cannot log in and normally can read only pending outbox tenant IDs through
+one function. SOC-100 temporarily grants it only the society and ledger privileges needed by a
+security-definer fund backfill (including `CREATE` on schema `public`, so the migration role must own
+the schema or database), then drops the helper and revokes those grants. It does not make the
+application runtime or Flyway migration role a `BYPASSRLS` role. Production provisioning
 must create the same no-login role and grant it as a member to the Flyway migration role, so that
 the migration role can transfer ownership of the function. For example, when `societix` is the
 migration role:
@@ -109,4 +116,3 @@ cd backend
 ```
 
 To point at a different database, also set `SPRING_DATASOURCE_URL`.
-
