@@ -37,18 +37,21 @@ user.
 - Added tests for every declared role mapping, ignoring unknown role names, a treasurer-only test
   fixture denying an owner even when the request header and body name `TREASURER`, and allowing a
   treasurer claim. The fixture is test-only because no production treasurer-only operation exists yet.
-- Society creation and current account/version enforcement remain covered by the SOC-11 onboarding
-  security tests in this feature branch.
+- Role assignment rejects `PLATFORM_ADMIN` and unknown role names over HTTP, and pending membership
+  claim synchronization omits the tenant context and society roles.
+- Society creation and current account/version enforcement are covered by the SOC-11 onboarding
+  authorization tests.
 
 ### Acceptance criteria to verification
 
 | Acceptance criterion | Verification |
 |---|---|
-| All backlog roles are represented and mapped | `FirebaseRoleAuthoritiesConverterTest` |
+| All backlog roles are represented; only declared roles from the validated claim become authorities | `FirebaseRoleAuthoritiesConverterTest` |
 | Owner cannot use treasurer-only operation; role header cannot grant access | `RoleAuthorizationTest` |
+| Pending membership receives no society role or tenant context; invalid role assignments return 400 | `MembershipServiceIT` |
 | Only `PLATFORM_ADMIN` can create a society, with current account checks | `SocietyOnboardingIT` and SOC-11 security tests |
 
 ### Verification status
 
 - Focused SOC-12 security tests: `./mvnw -B -Dtest=FirebaseRoleAuthoritiesConverterTest,RoleAuthorizationTest test` — passed.
-- Full `./mvnw -B verify` — passed (36 unit/context tests and 23 integration tests).
+- Full `./mvnw -B verify` is required in CI; see the current PR check for the result.

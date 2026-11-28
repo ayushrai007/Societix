@@ -109,7 +109,7 @@ public class FirebaseClaimsSyncHandler implements OutboxEventHandler {
             List<Role> roles = new ArrayList<>();
             rolesNode.forEach(role -> roles.add(Role.valueOf(role.asString())));
             return List.copyOf(roles);
-        } catch (JacksonException exception) {
+        } catch (JacksonException | IllegalArgumentException exception) {
             throw new IllegalStateException("Stored membership roles are invalid", exception);
         }
     }

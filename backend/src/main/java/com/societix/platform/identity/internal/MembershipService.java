@@ -438,7 +438,7 @@ public class MembershipService {
             Set<Role> values = new LinkedHashSet<>();
             roles.forEach(value -> values.add(Role.valueOf(value.asString())));
             return Set.copyOf(values);
-        } catch (JacksonException exception) {
+        } catch (JacksonException | IllegalArgumentException exception) {
             throw new IllegalStateException("Stored membership roles are invalid", exception);
         }
     }

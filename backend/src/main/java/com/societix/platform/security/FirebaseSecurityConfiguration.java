@@ -41,8 +41,6 @@ public class FirebaseSecurityConfiguration {
                     authorize.requestMatchers("/health", "/actuator/health").permitAll();
                     if (societyCreationEnabled) {
                         authorize.requestMatchers("/actuator/metrics/**").hasRole(Role.PLATFORM_ADMIN.name());
-                        authorize.requestMatchers(HttpMethod.POST, "/api/v1/societies")
-                                .hasRole(Role.PLATFORM_ADMIN.name());
                     } else {
                         authorize.requestMatchers("/actuator/metrics/**").denyAll();
                     }

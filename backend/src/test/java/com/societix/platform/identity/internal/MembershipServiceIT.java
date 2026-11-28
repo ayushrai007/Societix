@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.societix.TestcontainersConfiguration;
@@ -31,6 +32,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
@@ -205,6 +207,64 @@ class MembershipServiceIT {
                         && claims.get("membershipAuthorizationVersion").equals(approved.authorizationVersion())
                         && claims.get("roles").equals(List.of(Role.OWNER.name()))));
         assertThat(memberships.getMembership(societyId, pending.membershipId()).claimsSynchronized()).isTrue();
+    }
+
+    @Test
+    void pendingMembershipClaimsHaveNoSocietyRoleOrTenantContext() {
+        UUID societyId = createSociety();
+        String firebaseUid = "pending-claims-user-" + UUID.randomUUID();
+        MembershipResponse pending = memberships.requestMembership(
+                firebaseUid, "+919876543210", societyId, MembershipType.RESIDENT);
+        var payload = jsonMapper.createObjectNode().put("membershipId", pending.membershipId().toString());
+
+        transactions.executeWithoutResult(transaction -> {
+            jdbcTemplate.queryForObject(
+                    "select set_config('app.tenant_id', ?, true)", String.class, societyId.toString());
+            claimsSync.handle(new OutboxMessage(
+                    UUID.randomUUID(), societyId, MembershipService.CLAIMS_SYNC_EVENT, payload, Instant.now()));
+        });
+
+        verify(firebaseClaims).setCustomClaims(
+                org.mockito.ArgumentMatchers.eq(firebaseUid),
+                argThat(claims -> claims.get("roles").equals(List.of())
+                        && !claims.containsKey("tenantId")
+                        && !claims.containsKey("membershipAuthorizationVersion")));
+    }
+
+    @Test
+    void roleAssignmentEndpointRejectsPlatformAdminAndUnknownRoles() throws Exception {
+        UUID societyId = createSociety();
+        String secretaryUid = "role-assignment-secretary-" + UUID.randomUUID();
+        MembershipResponse secretaryPending = memberships.requestMembership(
+                secretaryUid, "+919876543210", societyId, MembershipType.RESIDENT);
+        MembershipResponse secretary = memberships.approve(
+                societyId, secretaryPending.membershipId(), Set.of(Role.SECRETARY), "platform-admin");
+
+        String residentUid = "role-assignment-resident-" + UUID.randomUUID();
+        MembershipResponse residentPending = memberships.requestMembership(
+                residentUid, "+919876543211", societyId, MembershipType.RESIDENT);
+        memberships.approve(societyId, residentPending.membershipId(), Set.of(Role.OWNER), secretaryUid);
+
+        RequestPostProcessor secretaryToken = jwt()
+                .jwt(token -> token.subject(secretaryUid)
+                        .claim("userId", identityId(secretaryUid).toString())
+                        .claim("tenantId", societyId.toString())
+                        .claim("authorizationVersion", secretary.authorizationVersion())
+                        .claim("membershipAuthorizationVersion", secretary.authorizationVersion())
+                        .claim("roles", List.of(Role.SECRETARY.name())))
+                .authorities(new org.springframework.security.core.authority.SimpleGrantedAuthority(
+                        Role.SECRETARY.authority()));
+
+        mockMvc.perform(put("/api/v1/memberships/{membershipId}/roles", residentPending.membershipId())
+                        .with(secretaryToken)
+                        .contentType("application/json")
+                        .content("{\"roles\":[\"PLATFORM_ADMIN\"]}"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(put("/api/v1/memberships/{membershipId}/roles", residentPending.membershipId())
+                        .with(secretaryToken)
+                        .contentType("application/json")
+                        .content("{\"roles\":[\"UNKNOWN_ROLE\"]}"))
+                .andExpect(status().isBadRequest());
     }
 
     private UUID createSociety() {
