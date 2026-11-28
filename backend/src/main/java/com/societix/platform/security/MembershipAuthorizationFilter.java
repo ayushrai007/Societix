@@ -1,6 +1,6 @@
 package com.societix.platform.security;
 
-import com.societix.platform.identity.domain.SocietixRoleClaims;
+import com.societix.platform.identity.domain.Role;
 import com.societix.platform.identity.internal.MembershipAuthorizationService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -55,10 +55,10 @@ public class MembershipAuthorizationFilter extends OncePerRequestFilter {
         try {
             boolean platformAdmin = authentication.getAuthorities().stream()
                     .anyMatch(authority -> authority.getAuthority()
-                            .equals("ROLE_" + SocietixRoleClaims.PLATFORM_ADMIN));
+                            .equals(Role.PLATFORM_ADMIN.authority()));
             boolean societyRole = authentication.getAuthorities().stream()
                     .anyMatch(authority -> authority.getAuthority().startsWith("ROLE_")
-                            && !authority.getAuthority().equals("ROLE_" + SocietixRoleClaims.PLATFORM_ADMIN));
+                            && !authority.getAuthority().equals(Role.PLATFORM_ADMIN.authority()));
             String userIdClaim = jwt.getClaimAsString("userId");
             Object versionClaim = jwt.getClaim("authorizationVersion");
             if (userIdClaim == null || !(versionClaim instanceof Number version)) {

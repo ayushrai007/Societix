@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.UserRecord;
 import com.societix.platform.identity.domain.PhoneNumberProtector;
-import com.societix.platform.identity.domain.SocietixRoleClaims;
+import com.societix.platform.identity.domain.Role;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -57,7 +57,7 @@ class PlatformAdminBootstrapRunnerTest {
         verify(jdbc).update(anyString(), eq(userId));
         verify(firebaseAuth).setCustomUserClaims(eq(FIREBASE_UID), eq(Map.of(
                 "userId", userId.toString(),
-                "roles", List.of(SocietixRoleClaims.PLATFORM_ADMIN),
+                "roles", List.of(Role.PLATFORM_ADMIN.name()),
                 "authorizationVersion", 1L)));
     }
 }

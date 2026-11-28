@@ -21,7 +21,7 @@ public class SocietyController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('PLATFORM_ADMIN')")
+    @PreAuthorize("hasRole(T(com.societix.platform.identity.domain.Role).PLATFORM_ADMIN.name())")
     public ResponseEntity<SocietyResponse> create(
             @Valid @RequestBody CreateSocietyRequest request) {
         SocietyResponse response = SocietyResponse.from(onboarding.onboard(request));

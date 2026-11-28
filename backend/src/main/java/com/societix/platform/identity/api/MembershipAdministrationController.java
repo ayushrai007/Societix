@@ -26,25 +26,25 @@ public class MembershipAdministrationController {
     }
 
     @GetMapping("/membership-requests/pending")
-    @PreAuthorize("hasRole('SECRETARY')")
+    @PreAuthorize("hasRole(T(com.societix.platform.identity.domain.Role).SECRETARY.name())")
     public List<PendingMembershipResponse> pendingMemberships(@AuthenticationPrincipal Jwt jwt) {
         return memberships.pendingMemberships(tenantId(jwt));
     }
 
     @GetMapping("/memberships")
-    @PreAuthorize("hasRole('SECRETARY')")
+    @PreAuthorize("hasRole(T(com.societix.platform.identity.domain.Role).SECRETARY.name())")
     public List<ManagedMembershipResponse> approvedMemberships(@AuthenticationPrincipal Jwt jwt) {
         return memberships.approvedMemberships(tenantId(jwt));
     }
 
     @GetMapping("/societies/{societyId}/first-secretary-candidates")
-    @PreAuthorize("hasRole('PLATFORM_ADMIN')")
+    @PreAuthorize("hasRole(T(com.societix.platform.identity.domain.Role).PLATFORM_ADMIN.name())")
     public List<PendingMembershipResponse> firstSecretaryCandidates(@PathVariable UUID societyId) {
         return memberships.firstSecretaryCandidates(societyId);
     }
 
     @PostMapping("/societies/{societyId}/membership-requests/{membershipId}/appoint-first-secretary")
-    @PreAuthorize("hasRole('PLATFORM_ADMIN')")
+    @PreAuthorize("hasRole(T(com.societix.platform.identity.domain.Role).PLATFORM_ADMIN.name())")
     public MembershipResponse appointFirstSecretary(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID societyId,
@@ -53,7 +53,7 @@ public class MembershipAdministrationController {
     }
 
     @PostMapping("/membership-requests/{membershipId}/approve")
-    @PreAuthorize("hasRole('SECRETARY')")
+    @PreAuthorize("hasRole(T(com.societix.platform.identity.domain.Role).SECRETARY.name())")
     public MembershipResponse approve(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID membershipId,
@@ -62,13 +62,13 @@ public class MembershipAdministrationController {
     }
 
     @PostMapping("/membership-requests/{membershipId}/reject")
-    @PreAuthorize("hasRole('SECRETARY')")
+    @PreAuthorize("hasRole(T(com.societix.platform.identity.domain.Role).SECRETARY.name())")
     public MembershipResponse reject(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID membershipId) {
         return memberships.reject(tenantId(jwt), membershipId, jwt.getSubject());
     }
 
     @PutMapping("/memberships/{membershipId}/roles")
-    @PreAuthorize("hasRole('SECRETARY')")
+    @PreAuthorize("hasRole(T(com.societix.platform.identity.domain.Role).SECRETARY.name())")
     public MembershipResponse assignRoles(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID membershipId,
@@ -77,7 +77,7 @@ public class MembershipAdministrationController {
     }
 
     @PutMapping("/memberships/{membershipId}/suspension")
-    @PreAuthorize("hasRole('SECRETARY')")
+    @PreAuthorize("hasRole(T(com.societix.platform.identity.domain.Role).SECRETARY.name())")
     public MembershipResponse setSuspended(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID membershipId,

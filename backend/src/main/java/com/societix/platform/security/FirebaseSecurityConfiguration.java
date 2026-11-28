@@ -1,5 +1,6 @@
 package com.societix.platform.security;
 
+import com.societix.platform.identity.domain.Role;
 import com.societix.platform.identity.internal.MembershipAuthorizationService;
 import com.societix.platform.error.ProblemResponseWriter;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,13 +40,14 @@ public class FirebaseSecurityConfiguration {
         return http.authorizeHttpRequests(authorize -> {
                     authorize.requestMatchers("/health", "/actuator/health").permitAll();
                     if (societyCreationEnabled) {
-                        authorize.requestMatchers("/actuator/metrics/**").hasRole("PLATFORM_ADMIN");
+                        authorize.requestMatchers("/actuator/metrics/**").hasRole(Role.PLATFORM_ADMIN.name());
                     } else {
                         authorize.requestMatchers("/actuator/metrics/**").denyAll();
                     }
                     authorize.requestMatchers("/actuator/**").denyAll();
                     if (societyCreationEnabled) {
-                        authorize.requestMatchers(HttpMethod.POST, "/api/v1/societies").hasRole("PLATFORM_ADMIN");
+                        authorize.requestMatchers(HttpMethod.POST, "/api/v1/societies")
+                                .hasRole(Role.PLATFORM_ADMIN.name());
                     } else {
                         authorize.requestMatchers(HttpMethod.POST, "/api/v1/societies").denyAll();
                     }

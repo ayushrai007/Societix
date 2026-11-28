@@ -1,7 +1,7 @@
 package com.societix.platform.identity.internal;
 
 import com.societix.platform.identity.domain.MembershipStatus;
-import com.societix.platform.identity.domain.SocietixRoleClaims;
+import com.societix.platform.identity.domain.Role;
 import com.societix.platform.outbox.OutboxEventHandler;
 import com.societix.platform.outbox.OutboxMessage;
 import java.util.ArrayList;
@@ -75,7 +75,7 @@ public class FirebaseClaimsSyncHandler implements OutboxEventHandler {
         MembershipClaims membership = current.getFirst();
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", membership.identityId().toString());
-        List<String> roles = new ArrayList<>();
+        List<Role> roles = new ArrayList<>();
         boolean approvedMembership = membership.status() == MembershipStatus.APPROVED;
         if (approvedMembership) {
             claims.put("tenantId", message.societyId().toString());
@@ -84,9 +84,9 @@ public class FirebaseClaimsSyncHandler implements OutboxEventHandler {
         }
         boolean activePlatformAdmin = "ACTIVE".equals(membership.platformAdminStatus());
         if (activePlatformAdmin) {
-            roles.add(SocietixRoleClaims.PLATFORM_ADMIN);
+            roles.add(Role.PLATFORM_ADMIN);
         }
-        claims.put("roles", List.copyOf(roles));
+        claims.put("roles", roles.stream().map(Role::name).toList());
         claims.put(
                 "authorizationVersion",
                 activePlatformAdmin ? membership.platformAdminVersion() : membership.authorizationVersion());
@@ -103,11 +103,11 @@ public class FirebaseClaimsSyncHandler implements OutboxEventHandler {
                 membership.authorizationVersion());
     }
 
-    private List<String> readRoles(String json) {
+    private List<Role> readRoles(String json) {
         try {
             JsonNode rolesNode = jsonMapper.readTree(json);
-            List<String> roles = new ArrayList<>();
-            rolesNode.forEach(role -> roles.add(role.asString()));
+            List<Role> roles = new ArrayList<>();
+            rolesNode.forEach(role -> Role.fromClaim(role.asString()).ifPresent(roles::add));
             return List.copyOf(roles);
         } catch (JacksonException exception) {
             throw new IllegalStateException("Stored membership roles are invalid", exception);

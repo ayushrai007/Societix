@@ -4,7 +4,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 import com.societix.platform.identity.domain.PhoneNumberProtector;
-import com.societix.platform.identity.domain.SocietixRoleClaims;
+import com.societix.platform.identity.domain.Role;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -66,7 +66,7 @@ class PlatformAdminBootstrapRunner implements ApplicationRunner {
         try {
             firebaseAuth.setCustomUserClaims(firebaseUid, Map.of(
                     "userId", admin.userId().toString(),
-                    "roles", List.of(SocietixRoleClaims.PLATFORM_ADMIN),
+                    "roles", List.of(Role.PLATFORM_ADMIN.name()),
                     "authorizationVersion", admin.authorizationVersion()));
         } catch (FirebaseAuthException exception) {
             throw new IllegalStateException("Could not set initial platform administrator claims", exception);
