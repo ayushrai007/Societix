@@ -436,9 +436,9 @@ public class MembershipService {
         try {
             JsonNode roles = jsonMapper.readTree(json);
             Set<Role> values = new LinkedHashSet<>();
-            roles.forEach(value -> values.add(Role.valueOf(value.asString())));
+            roles.forEach(value -> Role.fromClaim(value.asString()).ifPresent(values::add));
             return Set.copyOf(values);
-        } catch (JacksonException | IllegalArgumentException exception) {
+        } catch (JacksonException exception) {
             throw new IllegalStateException("Stored membership roles are invalid", exception);
         }
     }

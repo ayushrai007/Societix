@@ -232,6 +232,36 @@ class MembershipServiceIT {
     }
 
     @Test
+    void claimsSyncIgnoresUnknownStoredRolesAndContinues() {
+        UUID societyId = createSociety();
+        String firebaseUid = "unknown-role-claims-user-" + UUID.randomUUID();
+        MembershipResponse pending = memberships.requestMembership(
+                firebaseUid, "+919876543210", societyId, MembershipType.RESIDENT);
+        MembershipResponse approved = memberships.approve(
+                societyId, pending.membershipId(), Set.of(Role.OWNER), "secretary-uid");
+        var payload = jsonMapper.createObjectNode().put("membershipId", pending.membershipId().toString());
+
+        transactions.executeWithoutResult(transaction -> {
+            jdbcTemplate.queryForObject(
+                    "select set_config('app.tenant_id', ?, true)", String.class, societyId.toString());
+            jdbcTemplate.update(
+                    "UPDATE society_membership SET roles = ?::jsonb WHERE tenant_id = ? AND id = ?",
+                    "[\"OWNER\",\"FUTURE_ROLE\"]",
+                    societyId,
+                    pending.membershipId());
+            claimsSync.handle(new OutboxMessage(
+                    UUID.randomUUID(), societyId, MembershipService.CLAIMS_SYNC_EVENT, payload, Instant.now()));
+        });
+
+        verify(firebaseClaims).setCustomClaims(
+                org.mockito.ArgumentMatchers.eq(firebaseUid),
+                argThat(claims -> claims.get("roles").equals(List.of(Role.OWNER.name()))));
+        assertThat(memberships.getMembership(societyId, pending.membershipId()).roles())
+                .containsExactlyInAnyOrder(Role.OWNER);
+        assertThat(approved.authorizationVersion()).isEqualTo(1);
+    }
+
+    @Test
     void roleAssignmentEndpointRejectsPlatformAdminAndUnknownRoles() throws Exception {
         UUID societyId = createSociety();
         String secretaryUid = "role-assignment-secretary-" + UUID.randomUUID();
